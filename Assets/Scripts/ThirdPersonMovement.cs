@@ -64,13 +64,14 @@ public class ThirdPersonMovement : MonoBehaviour
         controller.Move(moveDir * speed * Time.deltaTime);
         CurrentSpeed = controller.velocity.magnitude;
 
-        if (moveDir.sqrMagnitude > 0.01f && !GetComponent<AimController>().IsAiming())
+        if (moveDir.sqrMagnitude > 0.01f && (aimController == null || !aimController.IsAiming()))
         {
-            Vector3 lookDir = camForward;
-            lookDir.y = 0;
+            Vector3 lookDir = moveDir;
+            lookDir.y = 0f;
 
-            Quaternion targetRot = Quaternion.LookRotation(lookDir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            Quaternion targetRot = Quaternion.LookRotation(lookDir.normalized);
+            transform.rotation =
+                Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
 
     }
