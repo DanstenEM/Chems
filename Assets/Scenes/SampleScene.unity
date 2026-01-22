@@ -1080,6 +1080,7 @@ GameObject:
   - component: {fileID: 848776864}
   - component: {fileID: 848776863}
   - component: {fileID: 848776862}
+  - component: {fileID: 848776865}
   m_Layer: 7
   m_Name: Dummy
   m_TagString: Untagged
@@ -1182,6 +1183,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 848776860}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &848776865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 848776860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2880ecd1a78c494a8013e31f5da46c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
 --- !u!1 &1000658691
 GameObject:
   m_ObjectHideFlags: 0
@@ -1480,6 +1494,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1350335793}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1371587679
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1371587680}
+  m_Layer: 6
+  m_Name: GunPlacement
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1371587680
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1371587679}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.232, y: 1.475, z: 0.257}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1745601058}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1388246875
 GameObject:
   m_ObjectHideFlags: 0
@@ -1998,6 +2043,7 @@ Transform:
   m_Children:
   - {fileID: 637812473}
   - {fileID: 1517778528}
+  - {fileID: 1371587680}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1745601060
@@ -2366,7 +2412,7 @@ MonoBehaviour:
   fireDistance: 100
   hitMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 4294967295
   fireAction:
     m_UseReference: 0
     m_Action:
@@ -2387,8 +2433,10 @@ MonoBehaviour:
         m_Flags: 0
       m_Flags: 0
     m_Reference: {fileID: 0}
-  tracerPrefab: {fileID: 0}
-  muzzle: {fileID: 0}
+  tracerPrefab: {fileID: 6390930830456022657, guid: c6ba2ebde975dcb4693de7aa0bcce545, type: 3}
+  muzzle: {fileID: 1371587680}
+  damage: 25
+  impactPrefab: {fileID: 2554499146558399278, guid: 0b60edd4660bfc3419a4ef1e6d768e79, type: 3}
 --- !u!1 &1807574713
 GameObject:
   m_ObjectHideFlags: 0

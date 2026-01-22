@@ -22,6 +22,9 @@ public class Shooter : MonoBehaviour
     [Header("Damage")]
     [SerializeField] private float damage = 25f;
 
+    [Header("Impact")]
+    [SerializeField] private GameObject impactPrefab;
+
     float nextFireTime;
 
     void Awake()
@@ -65,13 +68,12 @@ public class Shooter : MonoBehaviour
         if (Physics.Raycast(ray, out hit, fireDistance, hitMask))
         {
             endPoint = hit.point;
-            Debug.Log("Hit: " + hit.collider.name);
+
+            SpawnImpact(hit);
 
             Health health = hit.collider.GetComponentInParent<Health>();
             if (health != null)
-            {
                 health.TakeDamage(damage);
-            }
         }
         SpawnTracer(startPoint, endPoint);
     }
@@ -81,5 +83,13 @@ public class Shooter : MonoBehaviour
 
         BulletTracer tracer = Instantiate(tracerPrefab);
         tracer.Init(start, end);
+    }
+    void SpawnImpact(RaycastHit hit)
+    {
+        if (!impactPrefab) return;
+
+        Quaternion rot = Quaternion.LookRotation(hit.normal);
+
+        GameObject impact = Instantiate(impactPrefab, hit.point + hit.normal * 0.01f, rot);
     }
 }
