@@ -1809,7 +1809,6 @@ GameObject:
   - component: {fileID: 1576084936}
   - component: {fileID: 1576084935}
   - component: {fileID: 1576084940}
-  - component: {fileID: 1576084942}
   - component: {fileID: 1576084941}
   m_Layer: 0
   m_Name: Box
@@ -1973,19 +1972,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34f4f30d33e0ee74aa8c3b5607c95c8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoxOn
+  <keyType>k__BackingField: 0
+  keyView: {fileID: 1000658693}
+  UI: {fileID: 1000658691}
   target: {fileID: 1350335793}
---- !u!114 &1576084942
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1576084933}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28e470a13588171489211a129aa4f1e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractableTrigger
 --- !u!1 &1745601057
 GameObject:
   m_ObjectHideFlags: 0
@@ -2339,27 +2329,70 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fd2d7b1296ed0e44a6b6aef6764af07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerTriggerInteraction
-  interactHintUI: {fileID: 1000658691}
-  interactAction:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Interact
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 6620da75-47d2-41ba-8d2e-971484e1293b
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings:
-      - m_Name: 
-        m_Id: 9294f850-b41e-4e0c-9552-6f399659ff28
-        m_Path: <Keyboard>/f
-        m_Interactions: 
+  interactActions:
+  - KeyActiveType: 0
+    Action:
+      m_UseReference: 0
+      m_Action:
+        m_Name: Action
+        m_Type: 0
+        m_ExpectedControlType: 
+        m_Id: 8fdcc2c6-49fc-4615-bc18-f0b07dd984b1
         m_Processors: 
-        m_Groups: 
-        m_Action: Interact
+        m_Interactions: 
+        m_SingletonActionBindings:
+        - m_Name: 
+          m_Id: 1f85ed9d-2a8c-49b4-ad9c-a2a0b95d47ce
+          m_Path: <Keyboard>/f
+          m_Interactions: 
+          m_Processors: 
+          m_Groups: 
+          m_Action: Action
+          m_Flags: 0
         m_Flags: 0
-      m_Flags: 0
-    m_Reference: {fileID: 0}
+      m_Reference: {fileID: 0}
+  - KeyActiveType: 1
+    Action:
+      m_UseReference: 0
+      m_Action:
+        m_Name: Action
+        m_Type: 0
+        m_ExpectedControlType: 
+        m_Id: 233e5290-b891-4c53-89c8-7912150d8c85
+        m_Processors: 
+        m_Interactions: 
+        m_SingletonActionBindings:
+        - m_Name: 
+          m_Id: 61bd38ef-6f1d-42f8-99ec-233b97cc9837
+          m_Path: <Keyboard>/f
+          m_Interactions: Hold
+          m_Processors: 
+          m_Groups: 
+          m_Action: Action
+          m_Flags: 0
+        m_Flags: 0
+      m_Reference: {fileID: 0}
+  - KeyActiveType: 2
+    Action:
+      m_UseReference: 0
+      m_Action:
+        m_Name: Action
+        m_Type: 0
+        m_ExpectedControlType: 
+        m_Id: f085db5d-6955-4833-a63d-f92a1e84c606
+        m_Processors: 
+        m_Interactions: 
+        m_SingletonActionBindings:
+        - m_Name: 
+          m_Id: 1ce194c1-ac5a-469e-ad5e-cbed043daccd
+          m_Path: <Keyboard>/f
+          m_Interactions: MultiTap
+          m_Processors: 
+          m_Groups: 
+          m_Action: Action
+          m_Flags: 0
+        m_Flags: 0
+      m_Reference: {fileID: 0}
 --- !u!1 &1807574713
 GameObject:
   m_ObjectHideFlags: 0
