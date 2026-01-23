@@ -1,40 +1,38 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
-/// <summary>
-/// Updates Animator parameters based on player movement.
-/// Animation always follows gameplay — never the other way around.
-/// </summary>
-[RequireComponent(typeof(ThirdPersonMovement))]
-[RequireComponent(typeof(PlayerInput))]
-public class PlayerAnimator : MonoBehaviour
+public class PlayerAnimator :  ITickable
 {
-    [Header("References")]
-    [SerializeField] private Animator animator;
-    [SerializeField] private ThirdPersonMovement playerMovement;
+    private Animator animator;
+    private ThirdPersonMovement playerMovement;
+    private float speedDampTime = 0.1f;
+    private AimController aimController;
 
-    [Header("Animation Settings")]
-    [SerializeField] private float speedDampTime = 0.1f;
-
-    PlayerInput input;
+    PlayerInput input;//
     InputAction sprintAction;
 
     int speedHash;
     int isSprintingHash;
 
-    void Awake()
+    public PlayerAnimator(Animator animator,
+        ThirdPersonMovement thirdPersonMovement,
+        PlayerInput playerInput,
+        AimController aimController)
     {
-        if (!playerMovement) playerMovement = GetComponent<ThirdPersonMovement>();
-
-        input = GetComponent<PlayerInput>();
+        this.animator = animator;
+        if (!playerMovement) playerMovement = thirdPersonMovement;
+        
+        input = playerInput;
         sprintAction = input.actions["Sprint"];
 
         // Cache animator parameter hashes
         speedHash = Animator.StringToHash("Speed");
         isSprintingHash = Animator.StringToHash("IsSprinting");
+        this.aimController = aimController;
     }
 
-    void Update()
+    public void Tick()
     {
         UpdateMovementAnimation();
     }
@@ -47,12 +45,10 @@ public class PlayerAnimator : MonoBehaviour
 
         animator.SetFloat(speedHash, speed, speedDampTime, Time.deltaTime);
 
-        AimController aim = GetComponent<AimController>();
-
         bool isSprinting =
             sprintAction.IsPressed() &&
             speed > 0.1f &&
-            (aim == null || !aim.IsAiming());
+            (aimController == null || !aimController.IsAiming());
 
         animator.SetBool(isSprintingHash, isSprinting);
     }

@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 
-[RequireComponent(typeof(PlayerInput))]
 public class AimController : MonoBehaviour
 {
     [Header("References")]
