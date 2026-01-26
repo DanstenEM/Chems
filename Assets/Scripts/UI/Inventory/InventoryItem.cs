@@ -1,8 +1,8 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Zenject;
 
 public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler
 {
@@ -10,6 +10,14 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     [SerializeField] private InputActionProperty mouseAction;
     [SerializeField] private Vector2 mousePosition;
     public Transform parentAfterDrag;
+    private InventorySlot[] slots;
+
+    [Inject]
+    public void Construct(InventorySlot[] inventorySlots)
+    {
+        slots = inventorySlots;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         mouseAction.action.Enable();
@@ -19,6 +27,11 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         image.raycastTarget = false;
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
+
+        foreach (var item in slots)
+        {
+            item.NullItemToSlot(this);
+        }
     }
 
     private void Action_performed(InputAction.CallbackContext obj)
@@ -34,6 +47,9 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         mouseAction.action.started -= Action_performed;
         mouseAction.action.performed -= Action_performed;
         transform.SetParent(parentAfterDrag);
+
+        if( parentAfterDrag.TryGetComponent(out InventorySlot component))
+            component.inventoryItem = this;
     }
 
     public void OnDrag(PointerEventData eventData)
