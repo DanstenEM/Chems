@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Zenject;
 
 [RequireComponent(typeof(CharacterController))]
 public class ThirdPersonMovement : MonoBehaviour
@@ -13,7 +14,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
 
     CharacterController controller;
-    PlayerInput input;
+    [Inject] PlayerInput input;
     Transform cam;
     AimController aimController;
 
