@@ -3710,6 +3710,10 @@ PrefabInstance:
       propertyPath: camTarget
       value: 
       objectReference: {fileID: 938497066}
+    - target: {fileID: 3369478891880853688, guid: 732102a1be7da7e4f990c6265c1f6df6, type: 3}
+      propertyPath: thirdPerson
+      value: 
+      objectReference: {fileID: 1359292064}
     - target: {fileID: 5202259810017102848, guid: 732102a1be7da7e4f990c6265c1f6df6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.71

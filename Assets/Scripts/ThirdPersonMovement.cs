@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using Zenject;
 
 [RequireComponent(typeof(CharacterController))]
-public class ThirdPersonMovement : MonoBehaviour
+public class ThirdPersonMovement : MonoBehaviour, IInitializable
 {
     public float walkSpeed = 4f;
     public float sprintSpeed = 7f;
@@ -14,7 +14,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
 
     CharacterController controller;
-    [Inject] PlayerInput input;
+    [Inject] public PlayerInput input;
     Transform cam;
     AimController aimController;
 
@@ -23,18 +23,6 @@ public class ThirdPersonMovement : MonoBehaviour
     InputAction sprintAction;
 
     Vector3 velocity;
-
-    void Awake()
-    {
-        controller = GetComponent<CharacterController>();
-        input = GetComponent<PlayerInput>();
-        cam = Camera.main.transform;
-        aimController = GetComponent<AimController>();
-
-
-        moveAction = input.actions["Move"];
-        sprintAction = input.actions["Sprint"];
-    }
 
     void Update()
     {
@@ -86,5 +74,16 @@ public class ThirdPersonMovement : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    public void Initialize()
+    {
+        controller = GetComponent<CharacterController>();
+        cam = Camera.main.transform;
+        aimController = GetComponent<AimController>();
+
+
+        moveAction = input.actions["Move"];
+        sprintAction = input.actions["Sprint"];
     }
 }
