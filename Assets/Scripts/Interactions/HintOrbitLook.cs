@@ -1,36 +1,26 @@
 using UnityEngine;
+using Zenject;
+using Zenject.SpaceFighter;
 
-public class HintCameraOrbit : MonoBehaviour
+public class HintCameraOrbit : IFixedTickable
 {
     [Header("References")]
     public Transform target;
+    public Transform myTransform;
 
     [Header("Orbit Settings")]
     public float radius = 0.5f;
     public float height = 1.6f;
 
-    void LateUpdate()
+    public HintCameraOrbit(Transform myTransform)
     {
-        if (!target || !Camera.main)
-            return;
-
-        // Direction from object to camera
-        Vector3 dir = Camera.main.transform.position - target.position;
-        dir.y = 0f;
-        dir.Normalize();
-
-        // Position on orbit facing the camera
-        Vector3 orbitPos = target.position + dir * radius;
-        orbitPos.y = target.position.y + height;
-
-        transform.position = orbitPos;
-
-        FaceCamera();
+        this.target = Camera.main.transform;
+        this.myTransform = myTransform;
     }
 
-    void FaceCamera()
+
+    public void FixedTick()
     {
-        Vector3 lookDir = transform.position - Camera.main.transform.position;
-        transform.rotation = Quaternion.LookRotation(lookDir);
+        myTransform.LookAt(target, target.up);
     }
 }

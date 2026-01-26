@@ -13,8 +13,8 @@ public class ThirdPersonMovement : MonoBehaviour
     public float CurrentSpeed { get; private set; }
 
 
-    [Inject] public PlayerInput input;
     CharacterController controller;
+    [Inject] PlayerInput input;
     Transform cam;
     AimController aimController;
 

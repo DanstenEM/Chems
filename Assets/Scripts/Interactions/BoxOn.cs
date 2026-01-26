@@ -1,22 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class BoxOn : TriggerInteractable
 {
-    public GameObject UI;
     public GameObject target;
     bool isOn = false;
 
     public override void Active(InputBinding input)
     {
         base.Active(input);
-
-        UI.SetActive(true);
     }
 
     public override void Deactive()
     {
-        UI.SetActive(false);
+        base.Deactive();
     }
 
     public override void Interact()
