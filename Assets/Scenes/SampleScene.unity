@@ -1982,6 +1982,8 @@ GameObject:
   - component: {fileID: 1745601067}
   - component: {fileID: 1745601069}
   - component: {fileID: 1745601068}
+  - component: {fileID: 1745601070}
+  - component: {fileID: 1745601071}
   m_Layer: 6
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -2382,6 +2384,36 @@ MonoBehaviour:
           m_Flags: 0
         m_Flags: 0
       m_Reference: {fileID: 0}
+--- !u!114 &1745601070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745601057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 239abe1e09f8d9b43abad713ff3cf362, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerObjContext
+  camTarget: {fileID: 330585545}
+--- !u!114 &1745601071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1745601057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08eca9f7688a0a24685b89133b020c8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Zenject::Zenject.GameObjectContext
+  _scriptableObjectInstallers: []
+  _monoInstallers: []
+  _installerPrefabs: []
+  _autoRun: 1
+  _kernel: {fileID: 0}
 --- !u!1 &1807574713
 GameObject:
   m_ObjectHideFlags: 0
