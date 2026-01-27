@@ -25,6 +25,8 @@ public class Shooter : MonoBehaviour
     [Header("Impact")]
     [SerializeField] private GameObject impactPrefab;
 
+    public bool IsFiring { get; private set; }
+
     float nextFireTime;
 
     void Awake()
@@ -45,11 +47,15 @@ public class Shooter : MonoBehaviour
 
     void HandleFire()
     {
+        if (!fireAction.action.IsPressed())
+        {
+            IsFiring = false;
+            return;
+        }
+
+        IsFiring = true;
 
         if (Time.time < nextFireTime)
-            return;
-
-        if (!fireAction.action.IsPressed())
             return;
 
         nextFireTime = Time.time + fireRate;
@@ -58,7 +64,6 @@ public class Shooter : MonoBehaviour
 
     void Fire()
     {
-        Debug.Log("Fire method");
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
@@ -75,8 +80,10 @@ public class Shooter : MonoBehaviour
             if (health != null)
                 health.TakeDamage(damage);
         }
+
         SpawnTracer(startPoint, endPoint);
     }
+
     void SpawnTracer(Vector3 start, Vector3 end)
     {
         if (!tracerPrefab) return;
@@ -84,12 +91,12 @@ public class Shooter : MonoBehaviour
         BulletTracer tracer = Instantiate(tracerPrefab);
         tracer.Init(start, end);
     }
+
     void SpawnImpact(RaycastHit hit)
     {
         if (!impactPrefab) return;
 
         Quaternion rot = Quaternion.LookRotation(hit.normal);
-
-        GameObject impact = Instantiate(impactPrefab, hit.point + hit.normal * 0.01f, rot);
+        Instantiate(impactPrefab, hit.point + hit.normal * 0.01f, rot);
     }
 }

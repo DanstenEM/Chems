@@ -7,9 +7,9 @@ public class AimController : MonoBehaviour
     [Header("References")]
     [SerializeField] private CinemachineCamera cinemachineCamera;
     [SerializeField] private Transform playerRoot;
-
+    [SerializeField] private AimIKController ik;
     [SerializeField] private Health health;
-    private bool isDie;
+    [SerializeField] private Shooter shooter;
 
     [Header("Orbital Settings")]
     [SerializeField] private float normalRadius = 4f;
@@ -17,13 +17,14 @@ public class AimController : MonoBehaviour
     [SerializeField] private float camLerpSpeed = 8f;
 
     [Header("Rotation")]
-    [SerializeField] private float aimRotationSpeed = 18f;
+    [SerializeField] private float aimRotationSpeed = 12f;
 
     [Header("Input")]
     [SerializeField] private InputActionProperty aimAction;
 
     CinemachineOrbitalFollow orbital;
     bool isAiming;
+    bool isDie;
 
     void Awake()
     {
@@ -35,17 +36,26 @@ public class AimController : MonoBehaviour
         }
 
         orbital = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
-
         if (!orbital)
         {
-            Debug.LogError("AimController: No CinemachineOrbitalFollow found on camera");
+            Debug.LogError("AimController: No CinemachineOrbitalFollow found");
             enabled = false;
             return;
         }
 
+        if (!playerRoot)
+            playerRoot = transform;
+
+        if (!ik)
+            ik = GetComponentInChildren<AimIKController>();
+
+        if (!shooter)
+            shooter = GetComponent<Shooter>();
+
         aimAction.action.Enable();
 
-        health.isDie.Changed += IsDie_Changed;
+        if (health)
+            health.isDie.Changed += IsDie_Changed;
     }
 
     private void IsDie_Changed(bool obj)
@@ -55,31 +65,40 @@ public class AimController : MonoBehaviour
 
     void Update()
     {
+        if (isDie) return;
+
         isAiming = aimAction.action.IsPressed();
 
+        if (ik)
+            ik.SetAiming(isAiming);
+
         HandleCamera();
-        HandleRotation();
+
+        if (isAiming || IsShooting())
+            RotateBodyToAim();
+    }
+
+    bool IsShooting()
+    {
+        return shooter && shooter.IsFiring;
     }
 
     void HandleCamera()
     {
         float targetRadius = isAiming ? aimRadius : normalRadius;
-
-        orbital.Radius =
-            Mathf.Lerp(orbital.Radius, targetRadius, Time.deltaTime * camLerpSpeed);
+        orbital.Radius = Mathf.Lerp(orbital.Radius, targetRadius, Time.deltaTime * camLerpSpeed);
     }
 
-    void HandleRotation()
+    void RotateBodyToAim()
     {
-        if (isDie) return;
-        if (!isAiming) return;
+        if (!Camera.main) return;
 
-        Vector3 camForward = Camera.main.transform.forward;
-        camForward.y = 0;
+        Vector3 dir = Camera.main.transform.forward;
+        dir.y = 0;
 
-        if (camForward.sqrMagnitude < 0.01f) return;
+        if (dir.sqrMagnitude < 0.01f) return;
 
-        Quaternion targetRot = Quaternion.LookRotation(camForward);
+        Quaternion targetRot = Quaternion.LookRotation(dir);
         playerRoot.rotation =
             Quaternion.Slerp(playerRoot.rotation, targetRot, aimRotationSpeed * Time.deltaTime);
     }
