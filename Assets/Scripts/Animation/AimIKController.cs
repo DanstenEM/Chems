@@ -32,6 +32,11 @@ public class AimIKController : MonoBehaviour
     void OnAnimatorIK(int layerIndex)
     {
         if (!animator) return;
+        if (!aimTarget)
+        {
+            animator.SetLookAtWeight(0f);
+            return;
+        }
 
         float target = aiming ? 1f : 0f;
         currentWeight = Mathf.Lerp(currentWeight, target, Time.deltaTime * ikBlendSpeed);

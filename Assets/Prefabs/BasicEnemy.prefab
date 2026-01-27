@@ -11,12 +11,11 @@ GameObject:
   - component: {fileID: 1127010061246198911}
   - component: {fileID: 5854172781440379102}
   - component: {fileID: 6033987437288582302}
-  - component: {fileID: 8234518373893759259}
   - component: {fileID: 1722401310727932195}
   - component: {fileID: 796585659381639084}
   - component: {fileID: 7116625539276180050}
   - component: {fileID: 1090359085295700992}
-  - component: {fileID: 9102821137473502860}
+  - component: {fileID: 3262490996100054917}
   m_Layer: 0
   m_Name: BasicEnemy
   m_TagString: Untagged
@@ -97,27 +96,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &8234518373893759259
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4157894045405320951}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!195 &1722401310727932195
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -152,18 +130,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eb9a21dfd3bc84408f98e0b7b19154b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
-  viewRadius: 12
+  agent: {fileID: 1722401310727932195}
+  shooter: {fileID: 7116625539276180050}
+  player: {fileID: 0}
+  detectRange: 20
   attackRange: 8
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 0
+  loseRange: 30
   patrolRadius: 10
   patrolDelay: 3
-  loseDistance: 20
-  loseTime: 3
 --- !u!114 &7116625539276180050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176,12 +150,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd09ca6223384f745acb53d9a7872f7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShooter
-  firePoint: {fileID: 1646361913181489208}
+  muzzle: {fileID: 1646361913181489208}
+  target: {fileID: 0}
+  bulletPrefab: {fileID: 7640483331292086375, guid: c5798238f5a6025469c3d4eb5b517400, type: 3}
   fireRate: 0.6
   damage: 10
-  fireDistance: 50
-  tracerPrefab: {fileID: 6390930830456022657, guid: c6ba2ebde975dcb4693de7aa0bcce545, type: 3}
-  muzzle: {fileID: 1646361913181489208}
+  fireRange: 30
+  impactPrefab: {fileID: 2554499146558399278, guid: 0b60edd4660bfc3419a4ef1e6d768e79, type: 3}
 --- !u!114 &1090359085295700992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,33 +170,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
---- !u!54 &9102821137473502860
-Rigidbody:
+  respawnDelay: 3
+  respawnPoint: {fileID: 0}
+  isPlayer: 0
+--- !u!143 &3262490996100054917
+CharacterController:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4157894045405320951}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 1
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6645456217871492087
 GameObject:
   m_ObjectHideFlags: 0

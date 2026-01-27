@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &357476387433619178
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5971240213504772438}
+  m_Layer: 6
+  m_Name: RightHandTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5971240213504772438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357476387433619178}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7501220177664540075}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &638723035712388534
 GameObject:
   m_ObjectHideFlags: 0
@@ -28,7 +59,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.485, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5971240213504772438}
   m_Father: {fileID: 5202259810017102848}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2720168813284258234
@@ -181,7 +213,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AimController
   cinemachineCamera: {fileID: 0}
   playerRoot: {fileID: 5202259810017102848}
+  ik: {fileID: 1370289840435844279}
   health: {fileID: 2620671748081596330}
+  shooter: {fileID: 7831820553281679747}
   normalRadius: 4
   aimRadius: 2.2
   camLerpSpeed: 8
@@ -328,12 +362,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Shooter
   playerCamera: {fileID: 0}
-  aimController: {fileID: 6611182224397429440}
+  muzzle: {fileID: 7501220177664540075}
+  bulletPrefab: {fileID: 7640483331292086375, guid: 142d3aa9939d9f64fa202b91506a621b, type: 3}
   fireRate: 0.15
-  fireDistance: 50
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 183
+  damage: 25
+  impactPrefab: {fileID: 2554499146558399278, guid: 0b60edd4660bfc3419a4ef1e6d768e79, type: 3}
   fireAction:
     m_UseReference: 0
     m_Action:
@@ -354,10 +387,6 @@ MonoBehaviour:
         m_Flags: 0
       m_Flags: 0
     m_Reference: {fileID: 0}
-  tracerPrefab: {fileID: 6390930830456022657, guid: c6ba2ebde975dcb4693de7aa0bcce545, type: 3}
-  muzzle: {fileID: 7501220177664540075}
-  damage: 25
-  impactPrefab: {fileID: 2554499146558399278, guid: 0b60edd4660bfc3419a4ef1e6d768e79, type: 3}
 --- !u!114 &2620671748081596330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -371,6 +400,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+  respawnDelay: 3
+  respawnPoint: {fileID: 0}
   isPlayer: 1
 --- !u!1 &3565417780925988765
 GameObject:
@@ -706,6 +737,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7695484015053287213}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1370289840435844279}
     - targetCorrespondingSourceObject: {fileID: -766917891154793864, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2631211268516114664}
@@ -1780,6 +1814,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db0f51e76d9f10940a6d2a2649a0a8ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RagdollController
+--- !u!114 &1370289840435844279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8357804964504418104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aaba8b6eb2da394da24060943ab0a3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AimIKController
+  aimTarget: {fileID: 0}
+  rightHandTarget: {fileID: 5971240213504772438}
+  bodyWeight: 0.3
+  headWeight: 1
+  eyesWeight: 1
+  clampWeight: 0.5
+  ikBlendSpeed: 6
 --- !u!4 &8698478353888865666 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
