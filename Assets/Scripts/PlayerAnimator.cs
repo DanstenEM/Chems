@@ -9,7 +9,7 @@ public class PlayerAnimator :  ITickable
     private float speedDampTime = 0.1f;
     private AimController aimController;
 
-    PlayerInput input;//
+    [Inject] PlayerInput input;
     InputAction sprintAction;
 
     int speedHash;
