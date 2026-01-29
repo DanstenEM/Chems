@@ -25,6 +25,9 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private float groundOffset = 0.02f;
     [SerializeField] private LayerMask groundLayers = ~0;
 
+    [Header("Pickup Area")]
+    [SerializeField] private float pickupAreaMultiplier = 3f;
+
     private InventorySystem inventorySystem;
 
     private void Awake()
@@ -32,6 +35,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         inventorySystem = FindObjectOfType<InventorySystem>();
         EnsureHint();
         AlignToGround();
+        ExpandPickupArea();
     }
 
     private void LateUpdate()
@@ -127,6 +131,34 @@ public class DropItemPickup : MonoBehaviour, IInteractable
             var alignedPosition = hit.point;
             alignedPosition.y += groundOffset;
             transform.position = alignedPosition;
+        }
+    }
+
+    private void ExpandPickupArea()
+    {
+        if (!TryGetComponent<Collider>(out var targetCollider))
+        {
+            return;
+        }
+
+        float multiplier = Mathf.Max(1f, pickupAreaMultiplier);
+
+        if (targetCollider is SphereCollider sphere)
+        {
+            sphere.radius *= multiplier;
+            return;
+        }
+
+        if (targetCollider is CapsuleCollider capsule)
+        {
+            capsule.radius *= multiplier;
+            capsule.height *= multiplier;
+            return;
+        }
+
+        if (targetCollider is BoxCollider box)
+        {
+            box.size = box.size * multiplier;
         }
     }
 }

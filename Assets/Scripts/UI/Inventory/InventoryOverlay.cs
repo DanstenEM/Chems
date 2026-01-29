@@ -22,6 +22,10 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
     [SerializeField] private Color slotDeselectedColor = new Color(1f, 0.9003632f, 0f, 1f);
 
+    [Header("Shooting")]
+    [SerializeField] private bool manageShooting = true;
+    [SerializeField] private Shooter shooter;
+
     [Header("Cursor")]
     [SerializeField] private bool manageCursor = true;
 
@@ -42,6 +46,8 @@ public class InventoryOverlay : MonoBehaviour
     private bool hasSavedCursorState;
     private bool previousCameraInputState;
     private bool hasSavedCameraInputState;
+    private bool previousShootingState;
+    private bool hasSavedShootingState;
 
     private void Awake()
     {
@@ -124,6 +130,33 @@ public class InventoryOverlay : MonoBehaviour
             {
                 cameraInput.enabled = previousCameraInputState;
                 hasSavedCameraInputState = false;
+            }
+        }
+
+        if (manageShooting)
+        {
+            if (shooter == null)
+            {
+                shooter = FindObjectOfType<Shooter>();
+            }
+
+            if (shooter != null)
+            {
+                if (isVisible)
+                {
+                    if (!hasSavedShootingState)
+                    {
+                        previousShootingState = shooter.enabled;
+                        hasSavedShootingState = true;
+                    }
+
+                    shooter.enabled = false;
+                }
+                else if (hasSavedShootingState)
+                {
+                    shooter.enabled = previousShootingState;
+                    hasSavedShootingState = false;
+                }
             }
         }
 
