@@ -24,6 +24,7 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.anchorMax = Vector2.one;
             rectTransform.offsetMin = Vector2.zero;
             rectTransform.offsetMax = Vector2.zero;
+            rectTransform.anchoredPosition = Vector2.zero;
         }
         if (image != null)
         {
@@ -53,6 +54,11 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         image.raycastTarget = true;
         transform.SetParent(parentAfterDrag);
+        var rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = Vector2.zero;
+        }
 
         //if( parentAfterDrag.TryGetComponent(out InventorySlot component))
         //    component.inventoryItem = this;
