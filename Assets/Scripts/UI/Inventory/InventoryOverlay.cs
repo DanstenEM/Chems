@@ -20,7 +20,7 @@ public class InventoryOverlay : MonoBehaviour
     [Header("Inventory")]
     [SerializeField] private InventorySystem inventorySystem;
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
-    [SerializeField] private Color slotDeselectedColor = new Color(1f, 0.9003632f, 0f, 1f);
+    [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
 
     [Header("Shooting")]
     [SerializeField] private bool manageShooting = true;

@@ -5951,7 +5951,7 @@ MonoBehaviour:
   weaponSlotsRoot: {fileID: 0}
   inventorySystem: {fileID: 2100000003}
   slotSelectedColor: {r: 1, g: 0.4292453, b: 0.4292453, a: 1}
-  slotDeselectedColor: {r: 1, g: 0.9003632, b: 0, a: 1}
+  slotDeselectedColor: {r: 0.6, g: 0.6, b: 0.6, a: 0.35}
 --- !u!114 &2100000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
