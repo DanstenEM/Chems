@@ -5,21 +5,30 @@ using Zenject;
 
 public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 {
-    private InventorySlot[] slots;
+    [SerializeField] private InventorySlot[] slots;
     [SerializeField] private InventoryItem inventoryPrefab;
     [SerializeField] private InventoryItemObj inventoryObj;
     [SerializeField] private int selectSlot = -1;
 
     public InputActionProperty mouseAction;
     public Vector2 mousePosition;
+    private bool mouseActionBound;
 
     [Inject]
     public void Construct(InventorySlot[] slots)
     {
         this.slots = slots;
-        mouseAction.action.Enable();
-        mouseAction.action.performed += Action_performed;
-        mouseAction.action.started += Action_performed;
+        BindMouseAction();
+    }
+
+    private void Awake()
+    {
+        if (slots == null || slots.Length == 0)
+        {
+            slots = FindObjectsOfType<InventorySlot>();
+        }
+
+        BindMouseAction();
     }
 
     private void Action_performed(InputAction.CallbackContext obj)
@@ -29,6 +38,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public void Initialize()
     {
+        if (inventoryObj == null)
+        {
+            return;
+        }
+
         AddItem(inventoryObj);
         AddItem(inventoryObj);
         AddItem(inventoryObj);
@@ -40,6 +54,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public bool AddItem(InventoryItemObj inventoryItemObj)
     {
+        if (slots == null || slots.Length == 0)
+        {
+            return false;
+        }
+
         bool useRegularOnly = inventoryItemObj != null && inventoryItemObj.isDefaultItem;
 
         foreach (var item in slots)
@@ -95,9 +114,15 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public void Dispose()
     {
+        if (!mouseActionBound || mouseAction.action == null)
+        {
+            return;
+        }
+
         mouseAction.action.Disable();
         mouseAction.action.performed -= Action_performed;
         mouseAction.action.started -= Action_performed;
+        mouseActionBound = false;
     }
 
     public InventoryItemObj GetSelectedItem(bool use)
@@ -126,5 +151,28 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     {
         var marker = slot.GetComponent<InventorySlotMarker>();
         return marker == null || marker.Category == InventorySlotMarker.SlotCategory.Regular;
+    }
+
+    public void SetSlots(InventorySlot[] newSlots)
+    {
+        if (newSlots == null || newSlots.Length == 0)
+        {
+            return;
+        }
+
+        slots = newSlots;
+    }
+
+    private void BindMouseAction()
+    {
+        if (mouseActionBound || mouseAction.action == null)
+        {
+            return;
+        }
+
+        mouseAction.action.Enable();
+        mouseAction.action.performed += Action_performed;
+        mouseAction.action.started += Action_performed;
+        mouseActionBound = true;
     }
 }

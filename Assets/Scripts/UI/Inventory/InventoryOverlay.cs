@@ -17,6 +17,11 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 8f);
     [SerializeField] private bool startHidden = true;
 
+    [Header("Inventory")]
+    [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
+    [SerializeField] private Color slotDeselectedColor = new Color(1f, 0.9003632f, 0f, 1f);
+
     [Header("Cursor")]
     [SerializeField] private bool manageCursor = true;
 
@@ -61,6 +66,8 @@ public class InventoryOverlay : MonoBehaviour
                 SetOverlayVisible(true);
             }
         }
+
+        BindInventorySystem();
     }
 
     private void Update()
@@ -245,5 +252,24 @@ public class InventoryOverlay : MonoBehaviour
 
         var slotMarker = slotObject.AddComponent<InventorySlotMarker>();
         slotMarker.Setup(groupName, index);
+
+        var slot = slotObject.AddComponent<InventorySlot>();
+        slot.Configure(image, slotSelectedColor, slotDeselectedColor);
+    }
+
+    private void BindInventorySystem()
+    {
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
+        if (inventorySystem == null || overlayRoot == null)
+        {
+            return;
+        }
+
+        var slots = overlayRoot.GetComponentsInChildren<InventorySlot>(true);
+        inventorySystem.SetSlots(slots);
     }
 }

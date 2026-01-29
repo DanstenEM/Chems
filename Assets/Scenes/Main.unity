@@ -5902,6 +5902,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2100000001}
   - component: {fileID: 2100000002}
+  - component: {fileID: 2100000003}
   m_Layer: 0
   m_Name: InventoryOverlaySystem
   m_TagString: Untagged
@@ -5948,6 +5949,46 @@ MonoBehaviour:
   regularSlotsRoot: {fileID: 0}
   chemicalSlotsRoot: {fileID: 0}
   weaponSlotsRoot: {fileID: 0}
+  inventorySystem: {fileID: 2100000003}
+  slotSelectedColor: {r: 1, g: 0.4292453, b: 0.4292453, a: 1}
+  slotDeselectedColor: {r: 1, g: 0.9003632, b: 0, a: 1}
+--- !u!114 &2100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bd3b9e7298713e44bef04ff9c7daf0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slots: []
+  inventoryPrefab: {fileID: 5638737629825818885, guid: 10ea5169612f1ee4f88a7c1a0e7a94f7, type: 3}
+  inventoryObj: {fileID: 11400000, guid: ddc26be6c8236cb44baf97e1ddee3ce1, type: 2}
+  selectSlot: -1
+  mouseAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Mouse
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: 249190d5-2a2d-4cbe-818c-86e9411b9675
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings:
+      - m_Name: 
+        m_Id: 230e5867-2e83-4413-b649-7008b426bb35
+        m_Path: <Mouse>/position
+        m_Interactions: 
+        m_Processors: 
+        m_Groups: 
+        m_Action: Mouse
+        m_Flags: 0
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  mousePosition: {x: 0, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
