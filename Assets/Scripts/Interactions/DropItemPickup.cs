@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Collider))]
 public class DropItemPickup : MonoBehaviour, IInteractable
 {
+    private static DropItemPickup activeHintOwner;
     private const string DefaultHintFormat = "PRESS {0} TAKE";
 
     [field: SerializeField] public KeyActiveType keyType { get; set; } = KeyActiveType.Tap;
@@ -80,6 +81,13 @@ public class DropItemPickup : MonoBehaviour, IInteractable
             return;
         }
 
+        if (activeHintOwner != null && activeHintOwner != this)
+        {
+            activeHintOwner.Deactive();
+        }
+
+        activeHintOwner = this;
+
         var keyLabel = InputControlPath.ToHumanReadableString(
             input.path,
             InputControlPath.HumanReadableStringOptions.OmitDevice);
@@ -100,6 +108,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         }
 
         hintText.gameObject.SetActive(false);
+
+        if (activeHintOwner == this)
+        {
+            activeHintOwner = null;
+        }
     }
 
     private void EnsureHint()
