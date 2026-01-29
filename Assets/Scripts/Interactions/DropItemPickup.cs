@@ -30,6 +30,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private float pickupAreaMultiplier = 3f;
 
     private InventorySystem inventorySystem;
+    private bool isPickedUp;
 
     private void Awake()
     {
@@ -58,6 +59,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        if (isPickedUp)
+        {
+            return;
+        }
+
         if (itemObj == null)
         {
             return;
@@ -70,6 +76,17 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
         if (inventorySystem != null && inventorySystem.AddItem(itemObj))
         {
+            isPickedUp = true;
+            if (hintText != null)
+            {
+                hintText.gameObject.SetActive(false);
+            }
+
+            if (TryGetComponent<Collider>(out var pickupCollider))
+            {
+                pickupCollider.enabled = false;
+            }
+
             Destroy(gameObject);
         }
     }
