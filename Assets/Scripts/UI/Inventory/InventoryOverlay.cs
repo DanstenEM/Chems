@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Cinemachine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -19,6 +20,10 @@ public class InventoryOverlay : MonoBehaviour
     [Header("Cursor")]
     [SerializeField] private bool manageCursor = true;
 
+    [Header("Camera Input")]
+    [SerializeField] private bool manageCameraInput = true;
+    [SerializeField] private CinemachineInputAxisController cameraInput;
+
     [Header("Scene References (Optional)")]
     [SerializeField] private Canvas inventoryCanvas;
     [SerializeField] private RectTransform overlayRoot;
@@ -30,12 +35,19 @@ public class InventoryOverlay : MonoBehaviour
     private CursorLockMode previousLockState = CursorLockMode.Locked;
     private bool previousCursorVisible;
     private bool hasSavedCursorState;
+    private bool previousCameraInputState;
+    private bool hasSavedCameraInputState;
 
     private void Awake()
     {
         if (overlayRoot == null)
         {
             BuildDefaultLayout();
+        }
+
+        if (cameraInput == null && manageCameraInput)
+        {
+            cameraInput = FindFirstObjectByType<CinemachineInputAxisController>();
         }
 
         if (overlayRoot != null)
@@ -88,6 +100,25 @@ public class InventoryOverlay : MonoBehaviour
     private void SetOverlayVisible(bool isVisible)
     {
         overlayRoot.gameObject.SetActive(isVisible);
+
+        if (manageCameraInput && cameraInput != null)
+        {
+            if (isVisible)
+            {
+                if (!hasSavedCameraInputState)
+                {
+                    previousCameraInputState = cameraInput.enabled;
+                    hasSavedCameraInputState = true;
+                }
+
+                cameraInput.enabled = false;
+            }
+            else if (hasSavedCameraInputState)
+            {
+                cameraInput.enabled = previousCameraInputState;
+                hasSavedCameraInputState = false;
+            }
+        }
 
         if (!manageCursor)
         {
