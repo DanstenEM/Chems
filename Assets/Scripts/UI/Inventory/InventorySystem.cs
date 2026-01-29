@@ -27,7 +27,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     {
         if (slots == null || slots.Length == 0)
         {
-            slots = FindObjectsOfType<InventorySlot>();
+            SetSlots(FindObjectsOfType<InventorySlot>());
         }
 
         BindMouseAction();
@@ -162,7 +162,26 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             return;
         }
 
+        Array.Sort(newSlots, CompareSlots);
         slots = newSlots;
+    }
+
+    private static int CompareSlots(InventorySlot left, InventorySlot right)
+    {
+        var leftMarker = left.GetComponent<InventorySlotMarker>();
+        var rightMarker = right.GetComponent<InventorySlotMarker>();
+
+        int leftCategory = leftMarker != null ? (int)leftMarker.Category : int.MaxValue;
+        int rightCategory = rightMarker != null ? (int)rightMarker.Category : int.MaxValue;
+        int categoryCompare = leftCategory.CompareTo(rightCategory);
+        if (categoryCompare != 0)
+        {
+            return categoryCompare;
+        }
+
+        int leftIndex = leftMarker != null ? leftMarker.Index : int.MaxValue;
+        int rightIndex = rightMarker != null ? rightMarker.Index : int.MaxValue;
+        return leftIndex.CompareTo(rightIndex);
     }
 
     private void BindMouseAction()

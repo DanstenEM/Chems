@@ -17,6 +17,14 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         itemObj = inventoryItemObj;
         this.inventorySystem = inventorySystem;
+        var rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+        }
         if (image != null)
         {
             image.color = new Color(1f, 0.85f, 0.2f, 1f);
