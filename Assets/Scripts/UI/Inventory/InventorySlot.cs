@@ -14,6 +14,11 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         {
             if(eventData.pointerDrag.TryGetComponent(out InventoryItem item))
             {
+                if (!IsItemAllowed(item))
+                {
+                    return;
+                }
+
                 item.parentAfterDrag = transform;
                 //inventoryItem = item;
             }
@@ -29,5 +34,23 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         selectColor = selectedColor;
         notSelectColor = deselectedColor;
         Deselect();
+    }
+
+    private bool IsItemAllowed(InventoryItem item)
+    {
+        if (item == null || item.itemObj == null)
+        {
+            return false;
+        }
+
+        var marker = GetComponent<InventorySlotMarker>();
+        var slotCategory = marker != null ? marker.Category : InventorySlotMarker.SlotCategory.Regular;
+
+        return slotCategory switch
+        {
+            InventorySlotMarker.SlotCategory.Chemical => item.itemObj.category == InventoryItemObj.ItemCategory.Chemical,
+            InventorySlotMarker.SlotCategory.Weapon => item.itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            _ => item.itemObj.category == InventoryItemObj.ItemCategory.Regular
+        };
     }
 }

@@ -65,7 +65,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         foreach (var item in slots)
         {
-            if (useRegularOnly && !IsRegularSlot(item))
+            if (!IsSlotCompatible(item, inventoryItemObj, useRegularOnly))
             {
                 continue;
             }
@@ -83,7 +83,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         foreach (var item in slots)
         {
-            if (useRegularOnly && !IsRegularSlot(item))
+            if (!IsSlotCompatible(item, inventoryItemObj, useRegularOnly))
             {
                 continue;
             }
@@ -153,6 +153,34 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     {
         var marker = slot.GetComponent<InventorySlotMarker>();
         return marker == null || marker.Category == InventorySlotMarker.SlotCategory.Regular;
+    }
+
+    private static bool IsSlotCompatible(InventorySlot slot, InventoryItemObj itemObj, bool useRegularOnly)
+    {
+        if (slot == null)
+        {
+            return false;
+        }
+
+        var marker = slot.GetComponent<InventorySlotMarker>();
+        var slotCategory = marker != null ? marker.Category : InventorySlotMarker.SlotCategory.Regular;
+
+        if (useRegularOnly)
+        {
+            return slotCategory == InventorySlotMarker.SlotCategory.Regular;
+        }
+
+        if (itemObj == null)
+        {
+            return true;
+        }
+
+        return slotCategory switch
+        {
+            InventorySlotMarker.SlotCategory.Chemical => itemObj.category == InventoryItemObj.ItemCategory.Chemical,
+            InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            _ => itemObj.category == InventoryItemObj.ItemCategory.Regular
+        };
     }
 
     public void SetSlots(InventorySlot[] newSlots)
