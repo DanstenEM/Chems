@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4436804144852392800}
   - component: {fileID: 6155271383070816368}
   - component: {fileID: 1508587536343600151}
+  - component: {fileID: 4073988776140666020}
   m_Layer: 0
   m_Name: EnemyDropCapsule
   m_TagString: Untagged
@@ -131,3 +132,26 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &4073988776140666020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8296451161917349089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c0f73fe5c37d1d4a8ef40b83de5115d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyType: 0
+  itemObj: {fileID: 11400000, guid: ddc26be6c8236cb44baf97e1ddee3ce1, type: 2}
+  hintText: {fileID: 0}
+  hintOffset: {x: 0, y: 1.2, z: 0}
+  hintFormat: PRESS {0} TAKE
+  groundRaycastHeight: 1.5
+  groundRaycastDistance: 6
+  groundOffset: 0.02
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295

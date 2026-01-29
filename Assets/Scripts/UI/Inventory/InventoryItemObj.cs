@@ -7,4 +7,5 @@ public class InventoryItemObj : ScriptableObject
     public Sprite icon;
 
     public bool isStackable;
+    public bool isDefaultItem = true;
 }

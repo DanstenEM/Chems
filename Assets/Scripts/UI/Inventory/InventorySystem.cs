@@ -40,8 +40,15 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public bool AddItem(InventoryItemObj inventoryItemObj)
     {
+        bool useRegularOnly = inventoryItemObj != null && inventoryItemObj.isDefaultItem;
+
         foreach (var item in slots)
         {
+            if (useRegularOnly && !IsRegularSlot(item))
+            {
+                continue;
+            }
+
             var slotItem = item.GetComponentInChildren<InventoryItem>();
             if (slotItem != null && slotItem.itemObj == inventoryItemObj &&
                 slotItem.count < slotItem.itemObj.stackCount
@@ -53,10 +60,15 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             }
         }
 
-            foreach (var item in slots)
+        foreach (var item in slots)
         {
+            if (useRegularOnly && !IsRegularSlot(item))
+            {
+                continue;
+            }
+
             var slotItem = item.GetComponentInChildren<InventoryItem>();
-            if(slotItem == null)
+            if (slotItem == null)
             {
                 SpawnNewItem(inventoryItemObj, item);
                 return true;
@@ -69,7 +81,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     public void SpawnNewItem(InventoryItemObj inventoryItemObj, InventorySlot inventorySlot)
     {
         var newItem = Instantiate(inventoryPrefab, inventorySlot.transform);
-        newItem.Construct(this,inventoryItemObj);
+        newItem.Construct(this, inventoryItemObj);
     }
 
     public void ChangeSelectSlot(int newValue)
@@ -92,7 +104,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     {
         var slot = slots[selectSlot];
         var inventoryItem = slot.GetComponentInChildren<InventoryItem>();
-        if(inventoryItem != null)
+        if (inventoryItem != null)
         {
             var item = inventoryItem.itemObj;
             if (use)
@@ -108,5 +120,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         }
 
         return null;
+    }
+
+    private static bool IsRegularSlot(InventorySlot slot)
+    {
+        var marker = slot.GetComponent<InventorySlotMarker>();
+        return marker == null || marker.Category == InventorySlotMarker.SlotCategory.Regular;
     }
 }
