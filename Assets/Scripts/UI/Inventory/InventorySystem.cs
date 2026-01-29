@@ -9,6 +9,8 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     [SerializeField] private InventoryItem inventoryPrefab;
     [SerializeField] private InventoryItemObj inventoryObj;
     [SerializeField] private int selectSlot = -1;
+    [SerializeField] private bool addStarterItems;
+    [SerializeField] private int starterItemCount = 0;
 
     public InputActionProperty mouseAction;
     public Vector2 mousePosition;
@@ -38,18 +40,18 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public void Initialize()
     {
-        if (inventoryObj == null)
+        if (addStarterItems && inventoryObj != null)
         {
-            return;
+            for (int i = 0; i < starterItemCount; i++)
+            {
+                AddItem(inventoryObj);
+            }
         }
 
-        AddItem(inventoryObj);
-        AddItem(inventoryObj);
-        AddItem(inventoryObj);
-        AddItem(inventoryObj);
-        AddItem(inventoryObj);
-
-        ChangeSelectSlot(1);
+        if (slots != null && slots.Length > 0)
+        {
+            ChangeSelectSlot(0);
+        }
     }
 
     public bool AddItem(InventoryItemObj inventoryItemObj)

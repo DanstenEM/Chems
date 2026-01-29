@@ -17,6 +17,15 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         itemObj = inventoryItemObj;
         this.inventorySystem = inventorySystem;
+        if (image != null)
+        {
+            image.color = new Color(1f, 0.85f, 0.2f, 1f);
+            if (itemObj != null && itemObj.icon != null)
+            {
+                image.sprite = itemObj.icon;
+                image.preserveAspect = true;
+            }
+        }
         RefrashCount();
     }
 
