@@ -28,7 +28,7 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         }
         if (image != null)
         {
-            image.color = new Color(1f, 0.85f, 0.2f, 1f);
+            image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
             if (itemObj != null && itemObj.icon != null)
             {
                 image.sprite = itemObj.icon;
@@ -68,4 +68,14 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         transform.position = inventorySystem.mousePosition;
     } 
+
+    private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
+    {
+        return category switch
+        {
+            InventoryItemObj.ItemCategory.Chemical => new Color(0.2f, 0.9f, 0.2f, 1f),
+            InventoryItemObj.ItemCategory.Weapon => new Color(0.95f, 0.2f, 0.2f, 1f),
+            _ => new Color(1f, 0.85f, 0.2f, 1f)
+        };
+    }
 }
