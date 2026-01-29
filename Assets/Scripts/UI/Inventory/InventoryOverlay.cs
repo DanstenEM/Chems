@@ -16,6 +16,9 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 8f);
     [SerializeField] private bool startHidden = true;
 
+    [Header("Cursor")]
+    [SerializeField] private bool manageCursor = true;
+
     [Header("Scene References (Optional)")]
     [SerializeField] private Canvas inventoryCanvas;
     [SerializeField] private RectTransform overlayRoot;
@@ -24,6 +27,9 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private RectTransform weaponSlotsRoot;
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
+    private CursorLockMode previousLockState = CursorLockMode.Locked;
+    private bool previousCursorVisible;
+    private bool hasSavedCursorState;
 
     private void Awake()
     {
@@ -32,9 +38,16 @@ public class InventoryOverlay : MonoBehaviour
             BuildDefaultLayout();
         }
 
-        if (startHidden && overlayRoot != null)
+        if (overlayRoot != null)
         {
-            overlayRoot.gameObject.SetActive(false);
+            if (startHidden)
+            {
+                overlayRoot.gameObject.SetActive(false);
+            }
+            else
+            {
+                SetOverlayVisible(true);
+            }
         }
     }
 
@@ -69,7 +82,36 @@ public class InventoryOverlay : MonoBehaviour
             return;
         }
 
-        overlayRoot.gameObject.SetActive(!overlayRoot.gameObject.activeSelf);
+        SetOverlayVisible(!overlayRoot.gameObject.activeSelf);
+    }
+
+    private void SetOverlayVisible(bool isVisible)
+    {
+        overlayRoot.gameObject.SetActive(isVisible);
+
+        if (!manageCursor)
+        {
+            return;
+        }
+
+        if (isVisible)
+        {
+            if (!hasSavedCursorState)
+            {
+                previousLockState = Cursor.lockState;
+                previousCursorVisible = Cursor.visible;
+                hasSavedCursorState = true;
+            }
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else if (hasSavedCursorState)
+        {
+            Cursor.lockState = previousLockState;
+            Cursor.visible = previousCursorVisible;
+            hasSavedCursorState = false;
+        }
     }
 
     private void BuildDefaultLayout()
