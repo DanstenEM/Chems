@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class InventoryOverlay : MonoBehaviour
@@ -39,10 +40,26 @@ public class InventoryOverlay : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(toggleKey))
+        if (WasTogglePressed())
         {
             Toggle();
         }
+    }
+
+    private bool WasTogglePressed()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return false;
+        }
+
+        return toggleKey switch
+        {
+            KeyCode.Tab => keyboard.tabKey.wasPressedThisFrame,
+            KeyCode.Escape => keyboard.escapeKey.wasPressedThisFrame,
+            _ => false
+        };
     }
 
     public void Toggle()
