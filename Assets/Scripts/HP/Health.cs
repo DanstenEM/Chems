@@ -8,6 +8,10 @@ public class Health : MonoBehaviour
     [Header("Respawn")]
     [SerializeField] private float respawnDelay = 3f;
     [SerializeField] private Transform respawnPoint;
+    [Header("Drops")]
+    [SerializeField] private GameObject deathDropPrefab;
+    [SerializeField] private Transform dropSpawnPoint;
+    [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
 
     bool dead;
 
@@ -67,6 +71,14 @@ public class Health : MonoBehaviour
 
             Invoke(nameof(Respawn), respawnDelay);
             return;
+        }
+
+        if (deathDropPrefab)
+        {
+            Vector3 spawnPosition = dropSpawnPoint
+                ? dropSpawnPoint.position
+                : transform.position + dropOffset;
+            Instantiate(deathDropPrefab, spawnPosition, Quaternion.identity);
         }
 
         Destroy(gameObject);

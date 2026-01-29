@@ -173,6 +173,9 @@ MonoBehaviour:
   respawnDelay: 3
   respawnPoint: {fileID: 0}
   isPlayer: 0
+  deathDropPrefab: {fileID: 8296451161917349089, guid: 86a597da05de4144a57ec0bfd86be091, type: 3}
+  dropSpawnPoint: {fileID: 0}
+  dropOffset: {x: 0, y: 0.5, z: 0}
 --- !u!143 &3262490996100054917
 CharacterController:
   m_ObjectHideFlags: 0
