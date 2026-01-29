@@ -17,6 +17,24 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         itemObj = inventoryItemObj;
         this.inventorySystem = inventorySystem;
+        var rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+            rectTransform.anchoredPosition = Vector2.zero;
+        }
+        if (image != null)
+        {
+            image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
+            if (itemObj != null && itemObj.icon != null)
+            {
+                image.sprite = itemObj.icon;
+                image.preserveAspect = true;
+            }
+        }
         RefrashCount();
     }
 
@@ -36,6 +54,11 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         image.raycastTarget = true;
         transform.SetParent(parentAfterDrag);
+        var rectTransform = GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = Vector2.zero;
+        }
 
         //if( parentAfterDrag.TryGetComponent(out InventorySlot component))
         //    component.inventoryItem = this;
@@ -45,4 +68,14 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         transform.position = inventorySystem.mousePosition;
     } 
+
+    private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
+    {
+        return category switch
+        {
+            InventoryItemObj.ItemCategory.Chemical => new Color(0.2f, 0.9f, 0.2f, 1f),
+            InventoryItemObj.ItemCategory.Weapon => new Color(0.95f, 0.2f, 0.2f, 1f),
+            _ => new Color(1f, 0.85f, 0.2f, 1f)
+        };
+    }
 }

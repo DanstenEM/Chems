@@ -17,6 +17,15 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 8f);
     [SerializeField] private bool startHidden = true;
 
+    [Header("Inventory")]
+    [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
+    [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
+
+    [Header("Shooting")]
+    [SerializeField] private bool manageShooting = true;
+    [SerializeField] private Shooter shooter;
+
     [Header("Cursor")]
     [SerializeField] private bool manageCursor = true;
 
@@ -37,6 +46,8 @@ public class InventoryOverlay : MonoBehaviour
     private bool hasSavedCursorState;
     private bool previousCameraInputState;
     private bool hasSavedCameraInputState;
+    private bool previousShootingState;
+    private bool hasSavedShootingState;
 
     private void Awake()
     {
@@ -61,6 +72,8 @@ public class InventoryOverlay : MonoBehaviour
                 SetOverlayVisible(true);
             }
         }
+
+        BindInventorySystem();
     }
 
     private void Update()
@@ -117,6 +130,33 @@ public class InventoryOverlay : MonoBehaviour
             {
                 cameraInput.enabled = previousCameraInputState;
                 hasSavedCameraInputState = false;
+            }
+        }
+
+        if (manageShooting)
+        {
+            if (shooter == null)
+            {
+                shooter = FindObjectOfType<Shooter>();
+            }
+
+            if (shooter != null)
+            {
+                if (isVisible)
+                {
+                    if (!hasSavedShootingState)
+                    {
+                        previousShootingState = shooter.enabled;
+                        hasSavedShootingState = true;
+                    }
+
+                    shooter.enabled = false;
+                }
+                else if (hasSavedShootingState)
+                {
+                    shooter.enabled = previousShootingState;
+                    hasSavedShootingState = false;
+                }
             }
         }
 
@@ -245,5 +285,24 @@ public class InventoryOverlay : MonoBehaviour
 
         var slotMarker = slotObject.AddComponent<InventorySlotMarker>();
         slotMarker.Setup(groupName, index);
+
+        var slot = slotObject.AddComponent<InventorySlot>();
+        slot.Configure(image, slotSelectedColor, slotDeselectedColor);
+    }
+
+    private void BindInventorySystem()
+    {
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
+        if (inventorySystem == null || overlayRoot == null)
+        {
+            return;
+        }
+
+        var slots = overlayRoot.GetComponentsInChildren<InventorySlot>(true);
+        inventorySystem.SetSlots(slots);
     }
 }
