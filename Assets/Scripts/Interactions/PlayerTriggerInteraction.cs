@@ -30,6 +30,10 @@ public class PlayerTriggerInteraction : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         var trigger = other.GetComponent<IInteractable>();
+        if (trigger == null)
+        {
+            trigger = other.GetComponentInParent<IInteractable>();
+        }
         if (trigger != null)
         {
             currentInteractable = trigger;
@@ -47,6 +51,10 @@ public class PlayerTriggerInteraction : MonoBehaviour
     void OnTriggerExit(Collider other)
     {
         var trigger = other.GetComponent<IInteractable>();
+        if (trigger == null)
+        {
+            trigger = other.GetComponentInParent<IInteractable>();
+        }
         if (trigger != null && trigger.Equals(currentInteractable))
         {
             var input = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);

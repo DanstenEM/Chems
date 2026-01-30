@@ -6,7 +6,8 @@ public class InventorySlotMarker : MonoBehaviour
     {
         Regular,
         Chemical,
-        Weapon
+        Weapon,
+        Any
     }
 
     [field: SerializeField] public SlotCategory Category { get; private set; }
@@ -20,6 +21,7 @@ public class InventorySlotMarker : MonoBehaviour
             "RegularSlots" => SlotCategory.Regular,
             "ChemicalSlots" => SlotCategory.Chemical,
             "WeaponSlots" => SlotCategory.Weapon,
+            "LootSlots" => SlotCategory.Any,
             _ => SlotCategory.Regular
         };
     }
