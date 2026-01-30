@@ -16,6 +16,9 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     public Vector2 mousePosition;
     private bool mouseActionBound;
 
+    public InventoryItem InventoryPrefab => inventoryPrefab;
+    public InventorySlot[] Slots => slots;
+
     [Inject]
     public void Construct(InventorySlot[] slots)
     {
@@ -167,7 +170,8 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         if (useRegularOnly)
         {
-            return slotCategory == InventorySlotMarker.SlotCategory.Regular;
+            return slotCategory == InventorySlotMarker.SlotCategory.Regular
+                || slotCategory == InventorySlotMarker.SlotCategory.Any;
         }
 
         if (itemObj == null)
@@ -179,6 +183,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         {
             InventorySlotMarker.SlotCategory.Chemical => itemObj.category == InventoryItemObj.ItemCategory.Chemical,
             InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            InventorySlotMarker.SlotCategory.Any => true,
             _ => itemObj.category == InventoryItemObj.ItemCategory.Regular
         };
     }
@@ -210,6 +215,21 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         int leftIndex = leftMarker != null ? leftMarker.Index : int.MaxValue;
         int rightIndex = rightMarker != null ? rightMarker.Index : int.MaxValue;
         return leftIndex.CompareTo(rightIndex);
+    }
+
+    public void Configure(InventoryItem itemPrefab, InputActionProperty mouseActionOverride)
+    {
+        if (itemPrefab != null)
+        {
+            inventoryPrefab = itemPrefab;
+        }
+
+        if (mouseActionOverride.action != null)
+        {
+            mouseAction = mouseActionOverride;
+        }
+
+        BindMouseAction();
     }
 
     private void BindMouseAction()

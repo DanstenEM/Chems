@@ -6,6 +6,12 @@ using UnityEngine.UI;
 
 public class InventoryOverlay : MonoBehaviour
 {
+    public enum OverlaySide
+    {
+        Center,
+        Right
+    }
+
     [Header("Input")]
     [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
 
@@ -16,6 +22,7 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private Vector2 slotSize = new Vector2(80f, 80f);
     [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 8f);
     [SerializeField] private bool startHidden = true;
+    [SerializeField] private Vector2 rightSideOffset = new Vector2(-40f, 0f);
 
     [Header("Inventory")]
     [SerializeField] private InventorySystem inventorySystem;
@@ -41,6 +48,12 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private RectTransform weaponSlotsRoot;
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
+    private Vector2 defaultAnchorMin;
+    private Vector2 defaultAnchorMax;
+    private Vector2 defaultPivot;
+    private Vector2 defaultAnchoredPosition;
+    private bool hasStoredDefaultLayout;
+    private OverlaySide currentSide = OverlaySide.Center;
     private CursorLockMode previousLockState = CursorLockMode.Locked;
     private bool previousCursorVisible;
     private bool hasSavedCursorState;
@@ -63,6 +76,7 @@ public class InventoryOverlay : MonoBehaviour
 
         if (overlayRoot != null)
         {
+            StoreDefaultLayout();
             if (startHidden)
             {
                 overlayRoot.gameObject.SetActive(false);
@@ -108,6 +122,47 @@ public class InventoryOverlay : MonoBehaviour
         }
 
         SetOverlayVisible(!overlayRoot.gameObject.activeSelf);
+    }
+
+    public bool IsVisible => overlayRoot != null && overlayRoot.gameObject.activeSelf;
+    public OverlaySide CurrentSide => currentSide;
+    public InventorySystem InventorySystem => inventorySystem;
+
+    public void SetVisible(bool isVisible)
+    {
+        if (overlayRoot == null)
+        {
+            return;
+        }
+
+        SetOverlayVisible(isVisible);
+    }
+
+    public void SetOverlaySide(OverlaySide side)
+    {
+        if (overlayRoot == null)
+        {
+            return;
+        }
+
+        StoreDefaultLayout();
+        currentSide = side;
+
+        switch (side)
+        {
+            case OverlaySide.Right:
+                overlayRoot.anchorMin = new Vector2(1f, 0.5f);
+                overlayRoot.anchorMax = new Vector2(1f, 0.5f);
+                overlayRoot.pivot = new Vector2(1f, 0.5f);
+                overlayRoot.anchoredPosition = rightSideOffset;
+                break;
+            default:
+                overlayRoot.anchorMin = defaultAnchorMin;
+                overlayRoot.anchorMax = defaultAnchorMax;
+                overlayRoot.pivot = defaultPivot;
+                overlayRoot.anchoredPosition = defaultAnchoredPosition;
+                break;
+        }
     }
 
     private void SetOverlayVisible(bool isVisible)
@@ -244,6 +299,20 @@ public class InventoryOverlay : MonoBehaviour
         image.color = new Color(0f, 0f, 0f, 0.55f);
 
         return rectTransform;
+    }
+
+    private void StoreDefaultLayout()
+    {
+        if (overlayRoot == null || hasStoredDefaultLayout)
+        {
+            return;
+        }
+
+        defaultAnchorMin = overlayRoot.anchorMin;
+        defaultAnchorMax = overlayRoot.anchorMax;
+        defaultPivot = overlayRoot.pivot;
+        defaultAnchoredPosition = overlayRoot.anchoredPosition;
+        hasStoredDefaultLayout = true;
     }
 
     private RectTransform CreateSlotGroup(string name, RectTransform parent, int slotCount, int columns)

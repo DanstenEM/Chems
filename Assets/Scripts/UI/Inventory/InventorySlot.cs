@@ -50,6 +50,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         {
             InventorySlotMarker.SlotCategory.Chemical => item.itemObj.category == InventoryItemObj.ItemCategory.Chemical,
             InventorySlotMarker.SlotCategory.Weapon => item.itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            InventorySlotMarker.SlotCategory.Any => true,
             _ => item.itemObj.category == InventoryItemObj.ItemCategory.Regular
         };
     }
