@@ -30,6 +30,10 @@ public class LootCrate : TriggerInteractable
     private void Awake()
     {
         lootOverlay = GetOrCreateOverlay();
+        if (interactionHint == null)
+        {
+            interactionHint = GetComponentInChildren<TMP_Text>(true);
+        }
     }
 
     public override void Active(InputBinding input)
