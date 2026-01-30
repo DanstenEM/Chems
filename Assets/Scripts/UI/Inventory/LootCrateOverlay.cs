@@ -109,8 +109,8 @@ public class LootCrateOverlay : MonoBehaviour
         {
             previousPlayerVisible = playerInventoryOverlay.IsVisible;
             previousPlayerSide = playerInventoryOverlay.CurrentSide;
-            playerInventoryOverlay.SetVisible(true);
             playerInventoryOverlay.SetOverlaySide(InventoryOverlay.OverlaySide.Right);
+            playerInventoryOverlay.SetVisible(true);
         }
         else
         {

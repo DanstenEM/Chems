@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using Assets.Scripts.Interactions.Abstract;
 using UnityEngine;
+using TMPro;
 using UnityEngine.InputSystem;
 
 public class LootCrate : TriggerInteractable
 {
     [Header("UI")]
     [SerializeField] private LootCrateOverlay lootOverlay;
+    [SerializeField] private TMP_Text interactionHint;
+    [SerializeField] private string interactionHintText = "OPEN CRATE";
 
     [Header("Loot Items")]
     [SerializeField] private List<InventoryItemObj> regularLoot = new List<InventoryItemObj>();
@@ -32,11 +35,20 @@ public class LootCrate : TriggerInteractable
     public override void Active(InputBinding input)
     {
         base.Active(input);
+        if (interactionHint != null)
+        {
+            interactionHint.text = interactionHintText;
+            interactionHint.gameObject.SetActive(true);
+        }
     }
 
     public override void Deactive()
     {
         base.Deactive();
+        if (interactionHint != null)
+        {
+            interactionHint.gameObject.SetActive(false);
+        }
         if (lootOverlay != null)
         {
             lootOverlay.Close();
