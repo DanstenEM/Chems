@@ -26,10 +26,7 @@ public class LootCrate : TriggerInteractable
 
     private void Awake()
     {
-        if (lootOverlay == null)
-        {
-            lootOverlay = FindObjectOfType<LootCrateOverlay>();
-        }
+        lootOverlay = GetOrCreateOverlay();
     }
 
     public override void Active(InputBinding input)
@@ -48,12 +45,11 @@ public class LootCrate : TriggerInteractable
 
     public override void Interact()
     {
-        if (lootOverlay == null)
+        lootOverlay = GetOrCreateOverlay();
+        if (lootOverlay != null)
         {
-            return;
+            lootOverlay.Open(this);
         }
-
-        lootOverlay.Open(this);
     }
 
     public void GenerateLootIfNeeded()
@@ -147,5 +143,23 @@ public class LootCrate : TriggerInteractable
 
         int index = Random.Range(0, items.Count);
         return items[index];
+    }
+
+    private LootCrateOverlay GetOrCreateOverlay()
+    {
+        if (lootOverlay != null)
+        {
+            return lootOverlay;
+        }
+
+        lootOverlay = FindObjectOfType<LootCrateOverlay>();
+        if (lootOverlay != null)
+        {
+            return lootOverlay;
+        }
+
+        var overlayObject = new GameObject("LootCrateOverlaySystem");
+        lootOverlay = overlayObject.AddComponent<LootCrateOverlay>();
+        return lootOverlay;
     }
 }
