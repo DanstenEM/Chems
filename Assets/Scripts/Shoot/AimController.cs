@@ -10,6 +10,7 @@ public class AimController : MonoBehaviour
     [SerializeField] private AimIKController ik;
     [SerializeField] private Health health;
     [SerializeField] private Shooter shooter;
+    [SerializeField] private Transform aimTarget;
 
     [Header("Orbital Settings")]
     [SerializeField] private float normalRadius = 4f;
@@ -18,6 +19,7 @@ public class AimController : MonoBehaviour
 
     [Header("Rotation")]
     [SerializeField] private float aimRotationSpeed = 12f;
+    [SerializeField] private float aimTargetDistance = 15f;
 
     [Header("Input")]
     [SerializeField] private InputActionProperty aimAction;
@@ -25,6 +27,7 @@ public class AimController : MonoBehaviour
     CinemachineOrbitalFollow orbital;
     bool isAiming;
     bool isDie;
+    Transform runtimeAimTarget;
 
     void Awake()
     {
@@ -49,6 +52,16 @@ public class AimController : MonoBehaviour
         if (!ik)
             ik = GetComponentInChildren<AimIKController>();
 
+        if (!aimTarget)
+        {
+            runtimeAimTarget = new GameObject("AimTarget").transform;
+            runtimeAimTarget.SetParent(transform, false);
+            aimTarget = runtimeAimTarget;
+        }
+
+        if (ik && !ik.aimTarget)
+            ik.aimTarget = aimTarget;
+
         if (!shooter)
             shooter = GetComponent<Shooter>();
 
@@ -72,6 +85,8 @@ public class AimController : MonoBehaviour
         if (ik)
             ik.SetAiming(isAiming);
 
+        UpdateAimTarget();
+
         HandleCamera();
 
         if (isAiming || IsShooting())
@@ -87,6 +102,14 @@ public class AimController : MonoBehaviour
     {
         float targetRadius = isAiming ? aimRadius : normalRadius;
         orbital.Radius = Mathf.Lerp(orbital.Radius, targetRadius, Time.deltaTime * camLerpSpeed);
+    }
+
+    void UpdateAimTarget()
+    {
+        if (!aimTarget || !Camera.main) return;
+
+        Transform camTransform = Camera.main.transform;
+        aimTarget.position = camTransform.position + camTransform.forward * aimTargetDistance;
     }
 
     void RotateBodyToAim()
