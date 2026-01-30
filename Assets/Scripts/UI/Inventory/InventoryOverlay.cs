@@ -21,6 +21,7 @@ public class InventoryOverlay : MonoBehaviour
     [SerializeField] private InventorySystem inventorySystem;
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
     [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
+    [SerializeField] private Health health;
 
     [Header("Shooting")]
     [SerializeField] private bool manageShooting = true;
@@ -74,6 +75,16 @@ public class InventoryOverlay : MonoBehaviour
         }
 
         BindInventorySystem();
+
+        if (health == null)
+        {
+            health = FindObjectOfType<Health>();
+        }
+
+        if (health != null)
+        {
+            health.isDie.Changed += HandleDeathStateChanged;
+        }
     }
 
     private void Update()
@@ -110,7 +121,7 @@ public class InventoryOverlay : MonoBehaviour
         SetOverlayVisible(!overlayRoot.gameObject.activeSelf);
     }
 
-    private void SetOverlayVisible(bool isVisible)
+    private void SetOverlayVisible(bool isVisible, bool restoreShootingState = true)
     {
         overlayRoot.gameObject.SetActive(isVisible);
 
@@ -152,12 +163,16 @@ public class InventoryOverlay : MonoBehaviour
 
                     shooter.enabled = false;
                 }
-                else if (hasSavedShootingState)
+                else if (hasSavedShootingState && restoreShootingState)
                 {
                     shooter.enabled = previousShootingState;
                     hasSavedShootingState = false;
                 }
             }
+        }
+        if (!restoreShootingState)
+        {
+            hasSavedShootingState = false;
         }
 
         if (!manageCursor)
@@ -182,6 +197,31 @@ public class InventoryOverlay : MonoBehaviour
             Cursor.lockState = previousLockState;
             Cursor.visible = previousCursorVisible;
             hasSavedCursorState = false;
+        }
+    }
+
+    private void HandleDeathStateChanged(bool isDead)
+    {
+        if (!isDead)
+        {
+            return;
+        }
+
+        if (overlayRoot != null && overlayRoot.gameObject.activeSelf)
+        {
+            SetOverlayVisible(false, false);
+        }
+        else
+        {
+            hasSavedShootingState = false;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.isDie.Changed -= HandleDeathStateChanged;
         }
     }
 
