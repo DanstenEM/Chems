@@ -15,7 +15,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     CharacterController controller;
     [Inject] public PlayerInput input;
-    Transform cam;
+    [SerializeField] private Transform cam;
     AimController aimController;
 
 
@@ -24,8 +24,26 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     Vector3 velocity;
 
+    void Awake()
+    {
+        if (controller == null)
+        {
+            controller = GetComponent<CharacterController>();
+        }
+
+        if (cam == null && Camera.main != null)
+        {
+            cam = Camera.main.transform;
+        }
+    }
+
     void Update()
     {
+        if (controller == null || cam == null || moveAction == null || sprintAction == null)
+        {
+            return;
+        }
+
         HandleMovement();
         HandleGravity();
     }
@@ -77,11 +95,17 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     public void Initialize()
     {
         controller = GetComponent<CharacterController>();
-        cam = Camera.main.transform;
+        if (cam == null && Camera.main != null)
+        {
+            cam = Camera.main.transform;
+        }
         aimController = GetComponent<AimController>();
 
 
-        moveAction = input.actions["Move"];
-        sprintAction = input.actions["Sprint"];
+        if (input != null)
+        {
+            moveAction = input.actions["Move"];
+            sprintAction = input.actions["Sprint"];
+        }
     }
 }
