@@ -15,10 +15,11 @@ public class Shooter : MonoBehaviour
     [SerializeField] private float damage = 25f;
 
     [Header("Recoil")]
-    [SerializeField] private float recoilKick = 2f;
-    [SerializeField] private float recoilRandomYaw = 0.75f;
-    [SerializeField] private float recoilReturnSpeed = 12f;
-    [SerializeField] private float maxRecoil = 6f;
+    [SerializeField] private float recoilKick = 4f;
+    [SerializeField] private float recoilRandomYaw = 1.25f;
+    [SerializeField] private float recoilReturnSpeed = 10f;
+    [SerializeField] private float maxRecoil = 10f;
+    [SerializeField] private float recoilAimOffset = 0.08f;
 
     [Header("Impact")]
     [SerializeField] private GameObject impactPrefab;
@@ -80,7 +81,9 @@ public class Shooter : MonoBehaviour
         ApplyRecoil();
 
         // Aim from center of screen
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        float recoilOffset = Mathf.Clamp01(currentRecoil / Mathf.Max(0.01f, maxRecoil));
+        float aimYOffset = recoilAimOffset * recoilOffset;
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f + aimYOffset, 0));
         Vector3 dir = ApplyRecoilToDirection(ray.direction);
 
         BulletProjectile bullet =
