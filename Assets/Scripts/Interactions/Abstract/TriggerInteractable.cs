@@ -14,7 +14,7 @@ public abstract class TriggerInteractable : MonoBehaviour, IInteractable
     private HintCameraOrbit hintCameraOrbit;
     private Regex Regex = new Regex(@"[a-zA-Z]{1,}");
 
-    [Inject]
+    [Inject(Optional = true)]
     public void Construct(HintCameraOrbit hintCameraOrbit)
     {
         this.hintCameraOrbit = hintCameraOrbit;
