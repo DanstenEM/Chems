@@ -233,4 +233,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4d755735177046d1a793e46a7e73c4ad, type: 2}
   weaponLootPool:
   - {fileID: 11400000, guid: 3ca29501e6ef44968387f96fcef9e0d5, type: 2}
-  generateRandomLootOnAwake: 1
+  generateRandomLootOnStart: 1

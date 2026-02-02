@@ -4,6 +4,7 @@ using Assets.Scripts.Interactions.Abstract;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Collider))]
 public class InteractableCube : MonoBehaviour, IInteractable
@@ -24,7 +25,9 @@ public class InteractableCube : MonoBehaviour, IInteractable
     [SerializeField] private InventoryItemObj[] defaultLootPool;
     [SerializeField] private InventoryItemObj[] chemicalLootPool;
     [SerializeField] private InventoryItemObj[] weaponLootPool;
-    [SerializeField] private bool generateRandomLootOnAwake = true;
+    [FormerlySerializedAs("generateRandomLootOnAwake")]
+    [SerializeField] private bool generateRandomLootOnStart = true;
+    private bool hasGeneratedLoot;
 
     private void Awake()
     {
@@ -35,9 +38,15 @@ public class InteractableCube : MonoBehaviour, IInteractable
             lootCrateUI = GetComponent<LootCrateUI>();
         }
 
-        if (generateRandomLootOnAwake && (lootItems == null || lootItems.Length == 0))
+        hasGeneratedLoot = lootItems != null && lootItems.Length > 0;
+    }
+
+    private void Start()
+    {
+        if (generateRandomLootOnStart && !hasGeneratedLoot && (lootItems == null || lootItems.Length == 0))
         {
             lootItems = GenerateRandomLoot();
+            hasGeneratedLoot = true;
         }
     }
 
