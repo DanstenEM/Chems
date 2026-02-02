@@ -17,9 +17,18 @@ public class InteractableCube : MonoBehaviour, IInteractable
     [SerializeField] private Vector3 hintOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private string hintFormat = DefaultHintFormat;
 
+    [Header("Loot Crate")]
+    [SerializeField] private LootCrateUI lootCrateUI;
+    [SerializeField] private InventoryItemObj[] lootItems;
+
     private void Awake()
     {
         EnsureHint();
+
+        if (lootCrateUI == null)
+        {
+            lootCrateUI = GetComponent<LootCrateUI>();
+        }
     }
 
     private void LateUpdate()
@@ -42,6 +51,11 @@ public class InteractableCube : MonoBehaviour, IInteractable
     public void Interact()
     {
         Debug.Log($"Interactable cube triggered: {name}", this);
+
+        if (lootCrateUI != null)
+        {
+            lootCrateUI.Toggle(lootItems);
+        }
     }
 
     public void Active(InputBinding input)
