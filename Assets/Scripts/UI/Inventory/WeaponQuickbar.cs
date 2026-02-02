@@ -144,7 +144,7 @@ public class WeaponQuickbar : MonoBehaviour
 
     private Canvas CreateCanvas(string name)
     {
-        var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup));
+        var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(CanvasGroup));
         canvasObject.layer = LayerMask.NameToLayer("UI");
 
         var canvas = canvasObject.GetComponent<Canvas>();
@@ -203,6 +203,7 @@ public class WeaponQuickbar : MonoBehaviour
 
         var image = slotObject.GetComponent<Image>();
         image.color = new Color(1f, 1f, 1f, 0.15f);
+        image.raycastTarget = false;
 
         var slotMarker = slotObject.AddComponent<InventorySlotMarker>();
         slotMarker.Setup(groupName, index);
