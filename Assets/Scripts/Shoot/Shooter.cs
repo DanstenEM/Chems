@@ -20,6 +20,9 @@ public class Shooter : MonoBehaviour
     [Header("Input")]
     [SerializeField] private InputActionProperty fireAction;
 
+    [Header("Weapon Gate")]
+    [SerializeField] private WeaponQuickbar weaponQuickbar;
+
     public bool IsFiring { get; private set; }
 
     float nextFireTime;
@@ -28,6 +31,11 @@ public class Shooter : MonoBehaviour
     {
         if (!playerCamera)
             playerCamera = Camera.main;
+
+        if (!weaponQuickbar)
+        {
+            weaponQuickbar = FindObjectOfType<WeaponQuickbar>();
+        }
 
         fireAction.action.Enable();
     }
@@ -39,6 +47,12 @@ public class Shooter : MonoBehaviour
 
     void HandleFire()
     {
+        if (weaponQuickbar != null && !weaponQuickbar.HasSelectedWeapon)
+        {
+            IsFiring = false;
+            return;
+        }
+
         if (!fireAction.action.IsPressed())
         {
             IsFiring = false;
