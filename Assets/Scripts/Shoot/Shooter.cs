@@ -14,6 +14,12 @@ public class Shooter : MonoBehaviour
     [SerializeField] private float fireRate = 0.15f;
     [SerializeField] private float damage = 25f;
 
+    [Header("Recoil")]
+    [SerializeField] private float recoilKick = 2f;
+    [SerializeField] private float recoilRandomYaw = 0.75f;
+    [SerializeField] private float recoilReturnSpeed = 12f;
+    [SerializeField] private float maxRecoil = 6f;
+
     [Header("Impact")]
     [SerializeField] private GameObject impactPrefab;
 
@@ -23,6 +29,8 @@ public class Shooter : MonoBehaviour
     public bool IsFiring { get; private set; }
 
     float nextFireTime;
+    float currentRecoil;
+    float currentYaw;
 
     void Awake()
     {
@@ -34,7 +42,17 @@ public class Shooter : MonoBehaviour
 
     void Update()
     {
+        UpdateRecoil();
         HandleFire();
+    }
+
+    void UpdateRecoil()
+    {
+        if (currentRecoil <= 0f && Mathf.Abs(currentYaw) <= 0.001f)
+            return;
+
+        currentRecoil = Mathf.MoveTowards(currentRecoil, 0f, recoilReturnSpeed * Time.deltaTime);
+        currentYaw = Mathf.MoveTowards(currentYaw, 0f, recoilReturnSpeed * Time.deltaTime);
     }
 
     void HandleFire()
@@ -56,12 +74,14 @@ public class Shooter : MonoBehaviour
 
     void Fire()
     {
-        if (!bulletPrefab|| !muzzle || !playerCamera)
+        if (!bulletPrefab || !muzzle || !playerCamera)
             return;
+
+        ApplyRecoil();
 
         // Aim from center of screen
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        Vector3 dir = ray.direction;
+        Vector3 dir = ApplyRecoilToDirection(ray.direction);
 
         BulletProjectile bullet =
             Instantiate(bulletPrefab, muzzle.position, Quaternion.LookRotation(dir));
@@ -69,5 +89,23 @@ public class Shooter : MonoBehaviour
         bullet.damage = damage;
         bullet.impactPrefab = impactPrefab;
         bullet.Init(dir);
+    }
+
+    void ApplyRecoil()
+    {
+        if (recoilKick <= 0f && recoilRandomYaw <= 0f)
+            return;
+
+        currentRecoil = Mathf.Min(currentRecoil + recoilKick, maxRecoil);
+        currentYaw += Random.Range(-recoilRandomYaw, recoilRandomYaw);
+    }
+
+    Vector3 ApplyRecoilToDirection(Vector3 direction)
+    {
+        if (currentRecoil == 0f && Mathf.Abs(currentYaw) < 0.001f)
+            return direction;
+
+        Quaternion recoilRotation = Quaternion.Euler(-currentRecoil, currentYaw, 0f);
+        return recoilRotation * direction;
     }
 }
