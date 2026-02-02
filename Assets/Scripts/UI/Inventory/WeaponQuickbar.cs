@@ -55,7 +55,7 @@ public class WeaponQuickbar : MonoBehaviour
     {
         if (inventorySystem != null)
         {
-            inventorySystem.SetSlots(FindObjectsOfType<InventorySlot>());
+            inventorySystem.SetSlots(FindObjectsOfType<InventorySlot>(true));
         }
 
         SelectSlot(0);
