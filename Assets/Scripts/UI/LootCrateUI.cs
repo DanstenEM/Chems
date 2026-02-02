@@ -7,21 +7,22 @@ public class LootCrateUI : MonoBehaviour
 {
     [Header("Layout")]
     [SerializeField] private Vector2 panelSize = new Vector2(500f, 360f);
-    [SerializeField] private Vector2 itemSize = new Vector2(120f, 120f);
-    [SerializeField] private Vector2 itemSpacing = new Vector2(12f, 12f);
+    [SerializeField] private Vector2 slotSize = new Vector2(80f, 80f);
+    [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 8f);
     [SerializeField] private int slotCount = 15;
     [SerializeField] private int columns = 5;
     [SerializeField] private Vector2 panelOffset = new Vector2(40f, 0f);
     [SerializeField] private bool startHidden = true;
 
-    [Header("Appearance")]
-    [SerializeField] private Color panelColor = new Color(0f, 0f, 0f, 0.6f);
-    [SerializeField] private Color itemBackgroundColor = new Color(1f, 1f, 1f, 0.1f);
+    [Header("Inventory")]
+    [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
+    [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
 
     [Header("Scene References (Optional)")]
     [SerializeField] private Canvas lootCanvas;
     [SerializeField] private RectTransform panelRoot;
-    [SerializeField] private RectTransform itemsRoot;
+    [SerializeField] private RectTransform slotsRoot;
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
 
@@ -36,6 +37,8 @@ public class LootCrateUI : MonoBehaviour
         {
             panelRoot.gameObject.SetActive(false);
         }
+
+        BindInventorySystem();
     }
 
     public void Toggle(IReadOnlyList<InventoryItemObj> lootItems)
@@ -75,8 +78,8 @@ public class LootCrateUI : MonoBehaviour
         titleText.alignment = TextAlignmentOptions.Center;
         titleText.color = Color.white;
 
-        itemsRoot = CreateItemsRoot(panelRoot, "LootItemsRoot");
-        UpdateItemsRootSize();
+        slotsRoot = CreateSlotsRoot(panelRoot, "LootSlotsRoot");
+        UpdateSlotsRootSize();
     }
 
     private Canvas CreateCanvas(string name)
@@ -117,12 +120,12 @@ public class LootCrateUI : MonoBehaviour
         rectTransform.anchoredPosition = panelOffset;
 
         var image = panelObject.GetComponent<Image>();
-        image.color = panelColor;
+        image.color = new Color(0f, 0f, 0f, 0.55f);
 
         return rectTransform;
     }
 
-    private RectTransform CreateItemsRoot(Transform parent, string name)
+    private RectTransform CreateSlotsRoot(Transform parent, string name)
     {
         var rootObject = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup), typeof(LayoutElement));
         rootObject.layer = LayerMask.NameToLayer("UI");
@@ -135,112 +138,84 @@ public class LootCrateUI : MonoBehaviour
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
         var grid = rootObject.GetComponent<GridLayoutGroup>();
-        grid.cellSize = itemSize;
-        grid.spacing = itemSpacing;
+        grid.cellSize = slotSize;
+        grid.spacing = slotSpacing;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = Mathf.Max(1, columns);
         grid.childAlignment = TextAnchor.UpperCenter;
 
+        for (int i = 0; i < slotCount; i++)
+        {
+            CreateSlot(rectTransform, i);
+        }
+
         return rectTransform;
+    }
+
+    private void CreateSlot(Transform parent, int index)
+    {
+        var slotObject = new GameObject($"Slot_{index + 1}", typeof(RectTransform), typeof(Image));
+        slotObject.layer = LayerMask.NameToLayer("UI");
+        slotObject.transform.SetParent(parent, false);
+        createdObjects.Add(slotObject);
+
+        var image = slotObject.GetComponent<Image>();
+        image.color = new Color(1f, 1f, 1f, 0.15f);
+
+        var slotMarker = slotObject.AddComponent<InventorySlotMarker>();
+        slotMarker.Setup("RegularSlots", index);
+
+        var slot = slotObject.AddComponent<InventorySlot>();
+        slot.Configure(image, slotSelectedColor, slotDeselectedColor);
     }
 
     private void Populate(IReadOnlyList<InventoryItemObj> lootItems)
     {
-        if (itemsRoot == null)
+        if (slotsRoot == null)
         {
             return;
         }
 
-        for (int i = itemsRoot.childCount - 1; i >= 0; i--)
+        UpdateSlotsRootSize();
+
+        var slots = slotsRoot.GetComponentsInChildren<InventorySlot>(true);
+        foreach (var slot in slots)
         {
-            Destroy(itemsRoot.GetChild(i).gameObject);
+            for (int i = slot.transform.childCount - 1; i >= 0; i--)
+            {
+                Destroy(slot.transform.GetChild(i).gameObject);
+            }
         }
 
-        if (slotCount <= 0)
+        if (inventorySystem == null)
         {
             return;
         }
 
-        UpdateItemsRootSize();
+        inventorySystem.SetSlots(slots);
 
-        int itemCount = lootItems != null ? lootItems.Count : 0;
-        for (int i = 0; i < slotCount; i++)
+        if (lootItems == null)
         {
-            if (i < itemCount)
-            {
-                CreateItemSlot(lootItems[i]);
-            }
-            else
-            {
-                CreateEmptySlot();
-            }
+            return;
+        }
+
+        foreach (var item in lootItems)
+        {
+            inventorySystem.AddItem(item);
         }
     }
 
-    private void CreateEmptySlot()
+    private void BindInventorySystem()
     {
-        var slotObject = CreateSlotRoot("EmptySlot");
-
-        var label = slotObject.AddComponent<TextMeshProUGUI>();
-        label.text = "Empty";
-        label.alignment = TextAlignmentOptions.Center;
-        label.fontSize = 20f;
-        label.color = Color.white;
-    }
-
-    private void CreateItemSlot(InventoryItemObj item)
-    {
-        var slotObject = CreateSlotRoot(item != null ? item.name : "UnknownItem");
-
-        if (item != null && item.icon != null)
+        if (inventorySystem == null)
         {
-            var iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-            iconObject.layer = LayerMask.NameToLayer("UI");
-            iconObject.transform.SetParent(slotObject.transform, false);
-
-            var iconImage = iconObject.GetComponent<Image>();
-            iconImage.sprite = item.icon;
-            iconImage.preserveAspect = true;
-
-            var iconRect = iconObject.GetComponent<RectTransform>();
-            iconRect.anchorMin = new Vector2(0.1f, 0.3f);
-            iconRect.anchorMax = new Vector2(0.9f, 0.9f);
-            iconRect.offsetMin = Vector2.zero;
-            iconRect.offsetMax = Vector2.zero;
+            inventorySystem = GetComponent<InventorySystem>();
         }
-
-        var textObject = new GameObject("Name", typeof(RectTransform));
-        textObject.layer = LayerMask.NameToLayer("UI");
-        textObject.transform.SetParent(slotObject.transform, false);
-
-        var text = textObject.AddComponent<TextMeshProUGUI>();
-        text.text = item != null ? item.name : "Unknown";
-        text.alignment = TextAlignmentOptions.Bottom;
-        text.fontSize = 18f;
-        text.color = Color.white;
-
-        var textRect = textObject.GetComponent<RectTransform>();
-        textRect.anchorMin = new Vector2(0.05f, 0.05f);
-        textRect.anchorMax = new Vector2(0.95f, 0.3f);
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
     }
 
-    private GameObject CreateSlotRoot(string name)
+    private void UpdateSlotsRootSize()
     {
-        var slotObject = new GameObject(name, typeof(RectTransform), typeof(Image));
-        slotObject.layer = LayerMask.NameToLayer("UI");
-        slotObject.transform.SetParent(itemsRoot, false);
-
-        var image = slotObject.GetComponent<Image>();
-        image.color = itemBackgroundColor;
-
-        return slotObject;
-    }
-
-    private void UpdateItemsRootSize()
-    {
-        if (itemsRoot == null)
+        if (slotsRoot == null)
         {
             return;
         }
@@ -249,12 +224,12 @@ public class LootCrateUI : MonoBehaviour
         int safeSlots = Mathf.Max(0, slotCount);
         int rows = safeSlots == 0 ? 0 : Mathf.CeilToInt(safeSlots / (float)safeColumns);
 
-        float width = safeColumns * itemSize.x + Mathf.Max(0, safeColumns - 1) * itemSpacing.x;
-        float height = rows * itemSize.y + Mathf.Max(0, rows - 1) * itemSpacing.y;
+        float width = safeColumns * slotSize.x + Mathf.Max(0, safeColumns - 1) * slotSpacing.x;
+        float height = rows * slotSize.y + Mathf.Max(0, rows - 1) * slotSpacing.y;
 
-        itemsRoot.sizeDelta = new Vector2(width, height);
+        slotsRoot.sizeDelta = new Vector2(width, height);
 
-        var layoutElement = itemsRoot.GetComponent<LayoutElement>();
+        var layoutElement = slotsRoot.GetComponent<LayoutElement>();
         if (layoutElement != null)
         {
             layoutElement.preferredWidth = width;

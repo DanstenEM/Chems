@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 155315892658236312}
   - component: {fileID: 7141244571605411327}
   - component: {fileID: 6946463778822389185}
+  - component: {fileID: 2851822657172079128}
   - component: {fileID: 1370268484145598085}
   - component: {fileID: 7481896064741850180}
   m_Layer: 0
@@ -153,6 +154,36 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2851822657172079128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8530438184164918764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bd3b9e7298713e44bef04ff9c7daf0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventorySystem
+  inventoryPrefab: {fileID: 5638737629825818885, guid: 10ea5169612f1ee4f88a7c1a0e7a94f7, type: 3}
+  inventoryObj: {fileID: 0}
+  selectSlot: -1
+  addStarterItems: 0
+  starterItemCount: 0
+  mouseAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 00000000-0000-0000-0000-000000000000
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  mousePosition: {x: 0, y: 0}
 --- !u!114 &1370268484145598085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,17 +197,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   panelSize: {x: 500, y: 360}
-  itemSize: {x: 120, y: 120}
-  itemSpacing: {x: 12, y: 12}
+  slotSize: {x: 80, y: 80}
+  slotSpacing: {x: 8, y: 8}
   slotCount: 15
   columns: 5
   panelOffset: {x: 40, y: 0}
   startHidden: 1
-  panelColor: {r: 0, g: 0, b: 0, a: 0.6}
-  itemBackgroundColor: {r: 1, g: 1, b: 1, a: 0.1}
+  inventorySystem: {fileID: 2851822657172079128}
+  slotSelectedColor: {r: 1, g: 0.4292453, b: 0.4292453, a: 1}
+  slotDeselectedColor: {r: 0.6, g: 0.6, b: 0.6, a: 0.35}
   lootCanvas: {fileID: 0}
   panelRoot: {fileID: 0}
-  itemsRoot: {fileID: 0}
+  slotsRoot: {fileID: 0}
 --- !u!114 &7481896064741850180
 MonoBehaviour:
   m_ObjectHideFlags: 0
