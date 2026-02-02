@@ -22,6 +22,18 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private Canvas overlayCanvas;
     [SerializeField] private RectTransform overlayRoot;
     [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private RectTransform weaponSlotsRoot;
+
+    [Header("Weapon Slots")]
+    [SerializeField] private int weaponSlotCount = 2;
+    [SerializeField] private Vector2 weaponSlotSize = new Vector2(56f, 56f);
+    [SerializeField] private Vector2 weaponSlotOffset = new Vector2(-24f, 24f);
+    [SerializeField] private float weaponSlotSpacing = 8f;
+    [SerializeField] private Color weaponSlotBackground = new Color(1f, 1f, 1f, 0.15f);
+    [SerializeField] private InventorySystem inventorySystem;
+
+    private Image[] weaponSlotImages;
+    private Image[] weaponIconImages;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureOverlayExists()
@@ -49,12 +61,19 @@ public class PlayerOverlay : MonoBehaviour
             health = FindPlayerHealth();
         }
 
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
         UpdateHealthText();
+        UpdateWeaponSlots();
     }
 
     private void Update()
     {
         UpdateHealthText();
+        UpdateWeaponSlots();
     }
 
     private void UpdateHealthText()
@@ -71,6 +90,75 @@ public class PlayerOverlay : MonoBehaviour
         }
 
         healthText.text = $"{healthLabel}: {health.CurrentHealth:0}";
+    }
+
+    private void UpdateWeaponSlots()
+    {
+        if (weaponIconImages == null || weaponIconImages.Length == 0)
+        {
+            return;
+        }
+
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
+        var slots = inventorySystem != null ? inventorySystem.GetSlots() : null;
+        var weaponSlots = GetWeaponSlots(slots);
+
+        for (int i = 0; i < weaponIconImages.Length; i++)
+        {
+            var iconImage = weaponIconImages[i];
+            var slot = i < weaponSlots.Length ? weaponSlots[i] : null;
+            var item = slot != null ? slot.GetComponentInChildren<InventoryItem>() : null;
+
+            if (item != null && item.itemObj != null && item.itemObj.icon != null)
+            {
+                iconImage.enabled = true;
+                iconImage.sprite = item.itemObj.icon;
+                iconImage.color = Color.white;
+            }
+            else
+            {
+                iconImage.enabled = false;
+                iconImage.sprite = null;
+            }
+        }
+    }
+
+    private InventorySlot[] GetWeaponSlots(InventorySlot[] slots)
+    {
+        if (slots == null || slots.Length == 0)
+        {
+            return new InventorySlot[0];
+        }
+
+        var weaponSlots = new System.Collections.Generic.List<InventorySlot>();
+        foreach (var slot in slots)
+        {
+            if (slot == null)
+            {
+                continue;
+            }
+
+            var marker = slot.GetComponent<InventorySlotMarker>();
+            if (marker != null && marker.Category == InventorySlotMarker.SlotCategory.Weapon)
+            {
+                weaponSlots.Add(slot);
+            }
+        }
+
+        weaponSlots.Sort((left, right) =>
+        {
+            var leftMarker = left.GetComponent<InventorySlotMarker>();
+            var rightMarker = right.GetComponent<InventorySlotMarker>();
+            var leftIndex = leftMarker != null ? leftMarker.Index : int.MaxValue;
+            var rightIndex = rightMarker != null ? rightMarker.Index : int.MaxValue;
+            return leftIndex.CompareTo(rightIndex);
+        });
+
+        return weaponSlots.ToArray();
     }
 
     private Health FindPlayerHealth()
@@ -92,6 +180,7 @@ public class PlayerOverlay : MonoBehaviour
         overlayCanvas = CreateCanvas("PlayerOverlayCanvas");
         overlayRoot = CreatePanel(overlayCanvas.transform, "PlayerOverlayPanel");
         healthText = CreateLabel(overlayRoot, "HealthText");
+        weaponSlotsRoot = CreateWeaponSlots(overlayCanvas.transform, "WeaponSlotsOverlay");
     }
 
     private Canvas CreateCanvas(string name)
@@ -158,5 +247,70 @@ public class PlayerOverlay : MonoBehaviour
         }
 
         return label;
+    }
+
+    private RectTransform CreateWeaponSlots(Transform parent, string name)
+    {
+        var rootObject = new GameObject(name, typeof(RectTransform));
+        rootObject.layer = LayerMask.NameToLayer("UI");
+        rootObject.transform.SetParent(parent, false);
+
+        var rectTransform = rootObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(1f, 0f);
+        rectTransform.anchorMax = new Vector2(1f, 0f);
+        rectTransform.pivot = new Vector2(1f, 0f);
+        rectTransform.sizeDelta = new Vector2(
+            weaponSlotSize.x * weaponSlotCount + weaponSlotSpacing * (weaponSlotCount - 1),
+            weaponSlotSize.y);
+        rectTransform.anchoredPosition = new Vector2(weaponSlotOffset.x, weaponSlotOffset.y);
+
+        weaponSlotImages = new Image[weaponSlotCount];
+        weaponIconImages = new Image[weaponSlotCount];
+
+        for (int i = 0; i < weaponSlotCount; i++)
+        {
+            var slot = CreateWeaponSlot(rectTransform, $"WeaponSlot_{i + 1}", i);
+            weaponSlotImages[i] = slot.background;
+            weaponIconImages[i] = slot.icon;
+        }
+
+        return rectTransform;
+    }
+
+    private (Image background, Image icon) CreateWeaponSlot(RectTransform parent, string name, int index)
+    {
+        var slotObject = new GameObject(name, typeof(RectTransform), typeof(Image));
+        slotObject.layer = LayerMask.NameToLayer("UI");
+        slotObject.transform.SetParent(parent, false);
+
+        var rectTransform = slotObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(1f, 0f);
+        rectTransform.anchorMax = new Vector2(1f, 0f);
+        rectTransform.pivot = new Vector2(1f, 0f);
+        rectTransform.sizeDelta = weaponSlotSize;
+        rectTransform.anchoredPosition = new Vector2(
+            -(weaponSlotSize.x + weaponSlotSpacing) * index,
+            0f);
+
+        var background = slotObject.GetComponent<Image>();
+        background.color = weaponSlotBackground;
+        background.raycastTarget = false;
+
+        var iconObject = new GameObject($"{name}_Icon", typeof(RectTransform), typeof(Image));
+        iconObject.layer = LayerMask.NameToLayer("UI");
+        iconObject.transform.SetParent(slotObject.transform, false);
+
+        var iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(6f, 6f);
+        iconRect.offsetMax = new Vector2(-6f, -6f);
+
+        var iconImage = iconObject.GetComponent<Image>();
+        iconImage.preserveAspect = true;
+        iconImage.enabled = false;
+        iconImage.raycastTarget = false;
+
+        return (background, iconImage);
     }
 }

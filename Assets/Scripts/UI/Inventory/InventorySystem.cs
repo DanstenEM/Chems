@@ -149,6 +149,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         return null;
     }
 
+    public InventorySlot[] GetSlots()
+    {
+        return slots;
+    }
+
     private static bool IsRegularSlot(InventorySlot slot)
     {
         var marker = slot.GetComponent<InventorySlotMarker>();
