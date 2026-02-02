@@ -47,7 +47,7 @@ public class PlayerOverlay : MonoBehaviour
 
         if (health == null)
         {
-            health = FindObjectOfType<Health>();
+            health = FindPlayerHealth();
         }
 
         UpdateHealthText();
@@ -72,6 +72,20 @@ public class PlayerOverlay : MonoBehaviour
         }
 
         healthText.text = $"{healthLabel}: {health.CurrentHealth:0}";
+    }
+
+    private Health FindPlayerHealth()
+    {
+        var healths = FindObjectsOfType<Health>();
+        foreach (var candidate in healths)
+        {
+            if (candidate != null && candidate.CompareTag("Player"))
+            {
+                return candidate;
+            }
+        }
+
+        return healths.Length > 0 ? healths[0] : null;
     }
 
     private void BuildDefaultLayout()
