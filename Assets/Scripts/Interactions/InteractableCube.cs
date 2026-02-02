@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Collections.Generic;
 using Assets.Scripts.Interactions.Abstract;
 using TMPro;
 using UnityEngine;
@@ -20,6 +21,10 @@ public class InteractableCube : MonoBehaviour, IInteractable
     [Header("Loot Crate")]
     [SerializeField] private LootCrateUI lootCrateUI;
     [SerializeField] private InventoryItemObj[] lootItems;
+    [SerializeField] private InventoryItemObj[] defaultLootPool;
+    [SerializeField] private InventoryItemObj[] chemicalLootPool;
+    [SerializeField] private InventoryItemObj[] weaponLootPool;
+    [SerializeField] private bool generateRandomLootOnAwake = true;
 
     private void Awake()
     {
@@ -28,6 +33,11 @@ public class InteractableCube : MonoBehaviour, IInteractable
         if (lootCrateUI == null)
         {
             lootCrateUI = GetComponent<LootCrateUI>();
+        }
+
+        if (generateRandomLootOnAwake && (lootItems == null || lootItems.Length == 0))
+        {
+            lootItems = GenerateRandomLoot();
         }
     }
 
@@ -117,5 +127,67 @@ public class InteractableCube : MonoBehaviour, IInteractable
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
         hintText.gameObject.SetActive(false);
+    }
+
+    private InventoryItemObj[] GenerateRandomLoot()
+    {
+        int amount = Random.Range(2, 11);
+        var results = new List<InventoryItemObj>(amount);
+
+        for (int i = 0; i < amount; i++)
+        {
+            var item = GetRandomLootItem();
+            if (item != null)
+            {
+                results.Add(item);
+            }
+        }
+
+        return results.ToArray();
+    }
+
+    private InventoryItemObj GetRandomLootItem()
+    {
+        float roll = Random.value;
+
+        if (roll < 0.75f)
+        {
+            return GetRandomFromPool(defaultLootPool) ?? GetFallbackLootItem();
+        }
+
+        if (roll < 0.95f)
+        {
+            return GetRandomFromPool(chemicalLootPool) ?? GetFallbackLootItem();
+        }
+
+        return GetRandomFromPool(weaponLootPool) ?? GetFallbackLootItem();
+    }
+
+    private InventoryItemObj GetRandomFromPool(InventoryItemObj[] pool)
+    {
+        if (pool == null || pool.Length == 0)
+        {
+            return null;
+        }
+
+        int index = Random.Range(0, pool.Length);
+        return pool[index];
+    }
+
+    private InventoryItemObj GetFallbackLootItem()
+    {
+        var fallback = GetRandomFromPool(defaultLootPool);
+        if (fallback != null)
+        {
+            return fallback;
+        }
+
+        fallback = GetRandomFromPool(chemicalLootPool);
+        if (fallback != null)
+        {
+            return fallback;
+        }
+
+        return GetRandomFromPool(weaponLootPool);
     }
 }
