@@ -9,6 +9,9 @@ public class LootCrateUI : MonoBehaviour
     [SerializeField] private Vector2 panelSize = new Vector2(500f, 360f);
     [SerializeField] private Vector2 itemSize = new Vector2(120f, 120f);
     [SerializeField] private Vector2 itemSpacing = new Vector2(12f, 12f);
+    [SerializeField] private int slotCount = 15;
+    [SerializeField] private int columns = 5;
+    [SerializeField] private Vector2 panelOffset = new Vector2(40f, 0f);
     [SerializeField] private bool startHidden = true;
 
     [Header("Appearance")]
@@ -106,10 +109,11 @@ public class LootCrateUI : MonoBehaviour
         createdObjects.Add(panelObject);
 
         var rectTransform = panelObject.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMin = new Vector2(0f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0f, 0.5f);
+        rectTransform.pivot = new Vector2(0f, 0.5f);
         rectTransform.sizeDelta = panelSize;
+        rectTransform.anchoredPosition = panelOffset;
 
         var image = panelObject.GetComponent<Image>();
         image.color = panelColor;
@@ -133,7 +137,7 @@ public class LootCrateUI : MonoBehaviour
         grid.cellSize = itemSize;
         grid.spacing = itemSpacing;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 3;
+        grid.constraintCount = Mathf.Max(1, columns);
         grid.childAlignment = TextAnchor.UpperCenter;
 
         return rectTransform;
@@ -151,15 +155,22 @@ public class LootCrateUI : MonoBehaviour
             Destroy(itemsRoot.GetChild(i).gameObject);
         }
 
-        if (lootItems == null || lootItems.Count == 0)
+        if (slotCount <= 0)
         {
-            CreateEmptySlot();
             return;
         }
 
-        foreach (var item in lootItems)
+        int itemCount = lootItems != null ? lootItems.Count : 0;
+        for (int i = 0; i < slotCount; i++)
         {
-            CreateItemSlot(item);
+            if (i < itemCount)
+            {
+                CreateItemSlot(lootItems[i]);
+            }
+            else
+            {
+                CreateEmptySlot();
+            }
         }
     }
 

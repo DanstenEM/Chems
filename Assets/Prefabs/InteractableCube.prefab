@@ -168,6 +168,9 @@ MonoBehaviour:
   panelSize: {x: 500, y: 360}
   itemSize: {x: 120, y: 120}
   itemSpacing: {x: 12, y: 12}
+  slotCount: 15
+  columns: 5
+  panelOffset: {x: 40, y: 0}
   startHidden: 1
   panelColor: {r: 0, g: 0, b: 0, a: 0.6}
   itemBackgroundColor: {r: 1, g: 1, b: 1, a: 0.1}
