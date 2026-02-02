@@ -19,16 +19,13 @@ public class WeaponQuickbar : MonoBehaviour
 
     [Header("Layout")]
     [SerializeField] private int weaponSlotCount = 2;
-    [SerializeField] private Vector2 slotSize = new Vector2(150f, 75f);
-    [SerializeField] private Vector2 slotSpacing = new Vector2(0f, 8f);
+    [SerializeField] private Vector2 slotSize = new Vector2(300f, 150f);
+    [SerializeField] private Vector2 slotSpacing = new Vector2(0f, 16f);
     [SerializeField] private Vector2 anchoredPosition = new Vector2(-32f, 32f);
-    [SerializeField] private Vector2 backgroundPadding = new Vector2(12f, 12f);
 
     [Header("Appearance")]
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
     [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
-    [SerializeField] private Color backgroundColor = new Color(1f, 1f, 1f, 0.08f);
-
     [Header("Scene References (Optional)")]
     [SerializeField] private Canvas quickbarCanvas;
     [SerializeField] private RectTransform slotsRoot;
@@ -142,8 +139,7 @@ public class WeaponQuickbar : MonoBehaviour
     private void BuildDefaultLayout()
     {
         quickbarCanvas = CreateCanvas("WeaponQuickbarCanvas");
-        var panelRoot = CreatePanel(quickbarCanvas.transform as RectTransform, "WeaponQuickbarPanel");
-        slotsRoot = CreateSlotGroup("WeaponSlots", panelRoot, weaponSlotCount);
+        slotsRoot = CreateSlotGroup("WeaponSlots", quickbarCanvas.transform as RectTransform, weaponSlotCount);
     }
 
     private Canvas CreateCanvas(string name)
@@ -168,25 +164,6 @@ public class WeaponQuickbar : MonoBehaviour
         return canvas;
     }
 
-    private RectTransform CreatePanel(RectTransform parent, string name)
-    {
-        var panelObject = new GameObject(name, typeof(RectTransform), typeof(Image));
-        panelObject.layer = LayerMask.NameToLayer("UI");
-        panelObject.transform.SetParent(parent, false);
-
-        var panelRect = panelObject.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(1f, 0f);
-        panelRect.anchorMax = new Vector2(1f, 0f);
-        panelRect.pivot = new Vector2(1f, 0f);
-        panelRect.anchoredPosition = anchoredPosition;
-        panelRect.sizeDelta = GetBackgroundSize();
-
-        var image = panelObject.GetComponent<Image>();
-        image.color = backgroundColor;
-
-        return panelRect;
-    }
-
     private RectTransform CreateSlotGroup(string name, RectTransform parent, int slotCount)
     {
         var groupObject = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup));
@@ -194,10 +171,10 @@ public class WeaponQuickbar : MonoBehaviour
         groupObject.transform.SetParent(parent, false);
 
         var groupRect = groupObject.GetComponent<RectTransform>();
-        groupRect.anchorMin = new Vector2(0f, 0.5f);
-        groupRect.anchorMax = new Vector2(0f, 0.5f);
-        groupRect.pivot = new Vector2(0f, 0.5f);
-        groupRect.anchoredPosition = new Vector2(backgroundPadding.x, 0f);
+        groupRect.anchorMin = new Vector2(1f, 0f);
+        groupRect.anchorMax = new Vector2(1f, 0f);
+        groupRect.pivot = new Vector2(1f, 0f);
+        groupRect.anchoredPosition = anchoredPosition;
 
         var grid = groupObject.GetComponent<GridLayoutGroup>();
         grid.cellSize = slotSize;
@@ -212,13 +189,6 @@ public class WeaponQuickbar : MonoBehaviour
         }
 
         return groupRect;
-    }
-
-    private Vector2 GetBackgroundSize()
-    {
-        float width = slotSize.x + (backgroundPadding.x * 2f);
-        float height = (slotSize.y * weaponSlotCount) + (slotSpacing.y * (weaponSlotCount - 1)) + (backgroundPadding.y * 2f);
-        return new Vector2(width, height);
     }
 
     private void CreateSlot(Transform parent, string groupName, int index)
