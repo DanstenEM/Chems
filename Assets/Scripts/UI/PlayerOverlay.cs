@@ -4,9 +4,12 @@ using UnityEngine.UI;
 
 public class PlayerOverlay : MonoBehaviour
 {
+    private static bool hasAutoSpawned;
+
     [Header("Health")]
     [SerializeField] private Health health;
     [SerializeField] private string healthLabel = "Health";
+    [SerializeField] private TMP_FontAsset fallbackFont;
 
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
@@ -20,6 +23,20 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private Canvas overlayCanvas;
     [SerializeField] private RectTransform overlayRoot;
     [SerializeField] private TextMeshProUGUI healthText;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureOverlayExists()
+    {
+        if (hasAutoSpawned || FindObjectOfType<PlayerOverlay>() != null)
+        {
+            return;
+        }
+
+        var overlayObject = new GameObject("PlayerOverlay");
+        DontDestroyOnLoad(overlayObject);
+        overlayObject.AddComponent<PlayerOverlay>();
+        hasAutoSpawned = true;
+    }
 
     private void Awake()
     {
@@ -71,6 +88,7 @@ public class PlayerOverlay : MonoBehaviour
 
         var canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100;
 
         var scaler = canvasObject.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -101,6 +119,7 @@ public class PlayerOverlay : MonoBehaviour
 
         var image = panelObject.GetComponent<Image>();
         image.color = panelColor;
+        image.raycastTarget = false;
 
         return rectTransform;
     }
@@ -122,6 +141,12 @@ public class PlayerOverlay : MonoBehaviour
         label.fontSize = fontSize;
         label.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
         label.text = $"{healthLabel}: --";
+        label.raycastTarget = false;
+
+        if (label.font == null)
+        {
+            label.font = fallbackFont != null ? fallbackFont : TMP_Settings.defaultFontAsset;
+        }
 
         return label;
     }
