@@ -30,6 +30,7 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private Vector2 weaponSlotOffset = new Vector2(-24f, 24f);
     [SerializeField] private float weaponSlotSpacing = 8f;
     [SerializeField] private Color weaponSlotBackground = new Color(1f, 1f, 1f, 0.15f);
+    [SerializeField] private Color weaponSlotOccupiedBackground = new Color(0.95f, 0.2f, 0.2f, 0.35f);
     [SerializeField] private InventorySystem inventorySystem;
 
     private Image[] weaponSlotImages;
@@ -104,7 +105,7 @@ public class PlayerOverlay : MonoBehaviour
             inventorySystem = FindObjectOfType<InventorySystem>();
         }
 
-        var slots = inventorySystem != null ? inventorySystem.GetSlots() : null;
+        var slots = GetInventorySlots();
         var weaponSlots = GetWeaponSlots(slots);
 
         for (int i = 0; i < weaponIconImages.Length; i++)
@@ -115,16 +116,65 @@ public class PlayerOverlay : MonoBehaviour
 
             if (item != null && item.itemObj != null && item.itemObj.icon != null)
             {
+                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                {
+                    weaponSlotImages[i].color = weaponSlotOccupiedBackground;
+                }
+
                 iconImage.enabled = true;
                 iconImage.sprite = item.itemObj.icon;
                 iconImage.color = Color.white;
             }
+            else if (item != null)
+            {
+                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                {
+                    weaponSlotImages[i].color = weaponSlotOccupiedBackground;
+                }
+
+                iconImage.enabled = false;
+                iconImage.sprite = null;
+            }
             else
             {
+                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                {
+                    weaponSlotImages[i].color = weaponSlotBackground;
+                }
+
                 iconImage.enabled = false;
                 iconImage.sprite = null;
             }
         }
+    }
+
+    private InventorySlot[] GetInventorySlots()
+    {
+        if (inventorySystem != null)
+        {
+            var slots = inventorySystem.GetSlots();
+            if (slots != null && slots.Length > 0)
+            {
+                return slots;
+            }
+        }
+
+        var allSlots = Resources.FindObjectsOfTypeAll<InventorySlot>();
+        if (allSlots == null || allSlots.Length == 0)
+        {
+            return new InventorySlot[0];
+        }
+
+        var sceneSlots = new System.Collections.Generic.List<InventorySlot>();
+        foreach (var slot in allSlots)
+        {
+            if (slot != null && slot.gameObject.scene.IsValid())
+            {
+                sceneSlots.Add(slot);
+            }
+        }
+
+        return sceneSlots.ToArray();
     }
 
     private InventorySlot[] GetWeaponSlots(InventorySlot[] slots)
