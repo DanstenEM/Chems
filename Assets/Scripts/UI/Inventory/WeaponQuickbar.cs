@@ -5,6 +5,18 @@ using UnityEngine.UI;
 
 public class WeaponQuickbar : MonoBehaviour
 {
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureQuickbarExists()
+    {
+        if (FindObjectOfType<WeaponQuickbar>() != null)
+        {
+            return;
+        }
+
+        var quickbarObject = new GameObject("WeaponQuickbar");
+        quickbarObject.AddComponent<WeaponQuickbar>();
+    }
+
     [Header("Layout")]
     [SerializeField] private int weaponSlotCount = 2;
     [SerializeField] private Vector2 slotSize = new Vector2(64f, 64f);

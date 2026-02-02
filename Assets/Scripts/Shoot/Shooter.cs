@@ -47,7 +47,12 @@ public class Shooter : MonoBehaviour
 
     void HandleFire()
     {
-        if (weaponQuickbar != null && !weaponQuickbar.HasSelectedWeapon)
+        if (weaponQuickbar == null)
+        {
+            weaponQuickbar = FindObjectOfType<WeaponQuickbar>();
+        }
+
+        if (weaponQuickbar == null || !weaponQuickbar.HasSelectedWeapon)
         {
             IsFiring = false;
             return;
