@@ -144,7 +144,7 @@ public class WeaponQuickbar : MonoBehaviour
 
     private Canvas CreateCanvas(string name)
     {
-        var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        var canvasObject = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup));
         canvasObject.layer = LayerMask.NameToLayer("UI");
 
         var canvas = canvasObject.GetComponent<Canvas>();
@@ -160,6 +160,10 @@ public class WeaponQuickbar : MonoBehaviour
         rectTransform.anchorMax = Vector2.one;
         rectTransform.offsetMin = Vector2.zero;
         rectTransform.offsetMax = Vector2.zero;
+
+        var canvasGroup = canvasObject.GetComponent<CanvasGroup>();
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.interactable = false;
 
         return canvas;
     }
