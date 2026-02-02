@@ -76,6 +76,7 @@ public class LootCrateUI : MonoBehaviour
         titleText.color = Color.white;
 
         itemsRoot = CreateItemsRoot(panelRoot, "LootItemsRoot");
+        UpdateItemsRootSize();
     }
 
     private Canvas CreateCanvas(string name)
@@ -123,7 +124,7 @@ public class LootCrateUI : MonoBehaviour
 
     private RectTransform CreateItemsRoot(Transform parent, string name)
     {
-        var rootObject = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup));
+        var rootObject = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup), typeof(LayoutElement));
         rootObject.layer = LayerMask.NameToLayer("UI");
         rootObject.transform.SetParent(parent, false);
         createdObjects.Add(rootObject);
@@ -159,6 +160,8 @@ public class LootCrateUI : MonoBehaviour
         {
             return;
         }
+
+        UpdateItemsRootSize();
 
         int itemCount = lootItems != null ? lootItems.Count : 0;
         for (int i = 0; i < slotCount; i++)
@@ -233,5 +236,29 @@ public class LootCrateUI : MonoBehaviour
         image.color = itemBackgroundColor;
 
         return slotObject;
+    }
+
+    private void UpdateItemsRootSize()
+    {
+        if (itemsRoot == null)
+        {
+            return;
+        }
+
+        int safeColumns = Mathf.Max(1, columns);
+        int safeSlots = Mathf.Max(0, slotCount);
+        int rows = safeSlots == 0 ? 0 : Mathf.CeilToInt(safeSlots / (float)safeColumns);
+
+        float width = safeColumns * itemSize.x + Mathf.Max(0, safeColumns - 1) * itemSpacing.x;
+        float height = rows * itemSize.y + Mathf.Max(0, rows - 1) * itemSpacing.y;
+
+        itemsRoot.sizeDelta = new Vector2(width, height);
+
+        var layoutElement = itemsRoot.GetComponent<LayoutElement>();
+        if (layoutElement != null)
+        {
+            layoutElement.preferredWidth = width;
+            layoutElement.preferredHeight = height;
+        }
     }
 }
