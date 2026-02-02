@@ -19,8 +19,8 @@ public class WeaponQuickbar : MonoBehaviour
 
     [Header("Layout")]
     [SerializeField] private int weaponSlotCount = 2;
-    [SerializeField] private Vector2 slotSize = new Vector2(64f, 64f);
-    [SerializeField] private Vector2 slotSpacing = new Vector2(8f, 0f);
+    [SerializeField] private Vector2 slotSize = new Vector2(150f, 75f);
+    [SerializeField] private Vector2 slotSpacing = new Vector2(0f, 8f);
     [SerializeField] private Vector2 anchoredPosition = new Vector2(-32f, 32f);
     [SerializeField] private Vector2 backgroundPadding = new Vector2(12f, 12f);
 
@@ -203,8 +203,8 @@ public class WeaponQuickbar : MonoBehaviour
         grid.cellSize = slotSize;
         grid.spacing = slotSpacing;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = Mathf.Max(1, slotCount);
-        grid.childAlignment = TextAnchor.LowerCenter;
+        grid.constraintCount = 1;
+        grid.childAlignment = TextAnchor.LowerRight;
 
         for (int i = 0; i < slotCount; i++)
         {
@@ -216,8 +216,8 @@ public class WeaponQuickbar : MonoBehaviour
 
     private Vector2 GetBackgroundSize()
     {
-        float width = (slotSize.x * weaponSlotCount) + (slotSpacing.x * (weaponSlotCount - 1)) + (backgroundPadding.x * 2f);
-        float height = slotSize.y + (backgroundPadding.y * 2f);
+        float width = slotSize.x + (backgroundPadding.x * 2f);
+        float height = (slotSize.y * weaponSlotCount) + (slotSpacing.y * (weaponSlotCount - 1)) + (backgroundPadding.y * 2f);
         return new Vector2(width, height);
     }
 
