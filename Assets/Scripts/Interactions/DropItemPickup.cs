@@ -37,6 +37,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         inventorySystem = FindObjectOfType<InventorySystem>();
         EnsureHint();
         AlignToGround();
+        EnsureSolidCollider();
         ExpandPickupArea();
     }
 
@@ -171,6 +172,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
             return;
         }
 
+        if (!targetCollider.isTrigger)
+        {
+            return;
+        }
+
         float multiplier = Mathf.Max(1f, pickupAreaMultiplier);
 
         if (targetCollider is SphereCollider sphere)
@@ -189,6 +195,14 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         if (targetCollider is BoxCollider box)
         {
             box.size = box.size * multiplier;
+        }
+    }
+
+    private void EnsureSolidCollider()
+    {
+        if (TryGetComponent<Collider>(out var targetCollider))
+        {
+            targetCollider.isTrigger = false;
         }
     }
 }

@@ -32,6 +32,7 @@ public class InteractableCube : MonoBehaviour, IInteractable
     private void Awake()
     {
         EnsureHint();
+        EnsureSolidCollider();
 
         if (lootCrateUI == null)
         {
@@ -198,5 +199,13 @@ public class InteractableCube : MonoBehaviour, IInteractable
         }
 
         return GetRandomFromPool(weaponLootPool);
+    }
+
+    private void EnsureSolidCollider()
+    {
+        if (TryGetComponent<Collider>(out var targetCollider))
+        {
+            targetCollider.isTrigger = false;
+        }
     }
 }

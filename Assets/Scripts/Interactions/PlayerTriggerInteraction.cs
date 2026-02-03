@@ -9,8 +9,8 @@ public class PlayerTriggerInteraction : MonoBehaviour
     [Header("Inputs")]
     [SerializeField] private ActionToType[] interactActions;
     [SerializeField] private float lookRayDistance = 4f;
+    [SerializeField] private LayerMask interactableLayers = ~0;
 
-    private readonly System.Collections.Generic.HashSet<IInteractable> nearbyInteractables = new();
     private IInteractable currentInteractable;
 
     void OnDestroy()
@@ -35,36 +35,8 @@ public class PlayerTriggerInteraction : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        var trigger = other.GetComponent<IInteractable>();
-        if (trigger != null)
-        {
-            nearbyInteractables.Add(trigger);
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        var trigger = other.GetComponent<IInteractable>();
-        if (trigger != null)
-        {
-            nearbyInteractables.Remove(trigger);
-            if (trigger.Equals(currentInteractable))
-            {
-                ClearCurrentInteractable();
-            }
-        }
-    }
-
     private void UpdateLookedInteractable()
     {
-        if (nearbyInteractables.Count == 0)
-        {
-            ClearCurrentInteractable();
-            return;
-        }
-
         var cameraTarget = Camera.main;
         if (cameraTarget == null)
         {
@@ -72,10 +44,10 @@ public class PlayerTriggerInteraction : MonoBehaviour
             return;
         }
 
-        if (Physics.Raycast(cameraTarget.transform.position, cameraTarget.transform.forward, out var hit, lookRayDistance))
+        if (Physics.Raycast(cameraTarget.transform.position, cameraTarget.transform.forward, out var hit, lookRayDistance, interactableLayers))
         {
             var lookedInteractable = hit.collider.GetComponentInParent<IInteractable>();
-            if (lookedInteractable != null && nearbyInteractables.Contains(lookedInteractable))
+            if (lookedInteractable != null)
             {
                 if (!ReferenceEquals(currentInteractable, lookedInteractable))
                 {
