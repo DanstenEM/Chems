@@ -155,6 +155,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         return slots;
     }
 
+    public int GetSelectedSlotIndex()
+    {
+        return selectSlot;
+    }
+
     public bool SelectWeaponSlot(int weaponIndex)
     {
         if (weaponIndex < 0 || slots == null || slots.Length == 0)

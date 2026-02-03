@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -32,6 +33,7 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private float weaponSlotSpacing = 8f;
     [SerializeField] private Color weaponSlotBackground = new Color(1f, 1f, 1f, 0.15f);
     [SerializeField] private Color weaponSlotOccupiedBackground = new Color(0.95f, 0.2f, 0.2f, 0.35f);
+    [SerializeField] private Color weaponSlotSelectedBackground = new Color(1f, 0.7f, 0.2f, 0.85f);
     [SerializeField] private Color weaponSlotCountColor = Color.white;
     [SerializeField] private InventorySystem inventorySystem;
 
@@ -111,6 +113,7 @@ public class PlayerOverlay : MonoBehaviour
 
         var slots = GetInventorySlots();
         var weaponSlots = GetWeaponSlots(slots);
+        var selectedIndex = inventorySystem != null ? inventorySystem.GetSelectedSlotIndex() : -1;
 
         for (int i = 0; i < weaponIconImages.Length; i++)
         {
@@ -118,12 +121,16 @@ public class PlayerOverlay : MonoBehaviour
             var slot = i < weaponSlots.Length ? weaponSlots[i] : null;
             var item = slot != null ? slot.GetComponentInChildren<InventoryItem>() : null;
             var countText = weaponCountTexts != null && i < weaponCountTexts.Length ? weaponCountTexts[i] : null;
+            var slotIndex = GetInventorySlotIndex(slot);
+            var isSelected = slotIndex >= 0 && slotIndex == selectedIndex;
 
             if (item != null && item.itemObj != null && item.itemObj.icon != null)
             {
                 if (weaponSlotImages != null && i < weaponSlotImages.Length)
                 {
-                    weaponSlotImages[i].color = GetWeaponSlotColor(item.itemObj.category);
+                    weaponSlotImages[i].color = isSelected
+                        ? weaponSlotSelectedBackground
+                        : GetWeaponSlotColor(item.itemObj.category);
                 }
 
                 iconImage.enabled = true;
@@ -140,7 +147,9 @@ public class PlayerOverlay : MonoBehaviour
             {
                 if (weaponSlotImages != null && i < weaponSlotImages.Length)
                 {
-                    weaponSlotImages[i].color = GetWeaponSlotColor(item.itemObj != null ? item.itemObj.category : InventoryItemObj.ItemCategory.Weapon);
+                    weaponSlotImages[i].color = isSelected
+                        ? weaponSlotSelectedBackground
+                        : GetWeaponSlotColor(item.itemObj != null ? item.itemObj.category : InventoryItemObj.ItemCategory.Weapon);
                 }
 
                 iconImage.enabled = false;
@@ -156,7 +165,7 @@ public class PlayerOverlay : MonoBehaviour
             {
                 if (weaponSlotImages != null && i < weaponSlotImages.Length)
                 {
-                    weaponSlotImages[i].color = weaponSlotBackground;
+                    weaponSlotImages[i].color = isSelected ? weaponSlotSelectedBackground : weaponSlotBackground;
                 }
 
                 iconImage.enabled = false;
@@ -232,6 +241,22 @@ public class PlayerOverlay : MonoBehaviour
         });
 
         return weaponSlots.ToArray();
+    }
+
+    private int GetInventorySlotIndex(InventorySlot slot)
+    {
+        if (slot == null || inventorySystem == null)
+        {
+            return -1;
+        }
+
+        var allSlots = inventorySystem.GetSlots();
+        if (allSlots == null || allSlots.Length == 0)
+        {
+            return -1;
+        }
+
+        return Array.IndexOf(allSlots, slot);
     }
 
     private void HandleWeaponSlotInput()
