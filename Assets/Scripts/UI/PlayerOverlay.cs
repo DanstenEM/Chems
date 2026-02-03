@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class PlayerOverlay : MonoBehaviour
@@ -77,6 +78,7 @@ public class PlayerOverlay : MonoBehaviour
     {
         UpdateHealthText();
         UpdateWeaponSlots();
+        HandleWeaponSlotInput();
     }
 
     private void UpdateHealthText()
@@ -230,6 +232,34 @@ public class PlayerOverlay : MonoBehaviour
         });
 
         return weaponSlots.ToArray();
+    }
+
+    private void HandleWeaponSlotInput()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
+        if (inventorySystem == null)
+        {
+            return;
+        }
+
+        if (keyboard.digit1Key.wasPressedThisFrame)
+        {
+            inventorySystem.SelectWeaponSlot(0);
+        }
+        else if (keyboard.digit2Key.wasPressedThisFrame)
+        {
+            inventorySystem.SelectWeaponSlot(1);
+        }
     }
 
     private Color GetWeaponSlotColor(InventoryItemObj.ItemCategory category)
