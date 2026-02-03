@@ -37,7 +37,6 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         inventorySystem = FindObjectOfType<InventorySystem>();
         EnsureHint();
         AlignToGround();
-        EnsureSolidCollider();
         ExpandPickupArea();
     }
 
@@ -198,11 +197,4 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         }
     }
 
-    private void EnsureSolidCollider()
-    {
-        if (TryGetComponent<Collider>(out var targetCollider))
-        {
-            targetCollider.isTrigger = false;
-        }
-    }
 }

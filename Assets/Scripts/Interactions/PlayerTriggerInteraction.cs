@@ -44,17 +44,58 @@ public class PlayerTriggerInteraction : MonoBehaviour
             return;
         }
 
-        if (Physics.Raycast(cameraTarget.transform.position, cameraTarget.transform.forward, out var hit, lookRayDistance, interactableLayers))
+        var hits = Physics.RaycastAll(
+            cameraTarget.transform.position,
+            cameraTarget.transform.forward,
+            lookRayDistance,
+            interactableLayers,
+            QueryTriggerInteraction.Collide);
+        IInteractable lookedInteractable = null;
+        float closestDistance = float.PositiveInfinity;
+
+        foreach (var hit in hits)
         {
-            var lookedInteractable = hit.collider.GetComponentInParent<IInteractable>();
-            if (lookedInteractable != null)
+            if (hit.collider == null)
             {
-                if (!ReferenceEquals(currentInteractable, lookedInteractable))
-                {
-                    SetCurrentInteractable(lookedInteractable);
-                }
-                return;
+                continue;
             }
+
+            if (hit.collider.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            var directInteractable = hit.collider.GetComponent<IInteractable>();
+            if (directInteractable != null)
+            {
+                if (hit.distance < closestDistance)
+                {
+                    closestDistance = hit.distance;
+                    lookedInteractable = directInteractable;
+                }
+                continue;
+            }
+
+            if (hit.collider.isTrigger)
+            {
+                continue;
+            }
+
+            var parentInteractable = hit.collider.GetComponentInParent<IInteractable>();
+            if (parentInteractable != null && hit.distance < closestDistance)
+            {
+                closestDistance = hit.distance;
+                lookedInteractable = parentInteractable;
+            }
+        }
+
+        if (lookedInteractable != null)
+        {
+            if (!ReferenceEquals(currentInteractable, lookedInteractable))
+            {
+                SetCurrentInteractable(lookedInteractable);
+            }
+            return;
         }
 
         ClearCurrentInteractable();
