@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
@@ -50,7 +51,10 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         if (slots != null && slots.Length > 0)
         {
-            ChangeSelectSlot(0);
+            if (!SelectWeaponSlot(0))
+            {
+                ChangeSelectSlot(0);
+            }
         }
     }
 
@@ -129,6 +133,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public InventoryItemObj GetSelectedItem(bool use)
     {
+        if (slots == null || slots.Length == 0 || selectSlot < 0 || selectSlot >= slots.Length)
+        {
+            return null;
+        }
+
         var slot = slots[selectSlot];
         var inventoryItem = slot.GetComponentInChildren<InventoryItem>();
         if (inventoryItem != null)
@@ -147,6 +156,69 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         }
 
         return null;
+    }
+
+    public InventorySlot[] GetSlots()
+    {
+        return slots;
+    }
+
+    public int GetSelectedSlotIndex()
+    {
+        return selectSlot;
+    }
+
+    public bool HasSelectedWeapon()
+    {
+        var item = GetSelectedItem(false);
+        return item != null && item.category == InventoryItemObj.ItemCategory.Weapon;
+    }
+
+    public bool SelectWeaponSlot(int weaponIndex)
+    {
+        if (weaponIndex < 0 || slots == null || slots.Length == 0)
+        {
+            return false;
+        }
+
+        var weaponSlots = new List<InventorySlot>();
+        foreach (var slot in slots)
+        {
+            if (slot == null)
+            {
+                continue;
+            }
+
+            var marker = slot.GetComponent<InventorySlotMarker>();
+            if (marker != null && marker.Category == InventorySlotMarker.SlotCategory.Weapon)
+            {
+                weaponSlots.Add(slot);
+            }
+        }
+
+        weaponSlots.Sort((left, right) =>
+        {
+            var leftMarker = left.GetComponent<InventorySlotMarker>();
+            var rightMarker = right.GetComponent<InventorySlotMarker>();
+            var leftIndex = leftMarker != null ? leftMarker.Index : int.MaxValue;
+            var rightIndex = rightMarker != null ? rightMarker.Index : int.MaxValue;
+            return leftIndex.CompareTo(rightIndex);
+        });
+
+        if (weaponIndex >= weaponSlots.Count)
+        {
+            return false;
+        }
+
+        var weaponSlot = weaponSlots[weaponIndex];
+        var slotIndex = Array.IndexOf(slots, weaponSlot);
+        if (slotIndex < 0)
+        {
+            return false;
+        }
+
+        ChangeSelectSlot(slotIndex);
+        return true;
     }
 
     private static bool IsRegularSlot(InventorySlot slot)
