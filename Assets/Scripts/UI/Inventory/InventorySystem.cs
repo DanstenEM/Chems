@@ -51,7 +51,10 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         if (slots != null && slots.Length > 0)
         {
-            ChangeSelectSlot(0);
+            if (!SelectWeaponSlot(0))
+            {
+                ChangeSelectSlot(0);
+            }
         }
     }
 
@@ -130,6 +133,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public InventoryItemObj GetSelectedItem(bool use)
     {
+        if (slots == null || slots.Length == 0 || selectSlot < 0 || selectSlot >= slots.Length)
+        {
+            return null;
+        }
+
         var slot = slots[selectSlot];
         var inventoryItem = slot.GetComponentInChildren<InventoryItem>();
         if (inventoryItem != null)
@@ -158,6 +166,12 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     public int GetSelectedSlotIndex()
     {
         return selectSlot;
+    }
+
+    public bool HasSelectedWeapon()
+    {
+        var item = GetSelectedItem(false);
+        return item != null && item.category == InventoryItemObj.ItemCategory.Weapon;
     }
 
     public bool SelectWeaponSlot(int weaponIndex)

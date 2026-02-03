@@ -19,6 +19,7 @@ public class Shooter : MonoBehaviour
 
     [Header("Input")]
     [SerializeField] private InputActionProperty fireAction;
+    [SerializeField] private InventorySystem inventorySystem;
 
     public bool IsFiring { get; private set; }
 
@@ -28,6 +29,11 @@ public class Shooter : MonoBehaviour
     {
         if (!playerCamera)
             playerCamera = Camera.main;
+
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
 
         fireAction.action.Enable();
     }
@@ -40,6 +46,17 @@ public class Shooter : MonoBehaviour
     void HandleFire()
     {
         if (!fireAction.action.IsPressed())
+        {
+            IsFiring = false;
+            return;
+        }
+
+        if (inventorySystem == null)
+        {
+            inventorySystem = FindObjectOfType<InventorySystem>();
+        }
+
+        if (inventorySystem != null && !inventorySystem.HasSelectedWeapon())
         {
             IsFiring = false;
             return;
