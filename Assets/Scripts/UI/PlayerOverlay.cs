@@ -31,10 +31,12 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private float weaponSlotSpacing = 8f;
     [SerializeField] private Color weaponSlotBackground = new Color(1f, 1f, 1f, 0.15f);
     [SerializeField] private Color weaponSlotOccupiedBackground = new Color(0.95f, 0.2f, 0.2f, 0.35f);
+    [SerializeField] private Color weaponSlotCountColor = Color.white;
     [SerializeField] private InventorySystem inventorySystem;
 
     private Image[] weaponSlotImages;
     private Image[] weaponIconImages;
+    private TextMeshProUGUI[] weaponCountTexts;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureOverlayExists()
@@ -113,27 +115,40 @@ public class PlayerOverlay : MonoBehaviour
             var iconImage = weaponIconImages[i];
             var slot = i < weaponSlots.Length ? weaponSlots[i] : null;
             var item = slot != null ? slot.GetComponentInChildren<InventoryItem>() : null;
+            var countText = weaponCountTexts != null && i < weaponCountTexts.Length ? weaponCountTexts[i] : null;
 
             if (item != null && item.itemObj != null && item.itemObj.icon != null)
             {
                 if (weaponSlotImages != null && i < weaponSlotImages.Length)
                 {
-                    weaponSlotImages[i].color = weaponSlotOccupiedBackground;
+                    weaponSlotImages[i].color = GetWeaponSlotColor(item.itemObj.category);
                 }
 
                 iconImage.enabled = true;
                 iconImage.sprite = item.itemObj.icon;
                 iconImage.color = Color.white;
+
+                if (countText != null)
+                {
+                    countText.enabled = true;
+                    countText.text = item.count.ToString();
+                }
             }
             else if (item != null)
             {
                 if (weaponSlotImages != null && i < weaponSlotImages.Length)
                 {
-                    weaponSlotImages[i].color = weaponSlotOccupiedBackground;
+                    weaponSlotImages[i].color = GetWeaponSlotColor(item.itemObj != null ? item.itemObj.category : InventoryItemObj.ItemCategory.Weapon);
                 }
 
                 iconImage.enabled = false;
                 iconImage.sprite = null;
+
+                if (countText != null)
+                {
+                    countText.enabled = true;
+                    countText.text = item.count.ToString();
+                }
             }
             else
             {
@@ -144,6 +159,12 @@ public class PlayerOverlay : MonoBehaviour
 
                 iconImage.enabled = false;
                 iconImage.sprite = null;
+
+                if (countText != null)
+                {
+                    countText.enabled = false;
+                    countText.text = string.Empty;
+                }
             }
         }
     }
@@ -209,6 +230,16 @@ public class PlayerOverlay : MonoBehaviour
         });
 
         return weaponSlots.ToArray();
+    }
+
+    private Color GetWeaponSlotColor(InventoryItemObj.ItemCategory category)
+    {
+        return category switch
+        {
+            InventoryItemObj.ItemCategory.Chemical => new Color(0.2f, 0.9f, 0.2f, 1f),
+            InventoryItemObj.ItemCategory.Weapon => new Color(0.95f, 0.2f, 0.2f, 1f),
+            _ => new Color(1f, 0.85f, 0.2f, 1f)
+        };
     }
 
     private Health FindPlayerHealth()
@@ -316,18 +347,20 @@ public class PlayerOverlay : MonoBehaviour
 
         weaponSlotImages = new Image[weaponSlotCount];
         weaponIconImages = new Image[weaponSlotCount];
+        weaponCountTexts = new TextMeshProUGUI[weaponSlotCount];
 
         for (int i = 0; i < weaponSlotCount; i++)
         {
             var slot = CreateWeaponSlot(rectTransform, $"WeaponSlot_{i + 1}", i);
             weaponSlotImages[i] = slot.background;
             weaponIconImages[i] = slot.icon;
+            weaponCountTexts[i] = slot.count;
         }
 
         return rectTransform;
     }
 
-    private (Image background, Image icon) CreateWeaponSlot(RectTransform parent, string name, int index)
+    private (Image background, Image icon, TextMeshProUGUI count) CreateWeaponSlot(RectTransform parent, string name, int index)
     {
         var slotObject = new GameObject(name, typeof(RectTransform), typeof(Image));
         slotObject.layer = LayerMask.NameToLayer("UI");
@@ -339,7 +372,7 @@ public class PlayerOverlay : MonoBehaviour
         rectTransform.pivot = new Vector2(1f, 0f);
         rectTransform.sizeDelta = weaponSlotSize;
         rectTransform.anchoredPosition = new Vector2(
-            -(weaponSlotSize.x + weaponSlotSpacing) * index,
+            -(weaponSlotSize.x + weaponSlotSpacing) * (weaponSlotCount - 1 - index),
             0f);
 
         var background = slotObject.GetComponent<Image>();
@@ -361,6 +394,29 @@ public class PlayerOverlay : MonoBehaviour
         iconImage.enabled = false;
         iconImage.raycastTarget = false;
 
-        return (background, iconImage);
+        var countObject = new GameObject($"{name}_Count", typeof(RectTransform), typeof(TextMeshProUGUI));
+        countObject.layer = LayerMask.NameToLayer("UI");
+        countObject.transform.SetParent(slotObject.transform, false);
+
+        var countRect = countObject.GetComponent<RectTransform>();
+        countRect.anchorMin = Vector2.zero;
+        countRect.anchorMax = Vector2.one;
+        countRect.offsetMin = new Vector2(4f, 2f);
+        countRect.offsetMax = new Vector2(-4f, -2f);
+
+        var countText = countObject.GetComponent<TextMeshProUGUI>();
+        countText.color = weaponSlotCountColor;
+        countText.fontSize = 22;
+        countText.alignment = TextAlignmentOptions.BottomRight;
+        countText.text = string.Empty;
+        countText.enabled = false;
+        countText.raycastTarget = false;
+
+        if (countText.font == null)
+        {
+            countText.font = fallbackFont != null ? fallbackFont : TMP_Settings.defaultFontAsset;
+        }
+
+        return (background, iconImage, countText);
     }
 }
