@@ -214,7 +214,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         }
 
         var ray = new Ray(cameraTarget.transform.position, cameraTarget.transform.forward);
-        if (Physics.Raycast(ray, out var hit, lookRayDistance, lookLayers, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(ray, out var hit, lookRayDistance, lookLayers, QueryTriggerInteraction.Collide))
         {
             if (hit.collider == pickupCollider)
             {
