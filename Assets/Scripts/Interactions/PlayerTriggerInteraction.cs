@@ -9,6 +9,10 @@ public class PlayerTriggerInteraction : MonoBehaviour
     [Header("Inputs")]
     [SerializeField] private ActionToType[] interactActions;
 
+    [Header("Targeting")]
+    [SerializeField] private float lookRayDistance = 6f;
+    [SerializeField] private LayerMask lookLayers = ~0;
+
     private readonly System.Collections.Generic.List<IInteractable> activeInteractables = new System.Collections.Generic.List<IInteractable>();
     IInteractable currentInteractable;
 
@@ -35,7 +39,7 @@ public class PlayerTriggerInteraction : MonoBehaviour
             return;
         }
 
-        var nextInteractable = GetClosestInteractable();
+        var nextInteractable = GetLookedAtInteractable() ?? GetClosestInteractable();
         if (nextInteractable != null && !Equals(nextInteractable, currentInteractable))
         {
             SetCurrentInteractable(nextInteractable);
@@ -139,6 +143,27 @@ public class PlayerTriggerInteraction : MonoBehaviour
         }
 
         return closest;
+    }
+
+    private IInteractable GetLookedAtInteractable()
+    {
+        var cameraTarget = Camera.main;
+        if (cameraTarget == null)
+        {
+            return null;
+        }
+
+        var ray = new Ray(cameraTarget.transform.position, cameraTarget.transform.forward);
+        if (Physics.Raycast(ray, out var hit, lookRayDistance, lookLayers, QueryTriggerInteraction.Collide))
+        {
+            var interactable = hit.collider.GetComponent<IInteractable>() ?? hit.collider.GetComponentInParent<IInteractable>();
+            if (interactable != null && activeInteractables.Contains(interactable))
+            {
+                return interactable;
+            }
+        }
+
+        return null;
     }
 }
 
