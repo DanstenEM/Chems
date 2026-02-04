@@ -20,6 +20,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private Vector3 hintOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private string hintFormat = DefaultHintFormat;
 
+    [Header("Look Hint")]
+    [SerializeField] private bool showHintOnLook = true;
+    [SerializeField] private float lookRayDistance = 4f;
+    [SerializeField] private LayerMask lookLayers = ~0;
+
     [Header("Ground Alignment")]
     [SerializeField] private float groundRaycastHeight = 1.5f;
     [SerializeField] private float groundRaycastDistance = 6f;
@@ -30,11 +35,15 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private float pickupAreaMultiplier = 3f;
 
     private InventorySystem inventorySystem;
+    private Collider pickupCollider;
     private bool isPickedUp;
+    private bool isTriggerHintActive;
+    private string currentHintLabel = "E";
 
     private void Awake()
     {
         inventorySystem = FindObjectOfType<InventorySystem>();
+        pickupCollider = GetComponent<Collider>();
         EnsureHint();
         AlignToGround();
         ExpandPickupArea();
@@ -55,6 +64,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
         var direction = hintText.transform.position - cameraTarget.transform.position;
         hintText.transform.rotation = Quaternion.LookRotation(direction);
+    }
+
+    private void Update()
+    {
+        UpdateLookHint();
     }
 
     public void Interact()
@@ -104,17 +118,10 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         }
 
         activeHintOwner = this;
+        isTriggerHintActive = true;
 
-        var keyLabel = InputControlPath.ToHumanReadableString(
-            input.path,
-            InputControlPath.HumanReadableStringOptions.OmitDevice);
-        if (string.IsNullOrWhiteSpace(keyLabel))
-        {
-            keyLabel = input.path;
-        }
-
-        hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, keyLabel.ToUpperInvariant());
-        hintText.gameObject.SetActive(true);
+        UpdateHintLabel(input);
+        ShowHint();
     }
 
     public void Deactive()
@@ -124,7 +131,12 @@ public class DropItemPickup : MonoBehaviour, IInteractable
             return;
         }
 
-        hintText.gameObject.SetActive(false);
+        isTriggerHintActive = false;
+
+        if (!showHintOnLook || !IsLookedAt())
+        {
+            HideHint();
+        }
 
         if (activeHintOwner == this)
         {
@@ -149,6 +161,96 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         hintText.fontSize = 3.5f;
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
+        hintText.gameObject.SetActive(false);
+    }
+
+    private void UpdateHintLabel(InputBinding input)
+    {
+        var keyLabel = InputControlPath.ToHumanReadableString(
+            input.path,
+            InputControlPath.HumanReadableStringOptions.OmitDevice);
+        if (string.IsNullOrWhiteSpace(keyLabel))
+        {
+            keyLabel = input.path;
+        }
+
+        currentHintLabel = keyLabel.ToUpperInvariant();
+        if (hintText != null)
+        {
+            hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, currentHintLabel);
+        }
+    }
+
+    private void UpdateLookHint()
+    {
+        if (!showHintOnLook || hintText == null || isPickedUp)
+        {
+            return;
+        }
+
+        if (IsLookedAt())
+        {
+            ShowHint();
+            return;
+        }
+
+        if (!isTriggerHintActive)
+        {
+            HideHint();
+        }
+    }
+
+    private bool IsLookedAt()
+    {
+        if (pickupCollider == null)
+        {
+            return false;
+        }
+
+        var cameraTarget = Camera.main;
+        if (cameraTarget == null)
+        {
+            return false;
+        }
+
+        var ray = new Ray(cameraTarget.transform.position, cameraTarget.transform.forward);
+        if (Physics.Raycast(ray, out var hit, lookRayDistance, lookLayers, QueryTriggerInteraction.Collide))
+        {
+            if (hit.collider == pickupCollider)
+            {
+                return true;
+            }
+
+            return hit.collider.transform.IsChildOf(transform);
+        }
+
+        return false;
+    }
+
+    private void ShowHint()
+    {
+        if (hintText == null)
+        {
+            return;
+        }
+
+        if (activeHintOwner != null && activeHintOwner != this)
+        {
+            activeHintOwner.Deactive();
+        }
+
+        activeHintOwner = this;
+        hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, currentHintLabel);
+        hintText.gameObject.SetActive(true);
+    }
+
+    private void HideHint()
+    {
+        if (hintText == null)
+        {
+            return;
+        }
+
         hintText.gameObject.SetActive(false);
     }
 
