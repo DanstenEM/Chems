@@ -35,7 +35,6 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private InventorySystem inventorySystem;
     private bool isPickedUp;
-    private bool isPlayerInRange;
     private bool isLookingAt;
 
     private void Awake()
@@ -48,16 +47,25 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private void LateUpdate()
     {
-        if (!isPlayerInRange)
-        {
-            return;
-        }
-
         UpdateLookState();
 
         if (hintText == null)
         {
             return;
+        }
+
+        if (isLookingAt)
+        {
+            if (activeHintOwner != null && activeHintOwner != this)
+            {
+                activeHintOwner.Deactive();
+            }
+
+            activeHintOwner = this;
+        }
+        else if (activeHintOwner == this)
+        {
+            activeHintOwner = null;
         }
 
         if (hintText.gameObject.activeSelf != isLookingAt)
@@ -87,7 +95,9 @@ public class DropItemPickup : MonoBehaviour, IInteractable
             return;
         }
 
-        if (!isPlayerInRange || !isLookingAt)
+        UpdateLookState();
+
+        if (!isLookingAt)
         {
             return;
         }
@@ -121,8 +131,6 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     public void Active(InputBinding input)
     {
-        isPlayerInRange = true;
-
         if (hintText == null)
         {
             return;
@@ -150,7 +158,6 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     public void Deactive()
     {
-        isPlayerInRange = false;
         isLookingAt = false;
 
         if (hintText == null)
@@ -179,7 +186,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         hintObject.transform.localPosition = hintOffset;
 
         hintText = hintObject.AddComponent<TextMeshPro>();
-        hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, "E");
+        hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, "F");
         hintText.fontSize = 3.5f;
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
