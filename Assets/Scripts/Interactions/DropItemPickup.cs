@@ -20,6 +20,10 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private Vector3 hintOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private string hintFormat = DefaultHintFormat;
 
+    [Header("Look Target")]
+    [SerializeField] private float lookAngleThreshold = 18f;
+    [SerializeField] private float maxLookDistance = 4f;
+
     [Header("Ground Alignment")]
     [SerializeField] private float groundRaycastHeight = 1.5f;
     [SerializeField] private float groundRaycastDistance = 6f;
@@ -31,6 +35,8 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private InventorySystem inventorySystem;
     private bool isPickedUp;
+    private bool isPlayerInRange;
+    private bool isLookingAt;
 
     private void Awake()
     {
@@ -42,7 +48,24 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private void LateUpdate()
     {
-        if (hintText == null || !hintText.gameObject.activeSelf)
+        if (!isPlayerInRange)
+        {
+            return;
+        }
+
+        UpdateLookState();
+
+        if (hintText == null)
+        {
+            return;
+        }
+
+        if (hintText.gameObject.activeSelf != isLookingAt)
+        {
+            hintText.gameObject.SetActive(isLookingAt);
+        }
+
+        if (!isLookingAt)
         {
             return;
         }
@@ -60,6 +83,11 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     public void Interact()
     {
         if (isPickedUp)
+        {
+            return;
+        }
+
+        if (!isPlayerInRange || !isLookingAt)
         {
             return;
         }
@@ -93,6 +121,8 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     public void Active(InputBinding input)
     {
+        isPlayerInRange = true;
+
         if (hintText == null)
         {
             return;
@@ -114,11 +144,15 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         }
 
         hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, keyLabel.ToUpperInvariant());
-        hintText.gameObject.SetActive(true);
+        UpdateLookState();
+        hintText.gameObject.SetActive(isLookingAt);
     }
 
     public void Deactive()
     {
+        isPlayerInRange = false;
+        isLookingAt = false;
+
         if (hintText == null)
         {
             return;
@@ -150,6 +184,46 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
         hintText.gameObject.SetActive(false);
+    }
+
+    private void UpdateLookState()
+    {
+        var cameraTarget = Camera.main;
+        if (cameraTarget == null)
+        {
+            isLookingAt = false;
+            return;
+        }
+
+        var lookTarget = GetLookTargetPosition();
+        var direction = lookTarget - cameraTarget.transform.position;
+        float distance = direction.magnitude;
+        if (distance <= 0.01f)
+        {
+            isLookingAt = false;
+            return;
+        }
+
+        if (maxLookDistance > 0f && distance > maxLookDistance)
+        {
+            isLookingAt = false;
+            return;
+        }
+
+        direction.Normalize();
+        float dot = Vector3.Dot(cameraTarget.transform.forward, direction);
+        float threshold = Mathf.Cos(lookAngleThreshold * Mathf.Deg2Rad);
+        isLookingAt = dot >= threshold;
+    }
+
+    private Vector3 GetLookTargetPosition()
+    {
+        if (hintText != null)
+        {
+            return hintText.transform.position;
+        }
+
+        return transform.position + hintOffset;
     }
 
     private void AlignToGround()
