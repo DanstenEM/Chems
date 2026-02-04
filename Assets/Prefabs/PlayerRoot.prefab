@@ -316,6 +316,10 @@ MonoBehaviour:
           m_Flags: 0
         m_Flags: 0
       m_Reference: {fileID: 0}
+  lookRayDistance: 6
+  interactableLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &3369478891880853688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -387,6 +391,7 @@ MonoBehaviour:
         m_Flags: 0
       m_Flags: 0
     m_Reference: {fileID: 0}
+  inventorySystem: {fileID: 0}
 --- !u!114 &2620671748081596330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,6 +407,9 @@ MonoBehaviour:
   maxHealth: 100
   respawnDelay: 3
   respawnPoint: {fileID: 0}
+  deathDropPrefab: {fileID: 0}
+  dropSpawnPoint: {fileID: 0}
+  dropOffset: {x: 0, y: 0.5, z: 0}
   isPlayer: 1
 --- !u!1 &3565417780925988765
 GameObject:
