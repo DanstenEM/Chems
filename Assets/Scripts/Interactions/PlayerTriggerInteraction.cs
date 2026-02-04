@@ -10,8 +10,7 @@ public class PlayerTriggerInteraction : MonoBehaviour
     [SerializeField] private ActionToType[] interactActions;
 
     [Header("Targeting")]
-    [SerializeField] private float lookRayDistance = 6f;
-    [SerializeField] private LayerMask lookLayers = ~0;
+    [SerializeField, Range(-1f, 1f)] private float lookDotThreshold = 0.75f;
 
     private readonly System.Collections.Generic.List<IInteractable> activeInteractables = new System.Collections.Generic.List<IInteractable>();
     IInteractable currentInteractable;
@@ -153,17 +152,34 @@ public class PlayerTriggerInteraction : MonoBehaviour
             return null;
         }
 
-        var ray = new Ray(cameraTarget.transform.position, cameraTarget.transform.forward);
-        if (Physics.Raycast(ray, out var hit, lookRayDistance, lookLayers, QueryTriggerInteraction.Collide))
+        var cameraPosition = cameraTarget.transform.position;
+        var cameraForward = cameraTarget.transform.forward;
+        IInteractable bestMatch = null;
+        float bestDot = lookDotThreshold;
+
+        foreach (var interactable in activeInteractables)
         {
-            var interactable = hit.collider.GetComponent<IInteractable>() ?? hit.collider.GetComponentInParent<IInteractable>();
-            if (interactable != null && activeInteractables.Contains(interactable))
+            if (interactable == null)
             {
-                return interactable;
+                continue;
+            }
+
+            var component = interactable as Component;
+            if (component == null)
+            {
+                continue;
+            }
+
+            var direction = (component.transform.position - cameraPosition).normalized;
+            float dot = Vector3.Dot(cameraForward, direction);
+            if (dot > bestDot)
+            {
+                bestDot = dot;
+                bestMatch = interactable;
             }
         }
 
-        return null;
+        return bestMatch;
     }
 }
 
