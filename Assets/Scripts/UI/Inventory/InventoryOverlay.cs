@@ -104,6 +104,11 @@ public class InventoryOverlay : MonoBehaviour
 
     private bool WasTogglePressed()
     {
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            return false;
+        }
+
         var keyboard = Keyboard.current;
         if (keyboard == null)
         {

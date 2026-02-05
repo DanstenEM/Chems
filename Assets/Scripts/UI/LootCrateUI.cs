@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class LootCrateUI : MonoBehaviour
 {
+    private static int openLootMenuCount;
+
+    public static bool IsAnyLootMenuOpen => openLootMenuCount > 0;
     [Header("Layout")]
     [SerializeField] private Vector2 panelSize = new Vector2(500f, 360f);
     [SerializeField] private Vector2 slotSize = new Vector2(80f, 80f);
@@ -28,6 +31,7 @@ public class LootCrateUI : MonoBehaviour
     private readonly List<GameObject> createdObjects = new List<GameObject>();
     private bool hasInitializedLoot;
     private bool openedPlayerInventoryWithLoot;
+    private bool isLootMenuOpen;
 
     private void Awake()
     {
@@ -53,6 +57,7 @@ public class LootCrateUI : MonoBehaviour
 
         bool shouldShow = !panelRoot.gameObject.activeSelf;
         panelRoot.gameObject.SetActive(shouldShow);
+        SetLootMenuOpen(shouldShow);
 
         if (!shouldShow)
         {
@@ -105,8 +110,32 @@ public class LootCrateUI : MonoBehaviour
         openedPlayerInventoryWithLoot = false;
     }
 
+    private void SetLootMenuOpen(bool shouldBeOpen)
+    {
+        if (shouldBeOpen)
+        {
+            if (isLootMenuOpen)
+            {
+                return;
+            }
+
+            isLootMenuOpen = true;
+            openLootMenuCount++;
+            return;
+        }
+
+        if (!isLootMenuOpen)
+        {
+            return;
+        }
+
+        isLootMenuOpen = false;
+        openLootMenuCount = Mathf.Max(0, openLootMenuCount - 1);
+    }
+
     private void OnDisable()
     {
+        SetLootMenuOpen(false);
         ClosePlayerInventoryCompanion();
     }
 

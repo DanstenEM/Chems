@@ -45,6 +45,12 @@ public class Shooter : MonoBehaviour
 
     void HandleFire()
     {
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            IsFiring = false;
+            return;
+        }
+
         if (!fireAction.action.IsPressed())
         {
             IsFiring = false;
