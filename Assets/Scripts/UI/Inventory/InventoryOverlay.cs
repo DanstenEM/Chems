@@ -49,6 +49,13 @@ public class InventoryOverlay : MonoBehaviour
     private bool hasSavedCameraInputState;
     private bool previousShootingState;
     private bool hasSavedShootingState;
+    private bool hasSavedLayoutState;
+    private Vector2 savedAnchorMin;
+    private Vector2 savedAnchorMax;
+    private Vector2 savedPivot;
+    private Vector2 savedAnchoredPosition;
+
+    public bool IsVisible => overlayRoot != null && overlayRoot.gameObject.activeSelf;
 
     private void Awake()
     {
@@ -119,6 +126,25 @@ public class InventoryOverlay : MonoBehaviour
         }
 
         SetOverlayVisible(!overlayRoot.gameObject.activeSelf);
+    }
+
+    public void ShowForLootCrate(bool isVisible)
+    {
+        if (overlayRoot == null)
+        {
+            return;
+        }
+
+        if (isVisible)
+        {
+            SaveLayoutState();
+            ApplyRightSideLayout();
+            SetOverlayVisible(true);
+            return;
+        }
+
+        RestoreLayoutState();
+        SetOverlayVisible(false);
     }
 
     private void SetOverlayVisible(bool isVisible, bool restoreShootingState = true)
@@ -198,6 +224,47 @@ public class InventoryOverlay : MonoBehaviour
             Cursor.visible = previousCursorVisible;
             hasSavedCursorState = false;
         }
+    }
+
+    private void SaveLayoutState()
+    {
+        if (hasSavedLayoutState || overlayRoot == null)
+        {
+            return;
+        }
+
+        savedAnchorMin = overlayRoot.anchorMin;
+        savedAnchorMax = overlayRoot.anchorMax;
+        savedPivot = overlayRoot.pivot;
+        savedAnchoredPosition = overlayRoot.anchoredPosition;
+        hasSavedLayoutState = true;
+    }
+
+    private void RestoreLayoutState()
+    {
+        if (!hasSavedLayoutState || overlayRoot == null)
+        {
+            return;
+        }
+
+        overlayRoot.anchorMin = savedAnchorMin;
+        overlayRoot.anchorMax = savedAnchorMax;
+        overlayRoot.pivot = savedPivot;
+        overlayRoot.anchoredPosition = savedAnchoredPosition;
+        hasSavedLayoutState = false;
+    }
+
+    private void ApplyRightSideLayout()
+    {
+        if (overlayRoot == null)
+        {
+            return;
+        }
+
+        overlayRoot.anchorMin = new Vector2(1f, 0.5f);
+        overlayRoot.anchorMax = new Vector2(1f, 0.5f);
+        overlayRoot.pivot = new Vector2(1f, 0.5f);
+        overlayRoot.anchoredPosition = new Vector2(-40f, 0f);
     }
 
     private void HandleDeathStateChanged(bool isDead)

@@ -16,6 +16,7 @@ public class LootCrateUI : MonoBehaviour
 
     [Header("Inventory")]
     [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private InventoryOverlay playerInventoryOverlay;
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
     [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
 
@@ -26,6 +27,7 @@ public class LootCrateUI : MonoBehaviour
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
     private bool hasInitializedLoot;
+    private bool openedPlayerInventoryWithLoot;
 
     private void Awake()
     {
@@ -54,14 +56,58 @@ public class LootCrateUI : MonoBehaviour
 
         if (!shouldShow)
         {
+            ClosePlayerInventoryCompanion();
             return;
         }
+
+        OpenPlayerInventoryCompanion();
 
         if (!hasInitializedLoot)
         {
             Populate(lootItems);
             hasInitializedLoot = true;
         }
+    }
+
+    private void OpenPlayerInventoryCompanion()
+    {
+        if (playerInventoryOverlay == null)
+        {
+            playerInventoryOverlay = FindFirstObjectByType<InventoryOverlay>();
+        }
+
+        if (playerInventoryOverlay == null)
+        {
+            return;
+        }
+
+        openedPlayerInventoryWithLoot = !playerInventoryOverlay.IsVisible;
+        playerInventoryOverlay.ShowForLootCrate(true);
+    }
+
+    private void ClosePlayerInventoryCompanion()
+    {
+        if (!openedPlayerInventoryWithLoot)
+        {
+            return;
+        }
+
+        if (playerInventoryOverlay == null)
+        {
+            playerInventoryOverlay = FindFirstObjectByType<InventoryOverlay>();
+        }
+
+        if (playerInventoryOverlay != null)
+        {
+            playerInventoryOverlay.ShowForLootCrate(false);
+        }
+
+        openedPlayerInventoryWithLoot = false;
+    }
+
+    private void OnDisable()
+    {
+        ClosePlayerInventoryCompanion();
     }
 
     private void BuildLayout()
