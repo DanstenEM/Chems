@@ -9,6 +9,10 @@ public class PlayerTriggerInteraction : MonoBehaviour
     [Header("Inputs")]
     [SerializeField] private ActionToType[] interactActions;
 
+    [Header("Targeting")]
+    [SerializeField, Range(-1f, 1f)] private float lookDotThreshold = 0.75f;
+
+    private readonly System.Collections.Generic.List<IInteractable> activeInteractables = new System.Collections.Generic.List<IInteractable>();
     IInteractable currentInteractable;
 
     void OnDestroy()
@@ -27,35 +31,155 @@ public class PlayerTriggerInteraction : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (activeInteractables.Count == 0)
+        {
+            return;
+        }
+
+        var nextInteractable = GetLookedAtInteractable() ?? GetClosestInteractable();
+        if (nextInteractable != null && !Equals(nextInteractable, currentInteractable))
+        {
+            SetCurrentInteractable(nextInteractable);
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
         var trigger = other.GetComponent<IInteractable>();
         if (trigger != null)
         {
-            currentInteractable = trigger;
+            if (!activeInteractables.Contains(trigger))
+            {
+                activeInteractables.Add(trigger);
+            }
 
-            var input = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);
-            input.Action.action.performed += OnInteract;
-            input.Action.action.Enable();
-
-            var path = input.Action.action.bindings[0];
-
-            currentInteractable.Active(path);
+            if (currentInteractable == null)
+            {
+                SetCurrentInteractable(trigger);
+            }
         }
     }
 
     void OnTriggerExit(Collider other)
     {
         var trigger = other.GetComponent<IInteractable>();
-        if (trigger != null && trigger.Equals(currentInteractable))
+        if (trigger != null)
         {
-            var input = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);
-            input.Action.action.performed -= OnInteract;
-            input.Action.action.Disable();
-            currentInteractable.Deactive();
+            activeInteractables.Remove(trigger);
 
-            currentInteractable = null;
+            if (trigger.Equals(currentInteractable))
+            {
+                ClearCurrentInteractable();
+                var nextInteractable = GetClosestInteractable();
+                if (nextInteractable != null)
+                {
+                    SetCurrentInteractable(nextInteractable);
+                }
+            }
         }
+    }
+
+    private void SetCurrentInteractable(IInteractable nextInteractable)
+    {
+        if (currentInteractable != null)
+        {
+            var previousInput = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);
+            previousInput.Action.action.performed -= OnInteract;
+            previousInput.Action.action.Disable();
+            currentInteractable.Deactive();
+        }
+
+        currentInteractable = nextInteractable;
+        var input = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);
+        input.Action.action.performed += OnInteract;
+        input.Action.action.Enable();
+
+        var path = input.Action.action.bindings[0];
+        currentInteractable.Active(path);
+    }
+
+    private void ClearCurrentInteractable()
+    {
+        if (currentInteractable == null)
+        {
+            return;
+        }
+
+        var input = interactActions.FirstOrDefault(x => x.KeyActiveType == currentInteractable.keyType);
+        input.Action.action.performed -= OnInteract;
+        input.Action.action.Disable();
+        currentInteractable.Deactive();
+
+        currentInteractable = null;
+    }
+
+    private IInteractable GetClosestInteractable()
+    {
+        IInteractable closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var interactable in activeInteractables)
+        {
+            if (interactable == null)
+            {
+                continue;
+            }
+
+            var component = interactable as Component;
+            if (component == null)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(transform.position, component.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closest = interactable;
+            }
+        }
+
+        return closest;
+    }
+
+    private IInteractable GetLookedAtInteractable()
+    {
+        var cameraTarget = Camera.main;
+        if (cameraTarget == null)
+        {
+            return null;
+        }
+
+        var cameraPosition = cameraTarget.transform.position;
+        var cameraForward = cameraTarget.transform.forward;
+        IInteractable bestMatch = null;
+        float bestDot = lookDotThreshold;
+
+        foreach (var interactable in activeInteractables)
+        {
+            if (interactable == null)
+            {
+                continue;
+            }
+
+            var component = interactable as Component;
+            if (component == null)
+            {
+                continue;
+            }
+
+            var direction = (component.transform.position - cameraPosition).normalized;
+            float dot = Vector3.Dot(cameraForward, direction);
+            if (dot > bestDot)
+            {
+                bestDot = dot;
+                bestMatch = interactable;
+            }
+        }
+
+        return bestMatch;
     }
 }
 
