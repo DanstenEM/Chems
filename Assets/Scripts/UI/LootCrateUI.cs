@@ -25,6 +25,7 @@ public class LootCrateUI : MonoBehaviour
     [SerializeField] private RectTransform slotsRoot;
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
+    private bool hasInitializedLoot;
 
     private void Awake()
     {
@@ -51,9 +52,15 @@ public class LootCrateUI : MonoBehaviour
         bool shouldShow = !panelRoot.gameObject.activeSelf;
         panelRoot.gameObject.SetActive(shouldShow);
 
-        if (shouldShow)
+        if (!shouldShow)
+        {
+            return;
+        }
+
+        if (!hasInitializedLoot)
         {
             Populate(lootItems);
+            hasInitializedLoot = true;
         }
     }
 
