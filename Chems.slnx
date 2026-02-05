@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Project Path="Unity.Cinemachine.Editor.csproj" />
   <Project Path="Zenject.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Zenject-IntegrationTests-Editor.csproj" />
   <Project Path="Zenject-ReflectionBaking-Editor.csproj" />
   <Project Path="Zenject-UnitTests-Editor.csproj" />
@@ -8,7 +9,6 @@
   <Project Path="Zenject-IntegrationTests.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.ConversionSystem.csproj" />
   <Project Path="Unity.Cinemachine.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.Tests.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />

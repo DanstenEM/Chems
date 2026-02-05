@@ -6,6 +6,7 @@ public class PlayerObjContext : MonoInstaller
     [SerializeField] private Camera camTarget;
     [SerializeField] private ThirdPersonMovement thirdPerson;
     [SerializeField] private CMChangeView CMChangeView;
+    [SerializeField] private ColorAjusmentComponent colorAjusmentComponent;
 
     public override void InstallBindings()
     {
@@ -14,5 +15,6 @@ public class PlayerObjContext : MonoInstaller
 
         Container.BindInterfacesAndSelfTo<ThirdPersonMovement>().FromInstance(thirdPerson).AsSingle();
         Container.BindInterfacesAndSelfTo<CMChangeView>().FromInstance(CMChangeView).AsSingle();
+        Container.Bind<ColorAjusmentComponent>().FromInstance(colorAjusmentComponent).AsSingle().Lazy();
     }
 }
