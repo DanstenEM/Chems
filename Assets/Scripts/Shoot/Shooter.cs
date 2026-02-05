@@ -32,7 +32,7 @@ public class Shooter : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         fireAction.action.Enable();
@@ -53,7 +53,7 @@ public class Shooter : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         if (inventorySystem != null && !inventorySystem.HasSelectedWeapon())

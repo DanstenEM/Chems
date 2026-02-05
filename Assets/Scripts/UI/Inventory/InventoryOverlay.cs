@@ -334,7 +334,7 @@ public class InventoryOverlay : MonoBehaviour
     {
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         if (inventorySystem == null || overlayRoot == null)

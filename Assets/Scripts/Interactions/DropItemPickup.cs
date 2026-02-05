@@ -42,7 +42,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private void Awake()
     {
-        inventorySystem = FindObjectOfType<InventorySystem>();
+        inventorySystem = InventorySystem.GameplayInventory;
         pickupCollider = GetComponent<Collider>();
         EnsureHint();
         AlignToGround();
@@ -85,7 +85,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         if (inventorySystem != null && inventorySystem.AddItem(itemObj))

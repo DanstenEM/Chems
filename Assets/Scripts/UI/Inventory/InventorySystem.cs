@@ -6,16 +6,33 @@ using Zenject;
 
 public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 {
+    private static InventorySystem gameplayInventory;
+
     [SerializeField] private InventorySlot[] slots;
     [SerializeField] private InventoryItem inventoryPrefab;
     [SerializeField] private InventoryItemObj inventoryObj;
     [SerializeField] private int selectSlot = -1;
     [SerializeField] private bool addStarterItems;
     [SerializeField] private int starterItemCount = 0;
+    [SerializeField] private bool isGameplayInventory = true;
 
     public InputActionProperty mouseAction;
     public Vector2 mousePosition;
     private bool mouseActionBound;
+
+    public static InventorySystem GameplayInventory
+    {
+        get
+        {
+            if (gameplayInventory != null)
+            {
+                return gameplayInventory;
+            }
+
+            gameplayInventory = FindGameplayInventoryInScene();
+            return gameplayInventory;
+        }
+    }
 
     [Inject]
     public void Construct(InventorySlot[] slots)
@@ -26,12 +43,25 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     private void Awake()
     {
+        if (isGameplayInventory)
+        {
+            gameplayInventory = this;
+        }
+
         if (slots == null || slots.Length == 0)
         {
             SetSlots(FindObjectsOfType<InventorySlot>());
         }
 
         BindMouseAction();
+    }
+
+    private void OnDestroy()
+    {
+        if (ReferenceEquals(gameplayInventory, this))
+        {
+            gameplayInventory = null;
+        }
     }
 
     private void Action_performed(InputAction.CallbackContext obj)
@@ -295,5 +325,19 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         mouseAction.action.performed += Action_performed;
         mouseAction.action.started += Action_performed;
         mouseActionBound = true;
+    }
+
+    private static InventorySystem FindGameplayInventoryInScene()
+    {
+        var inventorySystems = FindObjectsOfType<InventorySystem>();
+        foreach (var inventorySystem in inventorySystems)
+        {
+            if (inventorySystem != null && inventorySystem.isGameplayInventory)
+            {
+                return inventorySystem;
+            }
+        }
+
+        return null;
     }
 }
