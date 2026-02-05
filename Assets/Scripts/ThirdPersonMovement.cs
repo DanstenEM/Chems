@@ -32,6 +32,12 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     void HandleMovement()
     {
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            CurrentSpeed = 0f;
+            return;
+        }
+
         Vector2 inputVector = moveAction.ReadValue<Vector2>();
 
         Vector3 camForward = cam.forward;

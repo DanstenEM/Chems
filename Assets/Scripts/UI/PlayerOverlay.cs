@@ -69,7 +69,7 @@ public class PlayerOverlay : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         UpdateHealthText();
@@ -108,7 +108,7 @@ public class PlayerOverlay : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         var slots = GetInventorySlots();
@@ -269,7 +269,7 @@ public class PlayerOverlay : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         if (inventorySystem == null)

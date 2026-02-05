@@ -32,7 +32,7 @@ public class Shooter : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         fireAction.action.Enable();
@@ -45,6 +45,12 @@ public class Shooter : MonoBehaviour
 
     void HandleFire()
     {
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            IsFiring = false;
+            return;
+        }
+
         if (!fireAction.action.IsPressed())
         {
             IsFiring = false;
@@ -53,7 +59,7 @@ public class Shooter : MonoBehaviour
 
         if (inventorySystem == null)
         {
-            inventorySystem = FindObjectOfType<InventorySystem>();
+            inventorySystem = InventorySystem.GameplayInventory;
         }
 
         if (inventorySystem != null && !inventorySystem.HasSelectedWeapon())

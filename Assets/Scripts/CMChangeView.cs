@@ -19,7 +19,7 @@ public class CMChangeView : MonoBehaviour, IInitializable, IDisposable
 
     private void Action_performedR(InputAction.CallbackContext obj)
     {
-        if (isDie) return;
+        if (isDie || LootCrateUI.IsAnyLootMenuOpen) return;
 
         isRight = !isRight;
         var tweeen = isRight switch

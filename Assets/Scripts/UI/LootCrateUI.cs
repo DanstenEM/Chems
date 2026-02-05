@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class LootCrateUI : MonoBehaviour
 {
+    private static int openLootMenuCount;
+
+    public static bool IsAnyLootMenuOpen => openLootMenuCount > 0;
     [Header("Layout")]
     [SerializeField] private Vector2 panelSize = new Vector2(500f, 360f);
     [SerializeField] private Vector2 slotSize = new Vector2(80f, 80f);
@@ -16,6 +19,7 @@ public class LootCrateUI : MonoBehaviour
 
     [Header("Inventory")]
     [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private InventoryOverlay playerInventoryOverlay;
     [SerializeField] private Color slotSelectedColor = new Color(1f, 0.4292453f, 0.4292453f, 1f);
     [SerializeField] private Color slotDeselectedColor = new Color(0.6f, 0.6f, 0.6f, 0.35f);
 
@@ -25,6 +29,9 @@ public class LootCrateUI : MonoBehaviour
     [SerializeField] private RectTransform slotsRoot;
 
     private readonly List<GameObject> createdObjects = new List<GameObject>();
+    private bool hasInitializedLoot;
+    private bool openedPlayerInventoryWithLoot;
+    private bool isLootMenuOpen;
 
     private void Awake()
     {
@@ -50,11 +57,86 @@ public class LootCrateUI : MonoBehaviour
 
         bool shouldShow = !panelRoot.gameObject.activeSelf;
         panelRoot.gameObject.SetActive(shouldShow);
+        SetLootMenuOpen(shouldShow);
 
-        if (shouldShow)
+        if (!shouldShow)
+        {
+            ClosePlayerInventoryCompanion();
+            return;
+        }
+
+        OpenPlayerInventoryCompanion();
+
+        if (!hasInitializedLoot)
         {
             Populate(lootItems);
+            hasInitializedLoot = true;
         }
+    }
+
+    private void OpenPlayerInventoryCompanion()
+    {
+        if (playerInventoryOverlay == null)
+        {
+            playerInventoryOverlay = FindFirstObjectByType<InventoryOverlay>();
+        }
+
+        if (playerInventoryOverlay == null)
+        {
+            return;
+        }
+
+        openedPlayerInventoryWithLoot = !playerInventoryOverlay.IsVisible;
+        playerInventoryOverlay.ShowForLootCrate(true);
+    }
+
+    private void ClosePlayerInventoryCompanion()
+    {
+        if (!openedPlayerInventoryWithLoot)
+        {
+            return;
+        }
+
+        if (playerInventoryOverlay == null)
+        {
+            playerInventoryOverlay = FindFirstObjectByType<InventoryOverlay>();
+        }
+
+        if (playerInventoryOverlay != null)
+        {
+            playerInventoryOverlay.ShowForLootCrate(false);
+        }
+
+        openedPlayerInventoryWithLoot = false;
+    }
+
+    private void SetLootMenuOpen(bool shouldBeOpen)
+    {
+        if (shouldBeOpen)
+        {
+            if (isLootMenuOpen)
+            {
+                return;
+            }
+
+            isLootMenuOpen = true;
+            openLootMenuCount++;
+            return;
+        }
+
+        if (!isLootMenuOpen)
+        {
+            return;
+        }
+
+        isLootMenuOpen = false;
+        openLootMenuCount = Mathf.Max(0, openLootMenuCount - 1);
+    }
+
+    private void OnDisable()
+    {
+        SetLootMenuOpen(false);
+        ClosePlayerInventoryCompanion();
     }
 
     private void BuildLayout()

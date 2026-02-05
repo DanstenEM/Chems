@@ -67,6 +67,17 @@ public class AimController : MonoBehaviour
     {
         if (isDie) return;
 
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            isAiming = false;
+            if (ik)
+            {
+                ik.SetAiming(false);
+            }
+
+            return;
+        }
+
         isAiming = aimAction.action.IsPressed();
 
         if (ik)

@@ -173,6 +173,7 @@ MonoBehaviour:
   inventoryPrefab: {fileID: 5638737629825818885, guid: 10ea5169612f1ee4f88a7c1a0e7a94f7, type: 3}
   inventoryObj: {fileID: 0}
   selectSlot: -1
+  isGameplayInventory: 0
   mouseAction:
     m_UseReference: 0
     m_Action:
