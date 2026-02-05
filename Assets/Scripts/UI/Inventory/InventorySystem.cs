@@ -279,6 +279,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         return slotCategory switch
         {
+            InventorySlotMarker.SlotCategory.Universal => true,
             InventorySlotMarker.SlotCategory.Chemical => itemObj.category == InventoryItemObj.ItemCategory.Chemical,
             InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
             _ => itemObj.category == InventoryItemObj.ItemCategory.Regular

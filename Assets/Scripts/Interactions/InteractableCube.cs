@@ -25,6 +25,9 @@ public class InteractableCube : MonoBehaviour, IInteractable
     [SerializeField] private InventoryItemObj[] defaultLootPool;
     [SerializeField] private InventoryItemObj[] chemicalLootPool;
     [SerializeField] private InventoryItemObj[] weaponLootPool;
+    [SerializeField] private Vector2Int defaultLootCountRange = new Vector2Int(2, 6);
+    [SerializeField] private Vector2Int chemicalLootCountRange = new Vector2Int(0, 2);
+    [SerializeField] private Vector2Int weaponLootCountRange = new Vector2Int(0, 1);
     [FormerlySerializedAs("generateRandomLootOnAwake")]
     [SerializeField] private bool generateRandomLootOnStart = true;
     private bool hasGeneratedLoot;
@@ -140,36 +143,66 @@ public class InteractableCube : MonoBehaviour, IInteractable
 
     private InventoryItemObj[] GenerateRandomLoot()
     {
-        int amount = Random.Range(2, 11);
-        var results = new List<InventoryItemObj>(amount);
+        int defaultCount = GetCountFromRange(defaultLootCountRange);
+        int chemicalCount = GetCountFromRange(chemicalLootCountRange);
+        int weaponCount = GetCountFromRange(weaponLootCountRange);
 
-        for (int i = 0; i < amount; i++)
+        var results = new List<InventoryItemObj>(defaultCount + chemicalCount + weaponCount);
+        AddLootFromPool(results, defaultLootPool, defaultCount);
+        AddLootFromPool(results, chemicalLootPool, chemicalCount);
+        AddLootFromPool(results, weaponLootPool, weaponCount);
+
+        if (results.Count == 0)
         {
-            var item = GetRandomLootItem();
+            var fallback = GetFallbackLootItem();
+            if (fallback != null)
+            {
+                results.Add(fallback);
+            }
+        }
+
+        Shuffle(results);
+
+        return results.ToArray();
+    }
+
+    private void AddLootFromPool(List<InventoryItemObj> results, InventoryItemObj[] pool, int count)
+    {
+        if (results == null || count <= 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            var item = GetRandomFromPool(pool) ?? GetFallbackLootItem();
             if (item != null)
             {
                 results.Add(item);
             }
         }
-
-        return results.ToArray();
     }
 
-    private InventoryItemObj GetRandomLootItem()
+    private static void Shuffle(List<InventoryItemObj> items)
     {
-        float roll = Random.value;
-
-        if (roll < 0.75f)
+        if (items == null || items.Count < 2)
         {
-            return GetRandomFromPool(defaultLootPool) ?? GetFallbackLootItem();
+            return;
         }
 
-        if (roll < 0.95f)
+        for (int i = items.Count - 1; i > 0; i--)
         {
-            return GetRandomFromPool(chemicalLootPool) ?? GetFallbackLootItem();
+            int swapIndex = Random.Range(0, i + 1);
+            (items[i], items[swapIndex]) = (items[swapIndex], items[i]);
         }
+    }
 
-        return GetRandomFromPool(weaponLootPool) ?? GetFallbackLootItem();
+    private static int GetCountFromRange(Vector2Int range)
+    {
+        int min = Mathf.Min(range.x, range.y);
+        int max = Mathf.Max(range.x, range.y);
+
+        return Random.Range(min, max + 1);
     }
 
     private InventoryItemObj GetRandomFromPool(InventoryItemObj[] pool)

@@ -48,6 +48,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler
 
         return slotCategory switch
         {
+            InventorySlotMarker.SlotCategory.Universal => true,
             InventorySlotMarker.SlotCategory.Chemical => item.itemObj.category == InventoryItemObj.ItemCategory.Chemical,
             InventorySlotMarker.SlotCategory.Weapon => item.itemObj.category == InventoryItemObj.ItemCategory.Weapon,
             _ => item.itemObj.category == InventoryItemObj.ItemCategory.Regular
