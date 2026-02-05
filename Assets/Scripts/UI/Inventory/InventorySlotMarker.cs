@@ -4,6 +4,7 @@ public class InventorySlotMarker : MonoBehaviour
 {
     public enum SlotCategory
     {
+        Universal,
         Regular,
         Chemical,
         Weapon
@@ -17,6 +18,7 @@ public class InventorySlotMarker : MonoBehaviour
         Index = index;
         Category = groupName switch
         {
+            "LootSlots" => SlotCategory.Universal,
             "RegularSlots" => SlotCategory.Regular,
             "ChemicalSlots" => SlotCategory.Chemical,
             "WeaponSlots" => SlotCategory.Weapon,

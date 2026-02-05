@@ -245,7 +245,7 @@ public class LootCrateUI : MonoBehaviour
         image.color = new Color(1f, 1f, 1f, 0.15f);
 
         var slotMarker = slotObject.AddComponent<InventorySlotMarker>();
-        slotMarker.Setup("RegularSlots", index);
+        slotMarker.Setup("LootSlots", index);
 
         var slot = slotObject.AddComponent<InventorySlot>();
         slot.Configure(image, slotSelectedColor, slotDeselectedColor);
