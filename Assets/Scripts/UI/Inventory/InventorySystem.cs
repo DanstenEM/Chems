@@ -15,6 +15,9 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     [SerializeField] private bool addStarterItems;
     [SerializeField] private int starterItemCount = 0;
     [SerializeField] private bool isGameplayInventory = true;
+    [SerializeField] private float dropForwardDistance = 1.5f;
+    [SerializeField] private float dropHeightOffset = 0.4f;
+    [SerializeField] private string playerTag = "Player";
 
     public InputActionProperty mouseAction;
     public Vector2 mousePosition;
@@ -139,6 +142,47 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         newItem.Construct(this, inventoryItemObj);
     }
 
+    public bool TryDropDraggedItem(InventoryItem inventoryItem)
+    {
+        if (inventoryItem == null || inventoryItem.itemObj == null)
+        {
+            return false;
+        }
+
+        if (inventoryItem.itemObj.dropPrefab == null)
+        {
+            return false;
+        }
+
+        Transform dropOrigin = GetDropOrigin();
+        if (dropOrigin == null)
+        {
+            return false;
+        }
+
+        Vector3 forward = dropOrigin.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.0001f)
+        {
+            forward = Vector3.forward;
+        }
+
+        Vector3 spawnPosition = dropOrigin.position + forward.normalized * dropForwardDistance + Vector3.up * dropHeightOffset;
+        Instantiate(inventoryItem.itemObj.dropPrefab, spawnPosition, Quaternion.identity);
+
+        if (inventoryItem.count > 1)
+        {
+            inventoryItem.count -= 1;
+            inventoryItem.RefrashCount();
+        }
+        else
+        {
+            Destroy(inventoryItem.gameObject);
+        }
+
+        return true;
+    }
+
     public void ChangeSelectSlot(int newValue)
     {
         if (selectSlot > 0)
@@ -249,6 +293,25 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         ChangeSelectSlot(slotIndex);
         return true;
+    }
+
+    private Transform GetDropOrigin()
+    {
+        if (!string.IsNullOrWhiteSpace(playerTag))
+        {
+            var taggedPlayer = GameObject.FindGameObjectWithTag(playerTag);
+            if (taggedPlayer != null)
+            {
+                return taggedPlayer.transform;
+            }
+        }
+
+        if (Camera.main != null)
+        {
+            return Camera.main.transform;
+        }
+
+        return transform;
     }
 
     private static bool IsRegularSlot(InventorySlot slot)

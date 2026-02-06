@@ -25,7 +25,10 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private float lookRayDistance = 4f;
     [SerializeField] private LayerMask lookLayers = ~0;
 
-    [Header("Ground Alignment")]
+    [Header("Drop Physics")]
+    [SerializeField] private bool useDropPhysics = true;
+    [SerializeField] private float gravityAcceleration = 20f;
+    [SerializeField] private float maxFallSpeed = 25f;
     [SerializeField] private float groundRaycastHeight = 1.5f;
     [SerializeField] private float groundRaycastDistance = 6f;
     [SerializeField] private float groundOffset = 0.02f;
@@ -34,10 +37,16 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [Header("Pickup Area")]
     [SerializeField] private float pickupAreaMultiplier = 3f;
 
+    [Header("Drop Separation")]
+    [SerializeField] private float dropSeparationRadius = 0.35f;
+    [SerializeField] private float dropSeparationStrength = 8f;
+
     private InventorySystem inventorySystem;
     private Collider pickupCollider;
     private bool isPickedUp;
     private bool isTriggerHintActive;
+    private bool isGrounded;
+    private float currentFallSpeed;
     private string currentHintLabel = "E";
 
     private void Awake()
@@ -45,7 +54,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         inventorySystem = InventorySystem.GameplayInventory;
         pickupCollider = GetComponent<Collider>();
         EnsureHint();
-        AlignToGround();
+        InitializeDropState();
         ExpandPickupArea();
     }
 
@@ -68,6 +77,8 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private void Update()
     {
+        SimulateDropPhysics();
+        ResolveDropOverlap();
         UpdateLookHint();
     }
 
@@ -254,7 +265,116 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         hintText.gameObject.SetActive(false);
     }
 
-    private void AlignToGround()
+    private void InitializeDropState()
+    {
+        if (!useDropPhysics)
+        {
+            SnapToGround();
+            isGrounded = true;
+            return;
+        }
+
+        isGrounded = false;
+        currentFallSpeed = 0f;
+    }
+
+    private void SimulateDropPhysics()
+    {
+        if (!useDropPhysics || isGrounded || isPickedUp)
+        {
+            return;
+        }
+
+        var startPosition = transform.position + Vector3.up * groundRaycastHeight;
+        var rayDistance = groundRaycastHeight + groundRaycastDistance;
+
+        if (!Physics.Raycast(startPosition, Vector3.down, out var hit, rayDistance, groundLayers, QueryTriggerInteraction.Ignore))
+        {
+            currentFallSpeed = Mathf.Min(currentFallSpeed + gravityAcceleration * Time.deltaTime, maxFallSpeed);
+            transform.position += Vector3.down * (currentFallSpeed * Time.deltaTime);
+            return;
+        }
+
+        float targetY = hit.point.y + groundOffset;
+        currentFallSpeed = Mathf.Min(currentFallSpeed + gravityAcceleration * Time.deltaTime, maxFallSpeed);
+        float nextY = transform.position.y - (currentFallSpeed * Time.deltaTime);
+
+        if (nextY <= targetY)
+        {
+            var snappedPosition = transform.position;
+            snappedPosition.y = targetY;
+            transform.position = snappedPosition;
+            currentFallSpeed = 0f;
+            isGrounded = true;
+            return;
+        }
+
+        var nextPosition = transform.position;
+        nextPosition.y = nextY;
+        transform.position = nextPosition;
+    }
+
+    private void ResolveDropOverlap()
+    {
+        if (isPickedUp || dropSeparationRadius <= 0f)
+        {
+            return;
+        }
+
+        if (useDropPhysics && !isGrounded)
+        {
+            return;
+        }
+
+        var nearbyColliders = Physics.OverlapSphere(
+            transform.position,
+            dropSeparationRadius,
+            ~0,
+            QueryTriggerInteraction.Collide);
+
+        var push = Vector3.zero;
+        foreach (var nearbyCollider in nearbyColliders)
+        {
+            if (nearbyCollider == null)
+            {
+                continue;
+            }
+
+            var otherDrop = nearbyCollider.GetComponent<DropItemPickup>();
+            if (otherDrop == null || otherDrop == this || otherDrop.isPickedUp)
+            {
+                continue;
+            }
+
+            var offset = transform.position - otherDrop.transform.position;
+            offset.y = 0f;
+
+            float distance = offset.magnitude;
+            if (distance >= dropSeparationRadius)
+            {
+                continue;
+            }
+
+            var direction = distance > 0.001f
+                ? offset / distance
+                : Random.insideUnitSphere.normalized;
+            direction.y = 0f;
+
+            float penetration = dropSeparationRadius - distance;
+            push += direction * penetration;
+        }
+
+        if (push.sqrMagnitude <= 0.000001f)
+        {
+            return;
+        }
+
+        var nextPosition = transform.position + push * (dropSeparationStrength * Time.deltaTime);
+        nextPosition.y = transform.position.y;
+        transform.position = nextPosition;
+    }
+
+    private void SnapToGround()
     {
         var startPosition = transform.position + Vector3.up * groundRaycastHeight;
         var rayDistance = groundRaycastHeight + groundRaycastDistance;
