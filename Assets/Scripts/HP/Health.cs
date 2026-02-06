@@ -1,5 +1,5 @@
 using UnityEngine;
-using Zenject.SpaceFighter;
+using Zenject;
 
 public class Health : MonoBehaviour
 {
@@ -12,6 +12,7 @@ public class Health : MonoBehaviour
     [SerializeField] private GameObject deathDropPrefab;
     [SerializeField] private Transform dropSpawnPoint;
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
+    private ColorAjusmentComponent colorAjusment;
 
     bool dead;
 
@@ -23,6 +24,12 @@ public class Health : MonoBehaviour
     void Awake()
     {
         CurrentHealth = maxHealth;
+    }
+
+    [Inject]
+    public void Construct(ColorAjusmentComponent colorAjusment)
+    {
+        this.colorAjusment = colorAjusment;
     }
 
     public void TakeDamage(float amount)
@@ -37,6 +44,8 @@ public class Health : MonoBehaviour
         {
             Die();
         }
+
+        colorAjusment?.Execute();
     }
 
     void Die()

@@ -721,6 +721,28 @@ MonoBehaviour:
   cropToFit:
     m_OverrideState: 0
     m_Value: 1
+--- !u!114 &-2647980189467154549
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da5ab44aadfb1804db5fd470983ac1b8, type: 3}
+  m_Name: LiftGammaGain
+  m_EditorClassIdentifier: Unity.RenderPipelines.HighDefinition.Runtime::UnityEngine.Rendering.HighDefinition.LiftGammaGain
+  active: 1
+  lift:
+    m_OverrideState: 1
+    m_Value: {x: 0.92256844, y: 0.9511216, z: 1, w: 0}
+  gamma:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 0.9831925, z: 0.93277043, w: 0}
+  gain:
+    m_OverrideState: 1
+    m_Value: {x: 0.91267824, y: 0.90583754, z: 1, w: 0}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -740,7 +762,6 @@ MonoBehaviour:
   - {fileID: 7879906963843830384}
   - {fileID: -8067166546897044546}
   - {fileID: 3884085445312726101}
-  - {fileID: 1469905032442258176}
   - {fileID: 4624770114631576748}
   - {fileID: 254486641261711594}
   - {fileID: -6975776770395274358}
@@ -750,6 +771,7 @@ MonoBehaviour:
   - {fileID: -3552054655843743451}
   - {fileID: -4411639049219593900}
   - {fileID: 2093654109162064173}
+  - {fileID: -2647980189467154549}
 --- !u!114 &254486641261711594
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -770,60 +792,14 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 10
   colorFilter:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   hueShift:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   saturation:
     m_OverrideState: 1
     m_Value: 10
---- !u!114 &1469905032442258176
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24f077503be6ae942a1e1245dbd53ea9, type: 3}
-  m_Name: Bloom
-  m_EditorClassIdentifier: 
-  active: 1
-  quality:
-    m_OverrideState: 1
-    m_Value: 1
-  threshold:
-    m_OverrideState: 1
-    m_Value: 0
-  intensity:
-    m_OverrideState: 1
-    m_Value: 0.1
-  scatter:
-    m_OverrideState: 0
-    m_Value: 0.7
-  tint:
-    m_OverrideState: 0
-    m_Value: {r: 1, g: 1, b: 1, a: 1}
-  dirtTexture:
-    m_OverrideState: 0
-    m_Value: {fileID: 0}
-  dirtIntensity:
-    m_OverrideState: 0
-    m_Value: 0
-  anamorphic:
-    m_OverrideState: 0
-    m_Value: 1
-  m_Resolution:
-    m_OverrideState: 1
-    m_Value: 2
-  m_HighQualityPrefiltering:
-    m_OverrideState: 1
-    m_Value: 0
-  m_HighQualityFiltering:
-    m_OverrideState: 1
-    m_Value: 1
 --- !u!114 &1918416040923684496
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -920,7 +896,7 @@ MonoBehaviour:
   active: 1
   quality:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   intensity:
     m_OverrideState: 1
     m_Value: 0.5
@@ -950,7 +926,7 @@ MonoBehaviour:
     m_Value: 1
   m_SampleCount:
     m_OverrideState: 1
-    m_Value: 8
+    m_Value: 4
 --- !u!114 &3884085445312726101
 MonoBehaviour:
   m_ObjectHideFlags: 3

@@ -1,9 +1,10 @@
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.HighDefinition;
+using Zenject;
 
-public class ColorAjusmentComponent : MonoBehaviour, IVolumeComponent
+public class ColorAjusmentComponent : MonoBehaviour, IVolumeComponent, IInitializable
 {
     private ColorAdjustments adjustments;
 
@@ -24,22 +25,29 @@ public class ColorAjusmentComponent : MonoBehaviour, IVolumeComponent
     [field:SerializeField] public float duration { get; set; }
     [field:SerializeField] public Volume _volume { get; set; }
 
-    private void Start()
-    {
-        _volume.profile.TryGet(out adjustments);
-    }
-
     public void Execute()
     {
         if (adjustments == null) return;
+
         var time = 0f;
-        DOTween.To(() => time, x => time = x, 1, duration)
+        var startColor = adjustments.colorFilter.value;
+
+        var tween = DOTween.To(() => time, x => time = x, 1, duration)
             .SetEase(Ease.Linear)
             .OnUpdate(() =>
             {
                 adjustments.postExposure.value = postExposureCurve.Evaluate(time) * PostExposure;
                 adjustments.contrast.value = contrastCurve.Evaluate(time) * contrast;
+                adjustments.hueShift.value = hueShiftCurve.Evaluate(time) * hueShift;
+                adjustments.saturation.value = saturationCurve.Evaluate(time) * saturation;
 
+                adjustments.colorFilter.value = Color.Lerp(startColor, colorFilter, colorFilterCurve.Evaluate(time));
             });
+        tween.Play();
+    }
+
+    public void Initialize()
+    {
+        _volume.profile.TryGet(out adjustments);
     }
 }
