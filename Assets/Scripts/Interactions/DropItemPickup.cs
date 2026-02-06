@@ -37,6 +37,10 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [Header("Pickup Area")]
     [SerializeField] private float pickupAreaMultiplier = 3f;
 
+    [Header("Drop Separation")]
+    [SerializeField] private float dropSeparationRadius = 0.35f;
+    [SerializeField] private float dropSeparationStrength = 8f;
+
     private InventorySystem inventorySystem;
     private Collider pickupCollider;
     private bool isPickedUp;
@@ -74,6 +78,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     private void Update()
     {
         SimulateDropPhysics();
+        ResolveDropOverlap();
         UpdateLookHint();
     }
 
@@ -306,6 +311,66 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
         var nextPosition = transform.position;
         nextPosition.y = nextY;
+        transform.position = nextPosition;
+    }
+
+    private void ResolveDropOverlap()
+    {
+        if (isPickedUp || dropSeparationRadius <= 0f)
+        {
+            return;
+        }
+
+        if (useDropPhysics && !isGrounded)
+        {
+            return;
+        }
+
+        var nearbyColliders = Physics.OverlapSphere(
+            transform.position,
+            dropSeparationRadius,
+            ~0,
+            QueryTriggerInteraction.Collide);
+
+        var push = Vector3.zero;
+        foreach (var nearbyCollider in nearbyColliders)
+        {
+            if (nearbyCollider == null)
+            {
+                continue;
+            }
+
+            var otherDrop = nearbyCollider.GetComponent<DropItemPickup>();
+            if (otherDrop == null || otherDrop == this || otherDrop.isPickedUp)
+            {
+                continue;
+            }
+
+            var offset = transform.position - otherDrop.transform.position;
+            offset.y = 0f;
+
+            float distance = offset.magnitude;
+            if (distance >= dropSeparationRadius)
+            {
+                continue;
+            }
+
+            var direction = distance > 0.001f
+                ? offset / distance
+                : Random.insideUnitSphere.normalized;
+            direction.y = 0f;
+
+            float penetration = dropSeparationRadius - distance;
+            push += direction * penetration;
+        }
+
+        if (push.sqrMagnitude <= 0.000001f)
+        {
+            return;
+        }
+
+        var nextPosition = transform.position + push * (dropSeparationStrength * Time.deltaTime);
+        nextPosition.y = transform.position.y;
         transform.position = nextPosition;
     }
 
