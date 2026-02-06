@@ -16,4 +16,5 @@ public class InventoryItemObj : ScriptableObject
     public bool isStackable;
     public bool isDefaultItem = true;
     public ItemCategory category = ItemCategory.Regular;
+    public GameObject dropPrefab;
 }

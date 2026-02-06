@@ -9,11 +9,14 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     [field: SerializeField] public int count { get; set; } = 1;
     [SerializeField] private Image image;
     [SerializeField] private TMP_Text counter;
+    [SerializeField] private float dropDragMinDistance = 60f;
+
     private InventorySystem inventorySystem;
-    
+    private Vector2 beginDragPosition;
+
     public Transform parentAfterDrag;
 
-    public void Construct(InventorySystem inventorySystem,InventoryItemObj inventoryItemObj)
+    public void Construct(InventorySystem inventorySystem, InventoryItemObj inventoryItemObj)
     {
         itemObj = inventoryItemObj;
         this.inventorySystem = inventorySystem;
@@ -47,12 +50,19 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     {
         image.raycastTarget = false;
         parentAfterDrag = transform.parent;
+        beginDragPosition = eventData.position;
         transform.SetParent(transform.root);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         image.raycastTarget = true;
+
+        bool droppedOnInventorySlot = eventData.pointerEnter != null &&
+                                     eventData.pointerEnter.GetComponentInParent<InventorySlot>() != null;
+        bool shouldTryWorldDrop = !droppedOnInventorySlot &&
+                                  Vector2.Distance(beginDragPosition, eventData.position) >= dropDragMinDistance;
+
         transform.SetParent(parentAfterDrag);
         var rectTransform = GetComponent<RectTransform>();
         if (rectTransform != null)
@@ -60,14 +70,17 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.anchoredPosition = Vector2.zero;
         }
 
-        //if( parentAfterDrag.TryGetComponent(out InventorySlot component))
-        //    component.inventoryItem = this;
+        if (shouldTryWorldDrop && inventorySystem != null && inventorySystem.TryDropDraggedItem(this))
+        {
+            return;
+        }
+
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = inventorySystem.mousePosition;
-    } 
+    }
 
     private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
     {
