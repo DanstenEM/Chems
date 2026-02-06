@@ -332,7 +332,8 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         if (useRegularOnly)
         {
-            return slotCategory == InventorySlotMarker.SlotCategory.Regular;
+            return slotCategory == InventorySlotMarker.SlotCategory.Regular ||
+                   slotCategory == InventorySlotMarker.SlotCategory.Universal;
         }
 
         if (itemObj == null)
