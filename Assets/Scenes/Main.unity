@@ -2563,7 +2563,7 @@ MonoBehaviour:
     invertFade: 0
     distanceFadeStart: 10000
     distanceFadeEnd: 10000
-    textureOffset: {x: 0, y: 0, z: 0}
+    textureOffset: {x: -0, y: -0, z: -0}
     falloffMode: 0
     maskMode: 0
     materialMask: {fileID: 0}
@@ -6135,7 +6135,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: 3872e09ede953a14ca3a793684969032, type: 2}
+  sharedProfile: {fileID: 11400000, guid: adfaf736aef2364449f29cff68620d96, type: 2}
 --- !u!4 &1981134929
 Transform:
   m_ObjectHideFlags: 0
