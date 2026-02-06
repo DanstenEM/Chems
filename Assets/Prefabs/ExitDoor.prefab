@@ -113,6 +113,29 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2423188891123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691354485123319049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 396677cdd0e74f5e9fe8fe5813ee4265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _keyType: 0
+  doorAnimator: {fileID: 6947478812841729629}
+  openTriggerName: Open
+  openStateName: 
+  doorToMove: {fileID: 5389351479598700368}
+  openLocalOffset: {x: 0, y: 4, z: 0}
+  fallbackOpenDuration: 1.25
+  oneTimeUse: 1
+  onDoorOpened:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &691354485123319049
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,6 +148,7 @@ GameObject:
   - component: {fileID: 9180407348892174192}
   - component: {fileID: 7726050037723844508}
   - component: {fileID: 7642723132459537159}
+  - component: {fileID: 2423188891123456789}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -219,7 +243,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
