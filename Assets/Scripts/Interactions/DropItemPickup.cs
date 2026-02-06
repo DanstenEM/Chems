@@ -25,7 +25,10 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     [SerializeField] private float lookRayDistance = 4f;
     [SerializeField] private LayerMask lookLayers = ~0;
 
-    [Header("Ground Alignment")]
+    [Header("Drop Physics")]
+    [SerializeField] private bool useDropPhysics = true;
+    [SerializeField] private float gravityAcceleration = 20f;
+    [SerializeField] private float maxFallSpeed = 25f;
     [SerializeField] private float groundRaycastHeight = 1.5f;
     [SerializeField] private float groundRaycastDistance = 6f;
     [SerializeField] private float groundOffset = 0.02f;
@@ -38,6 +41,8 @@ public class DropItemPickup : MonoBehaviour, IInteractable
     private Collider pickupCollider;
     private bool isPickedUp;
     private bool isTriggerHintActive;
+    private bool isGrounded;
+    private float currentFallSpeed;
     private string currentHintLabel = "E";
 
     private void Awake()
@@ -45,7 +50,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         inventorySystem = InventorySystem.GameplayInventory;
         pickupCollider = GetComponent<Collider>();
         EnsureHint();
-        AlignToGround();
+        InitializeDropState();
         ExpandPickupArea();
     }
 
@@ -68,6 +73,7 @@ public class DropItemPickup : MonoBehaviour, IInteractable
 
     private void Update()
     {
+        SimulateDropPhysics();
         UpdateLookHint();
     }
 
@@ -254,7 +260,56 @@ public class DropItemPickup : MonoBehaviour, IInteractable
         hintText.gameObject.SetActive(false);
     }
 
-    private void AlignToGround()
+    private void InitializeDropState()
+    {
+        if (!useDropPhysics)
+        {
+            SnapToGround();
+            isGrounded = true;
+            return;
+        }
+
+        isGrounded = false;
+        currentFallSpeed = 0f;
+    }
+
+    private void SimulateDropPhysics()
+    {
+        if (!useDropPhysics || isGrounded || isPickedUp)
+        {
+            return;
+        }
+
+        var startPosition = transform.position + Vector3.up * groundRaycastHeight;
+        var rayDistance = groundRaycastHeight + groundRaycastDistance;
+
+        if (!Physics.Raycast(startPosition, Vector3.down, out var hit, rayDistance, groundLayers, QueryTriggerInteraction.Ignore))
+        {
+            currentFallSpeed = Mathf.Min(currentFallSpeed + gravityAcceleration * Time.deltaTime, maxFallSpeed);
+            transform.position += Vector3.down * (currentFallSpeed * Time.deltaTime);
+            return;
+        }
+
+        float targetY = hit.point.y + groundOffset;
+        currentFallSpeed = Mathf.Min(currentFallSpeed + gravityAcceleration * Time.deltaTime, maxFallSpeed);
+        float nextY = transform.position.y - (currentFallSpeed * Time.deltaTime);
+
+        if (nextY <= targetY)
+        {
+            var snappedPosition = transform.position;
+            snappedPosition.y = targetY;
+            transform.position = snappedPosition;
+            currentFallSpeed = 0f;
+            isGrounded = true;
+            return;
+        }
+
+        var nextPosition = transform.position;
+        nextPosition.y = nextY;
+        transform.position = nextPosition;
+    }
+
+    private void SnapToGround()
     {
         var startPosition = transform.position + Vector3.up * groundRaycastHeight;
         var rayDistance = groundRaycastHeight + groundRaycastDistance;
