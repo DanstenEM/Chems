@@ -44,8 +44,8 @@ public class Health : MonoBehaviour
         {
             Die();
         }
-
-        colorAjusment?.Execute();
+        if(isPlayer)
+            colorAjusment?.Execute();
     }
 
     void Die()

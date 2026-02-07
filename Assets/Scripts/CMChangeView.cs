@@ -22,18 +22,19 @@ public class CMChangeView : MonoBehaviour, IInitializable, IDisposable
         if (isDie || LootCrateUI.IsAnyLootMenuOpen) return;
 
         isRight = !isRight;
-        var tweeen = isRight switch
+        ChangeView(isRight);
+    }
+    
+    private void ChangeView(bool value)
+    {
+        if (isDie || LootCrateUI.IsAnyLootMenuOpen) return;
+
+        var tweeen = value switch
         {
             true => target.transform.DOLocalMove(right, duration),
             false => target.transform.DOLocalMove(left, duration)
         };
         tweeen.Play();
-    }
-
-    private void Action_performedL(InputAction.CallbackContext obj)
-    {
-        var tween = target.transform.DOLocalMove(left, duration);
-        tween.Play();
     }
 
     public void Initialize()
@@ -42,6 +43,7 @@ public class CMChangeView : MonoBehaviour, IInitializable, IDisposable
         actionChange.action.Enable();
         actionChange.action.performed += Action_performedR;
 
+        ChangeView(true);
     }
 
     private void IsDie_Changed(bool obj)
