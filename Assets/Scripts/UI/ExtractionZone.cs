@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEditor;
 #endif
 
+[RequireComponent(typeof(Collider))]
 public class ExtractionZone : MonoBehaviour
 {
     public float extractTime = 5f;
@@ -17,13 +18,30 @@ public class ExtractionZone : MonoBehaviour
     [SerializeField] private Color overlayTextColor = Color.white;
     [SerializeField] private Vector2 overlayOffset = new Vector2(0f, -60f);
 
+    [Header("Activation")]
+    [SerializeField] private DoorButtonInteractable doorButton;
+    [SerializeField] private bool requireDoorOpen = true;
+
     float timer;
     bool playerInside;
+    bool isActive = true;
     Canvas overlayCanvas;
     RectTransform overlayRoot;
+    Collider zoneCollider;
 
     void Awake()
     {
+        zoneCollider = GetComponent<Collider>();
+
+        if (doorButton != null)
+        {
+            doorButton.DoorOpened += HandleDoorOpened;
+            if (requireDoorOpen)
+            {
+                SetZoneActive(false);
+            }
+        }
+
         if (timerText == null && autoCreateOverlay)
         {
             BuildOverlay();
@@ -38,6 +56,7 @@ public class ExtractionZone : MonoBehaviour
 
     void Update()
     {
+        if (!isActive) return;
         if (!playerInside) return;
 
         timer += Time.deltaTime;
@@ -70,6 +89,30 @@ public class ExtractionZone : MonoBehaviour
             EditorApplication.isPlaying = false;
         }
 #endif
+    }
+
+    private void HandleDoorOpened()
+    {
+        SetZoneActive(true);
+    }
+
+    private void SetZoneActive(bool active)
+    {
+        isActive = active;
+        if (zoneCollider != null)
+        {
+            zoneCollider.enabled = active;
+        }
+
+        if (!active)
+        {
+            playerInside = false;
+            timer = 0f;
+            if (timerText)
+            {
+                timerText.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void BuildOverlay()
@@ -113,8 +156,17 @@ public class ExtractionZone : MonoBehaviour
         timerText.gameObject.SetActive(false);
     }
 
+    private void OnDestroy()
+    {
+        if (doorButton != null)
+        {
+            doorButton.DoorOpened -= HandleDoorOpened;
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
+        if (!isActive) return;
         if (!other.CompareTag("Player")) return;
 
         playerInside = true;
@@ -126,6 +178,7 @@ public class ExtractionZone : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
+        if (!isActive) return;
         if (!other.CompareTag("Player")) return;
 
         playerInside = false;
