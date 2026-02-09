@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 9180407348892174192}
   - component: {fileID: 7726050037723844508}
   - component: {fileID: 7642723132459537159}
+  - component: {fileID: 4293112129277109250}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -225,6 +226,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4293112129277109250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691354485123319049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22ae591c0c20458f9dff1b73855f28c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyType: 0
+  doorAnimator: {fileID: 6947478812841729629}
+  openStateName: ExtractDoorOpen
+  playOnce: 1
+  hintText: {fileID: 0}
+  hintOffset: {x: 0, y: 1.2, z: 0}
+  hintFormat: PRESS {0} OPEN
 --- !u!1 &1956319936344398282
 GameObject:
   m_ObjectHideFlags: 0
