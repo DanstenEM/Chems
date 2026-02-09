@@ -15,10 +15,7 @@ public class PlayerOverlay : MonoBehaviour
 
     [Header("Stamina")]
     [SerializeField] private ThirdPersonMovement playerMovement;
-    [SerializeField] private Vector2 staminaBarSize = new Vector2(160f, 12f);
-    [SerializeField] private Vector2 staminaBarOffset = new Vector2(12f, 22f);
-    [SerializeField] private Color staminaBackgroundColor = new Color(1f, 1f, 1f, 0.25f);
-    [SerializeField] private Color staminaFillColor = new Color(0.2f, 0.8f, 1f, 0.9f);
+    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, 20f);
 
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
@@ -32,7 +29,6 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private RectTransform overlayRoot;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private RectTransform staminaRoot;
-    [SerializeField] private Image staminaFill;
     [SerializeField] private TextMeshProUGUI staminaText;
     [SerializeField] private RectTransform weaponSlotsRoot;
 
@@ -199,40 +195,23 @@ public class PlayerOverlay : MonoBehaviour
 
     private void UpdateStaminaBar()
     {
-        if (staminaFill == null)
+        if (staminaText == null)
         {
             return;
         }
-
-        EnsureStaminaFillConfigured();
 
         if (playerMovement == null || !playerMovement.isActiveAndEnabled)
         {
             playerMovement = FindPlayerMovement();
         }
 
-        float staminaValue = playerMovement != null ? playerMovement.StaminaNormalized : 0f;
-        float normalized = Mathf.Clamp01(staminaValue);
-        staminaFill.fillAmount = normalized;
-
-        if (staminaText != null && playerMovement != null)
+        if (playerMovement != null)
         {
-            float currentStamina = normalized * 100f;
-            staminaText.text = $"{currentStamina:0}/100";
+            float currentStamina = Mathf.Clamp01(playerMovement.StaminaNormalized) * 100f;
+            staminaText.text = $"Stamina: {currentStamina:0}/100";
         }
     }
 
-    private void EnsureStaminaFillConfigured()
-    {
-        if (staminaFill.type == Image.Type.Filled)
-        {
-            return;
-        }
-
-        staminaFill.type = Image.Type.Filled;
-        staminaFill.fillMethod = Image.FillMethod.Horizontal;
-        staminaFill.fillOrigin = (int)Image.OriginHorizontal.Left;
-    }
 
     private InventorySlot[] GetInventorySlots()
     {
@@ -494,7 +473,7 @@ public class PlayerOverlay : MonoBehaviour
 
     private RectTransform CreateStaminaBar(Transform parent, string name)
     {
-        var barObject = new GameObject(name, typeof(RectTransform), typeof(Image));
+        var barObject = new GameObject(name, typeof(RectTransform));
         barObject.layer = LayerMask.NameToLayer("UI");
         barObject.transform.SetParent(parent, false);
 
@@ -502,30 +481,8 @@ public class PlayerOverlay : MonoBehaviour
         rectTransform.anchorMin = new Vector2(0f, 0f);
         rectTransform.anchorMax = new Vector2(0f, 0f);
         rectTransform.pivot = new Vector2(0f, 0f);
-        rectTransform.sizeDelta = staminaBarSize;
-        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaBarOffset.x, staminaBarOffset.y);
-
-        var background = barObject.GetComponent<Image>();
-        background.color = staminaBackgroundColor;
-        background.raycastTarget = false;
-
-        var fillObject = new GameObject($"{name}_Fill", typeof(RectTransform), typeof(Image));
-        fillObject.layer = LayerMask.NameToLayer("UI");
-        fillObject.transform.SetParent(barObject.transform, false);
-
-        var fillRect = fillObject.GetComponent<RectTransform>();
-        fillRect.anchorMin = new Vector2(0f, 0f);
-        fillRect.anchorMax = new Vector2(1f, 1f);
-        fillRect.offsetMin = Vector2.zero;
-        fillRect.offsetMax = Vector2.zero;
-
-        staminaFill = fillObject.GetComponent<Image>();
-        staminaFill.color = staminaFillColor;
-        staminaFill.type = Image.Type.Filled;
-        staminaFill.fillMethod = Image.FillMethod.Horizontal;
-        staminaFill.fillOrigin = (int)Image.OriginHorizontal.Left;
-        staminaFill.fillAmount = 1f;
-        staminaFill.raycastTarget = false;
+        rectTransform.sizeDelta = Vector2.zero;
+        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, staminaTextOffset.y);
 
         var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.layer = LayerMask.NameToLayer("UI");
@@ -541,7 +498,7 @@ public class PlayerOverlay : MonoBehaviour
         staminaText.color = textColor;
         staminaText.fontSize = 20;
         staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
-        staminaText.text = "100/100";
+        staminaText.text = "Stamina: 100/100";
         staminaText.raycastTarget = false;
 
         if (staminaText.font == null)
