@@ -1,10 +1,8 @@
-using System;
 using System.Collections;
 using System.Globalization;
 using Assets.Scripts.Interactions.Abstract;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Collider))]
@@ -14,14 +12,11 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
 
     [field: SerializeField] public KeyActiveType keyType { get; set; } = KeyActiveType.Tap;
 
-    public event Action DoorOpened;
-
     [Header("Door")]
     [SerializeField] private Animator doorAnimator;
     [SerializeField] private string openTriggerName = "Open";
     [SerializeField] private string openStateName = "ExtractDoorOpen";
     [SerializeField] private bool lockAfterOpen = true;
-    [SerializeField] private UnityEvent onDoorOpened;
 
     [Header("Hint")]
     [SerializeField] private TMP_Text hintText;
@@ -84,9 +79,6 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         {
             doorAnimator.Play(openStateName, 0, 0f);
         }
-
-        DoorOpened?.Invoke();
-        onDoorOpened?.Invoke();
 
         stopRoutine = StartCoroutine(StopAnimatorAfterPlay());
     }
