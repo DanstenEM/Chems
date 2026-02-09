@@ -10,6 +10,8 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     public float rotationSpeed = 12f;
     public float gravity = -20f;
     public float jumpHeight = 1.5f;
+    [SerializeField] float groundCheckDistance = 0.2f;
+    [SerializeField] LayerMask groundMask = ~0;
 
     public float CurrentSpeed { get; private set; }
 
@@ -79,7 +81,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     void HandleGravity()
     {
-        if (controller.isGrounded && velocity.y < 0)
+        if (IsGrounded() && velocity.y < 0)
         {
             velocity.y = -2f;
         }
@@ -95,10 +97,31 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
             return;
         }
 
-        if (controller.isGrounded && jumpAction.triggered)
+        if (IsGrounded() && jumpAction.triggered)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
+    }
+
+    bool IsGrounded()
+    {
+        if (controller.isGrounded)
+        {
+            return true;
+        }
+
+        Vector3 origin = controller.bounds.center;
+        float radius = Mathf.Max(0.01f, controller.radius * 0.9f);
+        float castDistance = (controller.height * 0.5f) - controller.radius + groundCheckDistance;
+
+        return Physics.SphereCast(
+            origin,
+            radius,
+            Vector3.down,
+            out _,
+            castDistance,
+            groundMask,
+            QueryTriggerInteraction.Ignore);
     }
 
     public void Initialize()
