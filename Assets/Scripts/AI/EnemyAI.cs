@@ -39,12 +39,6 @@ public class EnemyAI : MonoBehaviour
 
         if (!shooter)
             shooter = GetComponent<EnemyShooter>();
-
-        if (agent == null || shooter == null)
-        {
-            Debug.LogError("EnemyAI: Missing NavMeshAgent or EnemyShooter.", this);
-            enabled = false;
-        }
     }
 
     void Update()
@@ -85,10 +79,6 @@ public class EnemyAI : MonoBehaviour
 
     void Patrol()
     {
-        if (!agent || !shooter)
-        {
-            return;
-        }
         shooter.enabled = false;
 
         patrolTimer += Time.deltaTime;
@@ -111,10 +101,6 @@ public class EnemyAI : MonoBehaviour
 
     void Chase()
     {
-        if (!agent || !shooter)
-        {
-            return;
-        }
         shooter.enabled = false;
 
         agent.isStopped = false;
@@ -123,10 +109,6 @@ public class EnemyAI : MonoBehaviour
 
     void Attack()
     {
-        if (!agent || !shooter)
-        {
-            return;
-        }
         agent.isStopped = true;
 
         shooter.enabled = true;
