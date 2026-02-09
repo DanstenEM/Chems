@@ -13,6 +13,13 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private string healthLabel = "Health";
     [SerializeField] private TMP_FontAsset fallbackFont;
 
+    [Header("Stamina")]
+    [SerializeField] private ThirdPersonMovement playerMovement;
+    [SerializeField] private Vector2 staminaBarSize = new Vector2(200f, 12f);
+    [SerializeField] private Vector2 staminaBarOffset = new Vector2(18f, 12f);
+    [SerializeField] private Color staminaBackgroundColor = new Color(1f, 1f, 1f, 0.25f);
+    [SerializeField] private Color staminaFillColor = new Color(0.2f, 0.8f, 1f, 0.9f);
+
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
     [SerializeField] private Vector2 panelOffset = new Vector2(24f, 24f);
@@ -24,6 +31,8 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private Canvas overlayCanvas;
     [SerializeField] private RectTransform overlayRoot;
     [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private RectTransform staminaRoot;
+    [SerializeField] private Image staminaFill;
     [SerializeField] private RectTransform weaponSlotsRoot;
 
     [Header("Weapon Slots")]
@@ -67,18 +76,25 @@ public class PlayerOverlay : MonoBehaviour
             health = FindPlayerHealth();
         }
 
+        if (playerMovement == null)
+        {
+            playerMovement = FindPlayerMovement();
+        }
+
         if (inventorySystem == null)
         {
             inventorySystem = InventorySystem.GameplayInventory;
         }
 
         UpdateHealthText();
+        UpdateStaminaBar();
         UpdateWeaponSlots();
     }
 
     private void Update()
     {
         UpdateHealthText();
+        UpdateStaminaBar();
         UpdateWeaponSlots();
         HandleWeaponSlotInput();
     }
@@ -178,6 +194,22 @@ public class PlayerOverlay : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void UpdateStaminaBar()
+    {
+        if (staminaFill == null)
+        {
+            return;
+        }
+
+        if (playerMovement == null)
+        {
+            playerMovement = FindPlayerMovement();
+        }
+
+        float staminaValue = playerMovement != null ? playerMovement.StaminaNormalized : 0f;
+        staminaFill.fillAmount = Mathf.Clamp01(staminaValue);
     }
 
     private InventorySlot[] GetInventorySlots()
@@ -311,11 +343,26 @@ public class PlayerOverlay : MonoBehaviour
         return healths.Length > 0 ? healths[0] : null;
     }
 
+    private ThirdPersonMovement FindPlayerMovement()
+    {
+        var movers = FindObjectsOfType<ThirdPersonMovement>();
+        foreach (var candidate in movers)
+        {
+            if (candidate != null && candidate.CompareTag("Player"))
+            {
+                return candidate;
+            }
+        }
+
+        return movers.Length > 0 ? movers[0] : null;
+    }
+
     private void BuildDefaultLayout()
     {
         overlayCanvas = CreateCanvas("PlayerOverlayCanvas");
         overlayRoot = CreatePanel(overlayCanvas.transform, "PlayerOverlayPanel");
         healthText = CreateLabel(overlayRoot, "HealthText");
+        staminaRoot = CreateStaminaBar(overlayRoot, "StaminaBar");
         weaponSlotsRoot = CreateWeaponSlots(overlayCanvas.transform, "WeaponSlotsOverlay");
     }
 
@@ -411,6 +458,44 @@ public class PlayerOverlay : MonoBehaviour
             weaponIconImages[i] = slot.icon;
             weaponCountTexts[i] = slot.count;
         }
+
+        return rectTransform;
+    }
+
+    private RectTransform CreateStaminaBar(Transform parent, string name)
+    {
+        var barObject = new GameObject(name, typeof(RectTransform), typeof(Image));
+        barObject.layer = LayerMask.NameToLayer("UI");
+        barObject.transform.SetParent(parent, false);
+
+        var rectTransform = barObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0f, 0f);
+        rectTransform.anchorMax = new Vector2(0f, 0f);
+        rectTransform.pivot = new Vector2(0f, 0f);
+        rectTransform.sizeDelta = staminaBarSize;
+        rectTransform.anchoredPosition = staminaBarOffset;
+
+        var background = barObject.GetComponent<Image>();
+        background.color = staminaBackgroundColor;
+        background.raycastTarget = false;
+
+        var fillObject = new GameObject($"{name}_Fill", typeof(RectTransform), typeof(Image));
+        fillObject.layer = LayerMask.NameToLayer("UI");
+        fillObject.transform.SetParent(barObject.transform, false);
+
+        var fillRect = fillObject.GetComponent<RectTransform>();
+        fillRect.anchorMin = new Vector2(0f, 0f);
+        fillRect.anchorMax = new Vector2(1f, 1f);
+        fillRect.offsetMin = Vector2.zero;
+        fillRect.offsetMax = Vector2.zero;
+
+        staminaFill = fillObject.GetComponent<Image>();
+        staminaFill.color = staminaFillColor;
+        staminaFill.type = Image.Type.Filled;
+        staminaFill.fillMethod = Image.FillMethod.Horizontal;
+        staminaFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+        staminaFill.fillAmount = 1f;
+        staminaFill.raycastTarget = false;
 
         return rectTransform;
     }

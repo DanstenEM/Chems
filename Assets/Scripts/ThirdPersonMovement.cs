@@ -12,8 +12,13 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     public float jumpHeight = 1.5f;
     [SerializeField] float groundCheckDistance = 0.2f;
     [SerializeField] LayerMask groundMask = ~0;
+    [Header("Stamina")]
+    [SerializeField] float maxStamina = 7f;
+    [SerializeField] float staminaDrainRate = 1f;
+    [SerializeField] float staminaRegenRate = 1f;
 
     public float CurrentSpeed { get; private set; }
+    public float StaminaNormalized => maxStamina > 0f ? stamina / maxStamina : 0f;
 
 
     CharacterController controller;
@@ -28,6 +33,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     InputAction jumpAction;
 
     Vector3 velocity;
+    float stamina;
 
     void Update()
     {
@@ -41,6 +47,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
         if (LootCrateUI.IsAnyLootMenuOpen)
         {
             CurrentSpeed = 0f;
+            UpdateStamina(false);
             return;
         }
 
@@ -59,11 +66,15 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
         bool canSprint = sprintAction.IsPressed()
             && (aimController == null || !aimController.IsAiming())
-            && (shooter == null || !shooter.IsFiring);
-        float speed = canSprint ? sprintSpeed : walkSpeed;
+            && (shooter == null || !shooter.IsFiring)
+            && stamina > 0f;
+        bool isSprinting = canSprint && moveDir.sqrMagnitude > 0.01f;
+        float speed = isSprinting ? sprintSpeed : walkSpeed;
 
         controller.Move(moveDir * speed * Time.deltaTime);
         CurrentSpeed = controller.velocity.magnitude;
+
+        UpdateStamina(isSprinting);
 
         if (moveDir.sqrMagnitude > 0.01f
             && (aimController == null || !aimController.IsAiming())
@@ -124,6 +135,24 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
             QueryTriggerInteraction.Ignore);
     }
 
+    void UpdateStamina(bool isSprinting)
+    {
+        if (maxStamina <= 0f)
+        {
+            stamina = 0f;
+            return;
+        }
+
+        if (isSprinting)
+        {
+            stamina = Mathf.Max(0f, stamina - staminaDrainRate * Time.deltaTime);
+        }
+        else
+        {
+            stamina = Mathf.Min(maxStamina, stamina + staminaRegenRate * Time.deltaTime);
+        }
+    }
+
     public void Initialize()
     {
         controller = GetComponent<CharacterController>();
@@ -135,5 +164,6 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
         moveAction = input.actions["Move"];
         sprintAction = input.actions["Sprint"];
         jumpAction = input.actions["Jump"];
+        stamina = maxStamina;
     }
 }
