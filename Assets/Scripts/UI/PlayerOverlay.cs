@@ -203,6 +203,8 @@ public class PlayerOverlay : MonoBehaviour
             return;
         }
 
+        EnsureStaminaFillConfigured();
+
         if (playerMovement == null || !playerMovement.isActiveAndEnabled)
         {
             playerMovement = FindPlayerMovement();
@@ -216,6 +218,18 @@ public class PlayerOverlay : MonoBehaviour
         {
             staminaRoot.gameObject.SetActive(playerMovement != null && normalized < 0.999f);
         }
+    }
+
+    private void EnsureStaminaFillConfigured()
+    {
+        if (staminaFill.type == Image.Type.Filled)
+        {
+            return;
+        }
+
+        staminaFill.type = Image.Type.Filled;
+        staminaFill.fillMethod = Image.FillMethod.Horizontal;
+        staminaFill.fillOrigin = (int)Image.OriginHorizontal.Left;
     }
 
     private InventorySlot[] GetInventorySlots()
