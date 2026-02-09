@@ -12,7 +12,7 @@ public class ExtractionZone : MonoBehaviour
     [SerializeField] private TMP_FontAsset fallbackFont;
     [SerializeField] private int overlayFontSize = 36;
     [SerializeField] private Color overlayTextColor = Color.white;
-    [SerializeField] private Vector2 overlayOffset = new Vector2(0f, -120f);
+    [SerializeField] private Vector2 overlayOffset = new Vector2(0f, -60f);
 
     float timer;
     bool playerInside;
@@ -84,8 +84,9 @@ public class ExtractionZone : MonoBehaviour
         textObject.transform.SetParent(overlayRoot, false);
 
         var textTransform = textObject.GetComponent<RectTransform>();
-        textTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        textTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        textTransform.anchorMin = new Vector2(0.5f, 1f);
+        textTransform.anchorMax = new Vector2(0.5f, 1f);
+        textTransform.pivot = new Vector2(0.5f, 1f);
         textTransform.anchoredPosition = overlayOffset;
         textTransform.sizeDelta = new Vector2(600f, 80f);
 
