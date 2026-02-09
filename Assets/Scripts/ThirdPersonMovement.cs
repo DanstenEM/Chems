@@ -63,7 +63,9 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
         controller.Move(moveDir * speed * Time.deltaTime);
         CurrentSpeed = controller.velocity.magnitude;
 
-        if (moveDir.sqrMagnitude > 0.01f && (aimController == null || !aimController.IsAiming()))
+        if (moveDir.sqrMagnitude > 0.01f
+            && (aimController == null || !aimController.IsAiming())
+            && (shooter == null || !shooter.IsFiring))
         {
             Vector3 lookDir = moveDir;
             lookDir.y = 0f;
