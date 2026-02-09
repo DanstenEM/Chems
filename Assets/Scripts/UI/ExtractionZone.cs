@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,6 +22,8 @@ public class ExtractionZone : MonoBehaviour
     [Header("Activation")]
     [SerializeField] private DoorButtonInteractable doorButton;
     [SerializeField] private bool requireDoorOpen = true;
+    [SerializeField] private string extractionSceneName;
+    [SerializeField] private bool disablePlayerOnExtract = true;
 
     float timer;
     bool playerInside;
@@ -80,8 +83,8 @@ public class ExtractionZone : MonoBehaviour
         if (timerText)
             timerText.gameObject.SetActive(false);
 
-        // TODO: finish game / load scene / disable player
         enabled = false;
+        HandleExtractionComplete();
 
 #if UNITY_EDITOR
         if (EditorApplication.isPlaying)
@@ -89,6 +92,30 @@ public class ExtractionZone : MonoBehaviour
             EditorApplication.isPlaying = false;
         }
 #endif
+    }
+
+    private void HandleExtractionComplete()
+    {
+        if (!string.IsNullOrWhiteSpace(extractionSceneName))
+        {
+            SceneManager.LoadScene(extractionSceneName);
+            return;
+        }
+
+        if (disablePlayerOnExtract)
+        {
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                foreach (var behaviour in player.GetComponentsInChildren<MonoBehaviour>())
+                {
+                    if (behaviour != this)
+                    {
+                        behaviour.enabled = false;
+                    }
+                }
+            }
+        }
     }
 
     private void HandleDoorOpened()

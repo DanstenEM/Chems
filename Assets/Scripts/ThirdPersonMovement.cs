@@ -36,9 +36,15 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     Vector3 velocity;
     float stamina;
     float lastSprintTime = float.NegativeInfinity;
+    bool isInitialized;
 
     void Update()
     {
+        if (!isInitialized)
+        {
+            return;
+        }
+
         HandleMovement();
         HandleJump();
         HandleGravity();
@@ -159,14 +165,39 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     public void Initialize()
     {
         controller = GetComponent<CharacterController>();
-        cam = Camera.main.transform;
-        aimController = GetComponent<AimController>();
-        shooter = GetComponent<Shooter>();
+        if (Camera.main != null)
+        {
+            cam = Camera.main.transform;
+        }
+        else
+        {
+            Debug.LogError("ThirdPersonMovement: No Main Camera found in scene.", this);
+            enabled = false;
+            return;
+        }
 
+        if (input == null)
+        {
+            Debug.LogError("ThirdPersonMovement: PlayerInput not injected.", this);
+            enabled = false;
+            return;
+        }
 
         moveAction = input.actions["Move"];
         sprintAction = input.actions["Sprint"];
         jumpAction = input.actions["Jump"];
+
+        if (moveAction == null || sprintAction == null || jumpAction == null)
+        {
+            Debug.LogError("ThirdPersonMovement: Missing required input actions.", this);
+            enabled = false;
+            return;
+        }
+        aimController = GetComponent<AimController>();
+        shooter = GetComponent<Shooter>();
+
+
         stamina = maxStamina;
+        isInitialized = true;
     }
 }
