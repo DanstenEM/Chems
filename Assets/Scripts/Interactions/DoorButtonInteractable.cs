@@ -14,7 +14,7 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
 
     [Header("Door")]
     [SerializeField] private Animator doorAnimator;
-    [SerializeField] private string openStateName = "ExtractDoorOpen";
+    [SerializeField] private string openTriggerName = "Open";
     [SerializeField] private bool playOnce = true;
     private bool hasPlayed;
 
@@ -67,7 +67,8 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        doorAnimator.Play(openStateName, 0, 0f);
+        doorAnimator.ResetTrigger(openTriggerName);
+        doorAnimator.SetTrigger(openTriggerName);
         hasPlayed = true;
     }
 

@@ -240,7 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keyType: 0
   doorAnimator: {fileID: 6947478812841729629}
-  openStateName: ExtractDoorOpen
+  openTriggerName: Open
   playOnce: 1
   hintText: {fileID: 0}
   hintOffset: {x: 0, y: 1.2, z: 0}
