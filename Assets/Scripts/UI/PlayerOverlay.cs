@@ -482,7 +482,7 @@ public class PlayerOverlay : MonoBehaviour
         rectTransform.anchorMax = new Vector2(0f, 0f);
         rectTransform.pivot = new Vector2(0f, 0f);
         rectTransform.sizeDelta = new Vector2(180f, 24f);
-        var alignedStaminaY = (panelSize.y - rectTransform.sizeDelta.y) * 0.5f + staminaTextOffset.y;
+        var alignedStaminaY = panelPadding.y + staminaTextOffset.y;
         rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, alignedStaminaY);
 
         var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
