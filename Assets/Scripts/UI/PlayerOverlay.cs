@@ -16,7 +16,7 @@ public class PlayerOverlay : MonoBehaviour
     [Header("Stamina")]
     [SerializeField] private ThirdPersonMovement playerMovement;
     [SerializeField] private Vector2 staminaBarSize = new Vector2(200f, 12f);
-    [SerializeField] private Vector2 staminaBarOffset = new Vector2(18f, 12f);
+    [SerializeField] private Vector2 staminaBarOffset = new Vector2(0f, -120f);
     [SerializeField] private Color staminaBackgroundColor = new Color(1f, 1f, 1f, 0.25f);
     [SerializeField] private Color staminaFillColor = new Color(0.2f, 0.8f, 1f, 0.9f);
 
@@ -209,7 +209,13 @@ public class PlayerOverlay : MonoBehaviour
         }
 
         float staminaValue = playerMovement != null ? playerMovement.StaminaNormalized : 0f;
-        staminaFill.fillAmount = Mathf.Clamp01(staminaValue);
+        float normalized = Mathf.Clamp01(staminaValue);
+        staminaFill.fillAmount = normalized;
+
+        if (staminaRoot != null)
+        {
+            staminaRoot.gameObject.SetActive(normalized < 0.999f);
+        }
     }
 
     private InventorySlot[] GetInventorySlots()
@@ -396,9 +402,9 @@ public class PlayerOverlay : MonoBehaviour
         panelObject.transform.SetParent(parent, false);
 
         var rectTransform = panelObject.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0f, 0f);
-        rectTransform.anchorMax = new Vector2(0f, 0f);
-        rectTransform.pivot = new Vector2(0f, 0f);
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
         rectTransform.sizeDelta = panelSize;
         rectTransform.anchoredPosition = panelOffset;
 
@@ -469,9 +475,9 @@ public class PlayerOverlay : MonoBehaviour
         barObject.transform.SetParent(parent, false);
 
         var rectTransform = barObject.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0f, 0f);
-        rectTransform.anchorMax = new Vector2(0f, 0f);
-        rectTransform.pivot = new Vector2(0f, 0f);
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
         rectTransform.sizeDelta = staminaBarSize;
         rectTransform.anchoredPosition = staminaBarOffset;
 
