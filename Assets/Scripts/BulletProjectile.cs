@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
 public class BulletProjectile : MonoBehaviour
 {
     public float speed = 120f;
@@ -12,16 +13,29 @@ public class BulletProjectile : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            Debug.LogError("BulletProjectile: Rigidbody missing.", this);
+            enabled = false;
+        }
     }
 
     public void Init(Vector3 direction)
     {
+        if (rb == null)
+        {
+            return;
+        }
         rb.linearVelocity = direction * speed;
         Destroy(gameObject, lifeTime);
     }
 
     void OnCollisionEnter(Collision collision)
     {
+        if (rb == null)
+        {
+            return;
+        }
         Debug.Log("Hit: " + collision.collider.name);
         // DAMAGE
         Health health = collision.collider.GetComponentInParent<Health>();
