@@ -15,7 +15,7 @@ public class PlayerOverlay : MonoBehaviour
 
     [Header("Stamina")]
     [SerializeField] private ThirdPersonMovement playerMovement;
-    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, 0f);
+    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, -6f);
 
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
