@@ -15,8 +15,8 @@ public class PlayerOverlay : MonoBehaviour
 
     [Header("Stamina")]
     [SerializeField] private ThirdPersonMovement playerMovement;
-    [SerializeField] private Vector2 staminaBarSize = new Vector2(200f, 12f);
-    [SerializeField] private Vector2 staminaBarOffset = new Vector2(0f, -120f);
+    [SerializeField] private Vector2 staminaBarSize = new Vector2(160f, 12f);
+    [SerializeField] private Vector2 staminaBarOffset = new Vector2(12f, 22f);
     [SerializeField] private Color staminaBackgroundColor = new Color(1f, 1f, 1f, 0.25f);
     [SerializeField] private Color staminaFillColor = new Color(0.2f, 0.8f, 1f, 0.9f);
 
@@ -33,6 +33,7 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private RectTransform staminaRoot;
     [SerializeField] private Image staminaFill;
+    [SerializeField] private TextMeshProUGUI staminaText;
     [SerializeField] private RectTransform weaponSlotsRoot;
 
     [Header("Weapon Slots")]
@@ -214,9 +215,10 @@ public class PlayerOverlay : MonoBehaviour
         float normalized = Mathf.Clamp01(staminaValue);
         staminaFill.fillAmount = normalized;
 
-        if (staminaRoot != null)
+        if (staminaText != null && playerMovement != null)
         {
-            staminaRoot.gameObject.SetActive(playerMovement != null && normalized < 0.999f);
+            float currentStamina = normalized * 100f;
+            staminaText.text = $"{currentStamina:0}/100";
         }
     }
 
@@ -390,7 +392,7 @@ public class PlayerOverlay : MonoBehaviour
         overlayCanvas = CreateCanvas("PlayerOverlayCanvas");
         overlayRoot = CreatePanel(overlayCanvas.transform, "PlayerOverlayPanel");
         healthText = CreateLabel(overlayRoot, "HealthText");
-        staminaRoot = CreateStaminaBar(overlayCanvas.transform, "StaminaBar");
+        staminaRoot = CreateStaminaBar(overlayRoot, "StaminaBar");
         weaponSlotsRoot = CreateWeaponSlots(overlayCanvas.transform, "WeaponSlotsOverlay");
     }
 
@@ -497,11 +499,11 @@ public class PlayerOverlay : MonoBehaviour
         barObject.transform.SetParent(parent, false);
 
         var rectTransform = barObject.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMin = new Vector2(0f, 0f);
+        rectTransform.anchorMax = new Vector2(0f, 0f);
+        rectTransform.pivot = new Vector2(0f, 0f);
         rectTransform.sizeDelta = staminaBarSize;
-        rectTransform.anchoredPosition = staminaBarOffset;
+        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaBarOffset.x, staminaBarOffset.y);
 
         var background = barObject.GetComponent<Image>();
         background.color = staminaBackgroundColor;
@@ -524,6 +526,28 @@ public class PlayerOverlay : MonoBehaviour
         staminaFill.fillOrigin = (int)Image.OriginHorizontal.Left;
         staminaFill.fillAmount = 1f;
         staminaFill.raycastTarget = false;
+
+        var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.layer = LayerMask.NameToLayer("UI");
+        textObject.transform.SetParent(barObject.transform, false);
+
+        var textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0f, 0f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.offsetMin = new Vector2(0f, 12f);
+        textRect.offsetMax = new Vector2(0f, 32f);
+
+        staminaText = textObject.GetComponent<TextMeshProUGUI>();
+        staminaText.color = textColor;
+        staminaText.fontSize = 20;
+        staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
+        staminaText.text = "100/100";
+        staminaText.raycastTarget = false;
+
+        if (staminaText.font == null)
+        {
+            staminaText.font = fallbackFont != null ? fallbackFont : TMP_Settings.defaultFontAsset;
+        }
 
         return rectTransform;
     }
