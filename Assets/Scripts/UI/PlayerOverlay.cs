@@ -481,7 +481,7 @@ public class PlayerOverlay : MonoBehaviour
         rectTransform.anchorMin = new Vector2(0f, 0f);
         rectTransform.anchorMax = new Vector2(0f, 0f);
         rectTransform.pivot = new Vector2(0f, 0f);
-        rectTransform.sizeDelta = Vector2.zero;
+        rectTransform.sizeDelta = new Vector2(180f, 24f);
         rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, staminaTextOffset.y);
 
         var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -498,6 +498,8 @@ public class PlayerOverlay : MonoBehaviour
         staminaText.color = textColor;
         staminaText.fontSize = 20;
         staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
+        staminaText.enableWordWrapping = false;
+        staminaText.overflowMode = TextOverflowModes.Overflow;
         staminaText.text = "Stamina: 100";
         staminaText.raycastTarget = false;
 
