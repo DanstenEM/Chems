@@ -1,20 +1,17 @@
 using UnityEngine;
 using TMPro;
-<<<<<<< HEAD
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-=======
->>>>>>> parent of 461e4d5 (Merge pull request #32 from DanstenEM/codex/create-extraction-zone-prefab-with-trigger)
 
+[RequireComponent(typeof(Collider))]
 public class ExtractionZone : MonoBehaviour
 {
     public float extractTime = 5f;
     public TMP_Text timerText;
 
-<<<<<<< HEAD
     [Header("Overlay Defaults")]
     [SerializeField] private bool autoCreateOverlay = true;
     [SerializeField] private TMP_FontAsset fallbackFont;
@@ -28,10 +25,31 @@ public class ExtractionZone : MonoBehaviour
     [SerializeField] private string extractionSceneName;
     [SerializeField] private bool disablePlayerOnExtract = true;
 
-=======
->>>>>>> parent of 461e4d5 (Merge pull request #32 from DanstenEM/codex/create-extraction-zone-prefab-with-trigger)
     float timer;
     bool playerInside;
+    bool isActive = true;
+    Canvas overlayCanvas;
+    RectTransform overlayRoot;
+    Collider zoneCollider;
+
+    void Awake()
+    {
+        zoneCollider = GetComponent<Collider>();
+
+        if (doorButton != null)
+        {
+            doorButton.DoorOpened += HandleDoorOpened;
+            if (requireDoorOpen)
+            {
+                SetZoneActive(false);
+            }
+        }
+
+        if (timerText == null && autoCreateOverlay)
+        {
+            BuildOverlay();
+        }
+    }
 
     void Start()
     {
@@ -41,6 +59,7 @@ public class ExtractionZone : MonoBehaviour
 
     void Update()
     {
+        if (!isActive) return;
         if (!playerInside) return;
 
         timer += Time.deltaTime;
@@ -65,7 +84,6 @@ public class ExtractionZone : MonoBehaviour
             timerText.gameObject.SetActive(false);
 
         enabled = false;
-<<<<<<< HEAD
         HandleExtractionComplete();
 
 #if UNITY_EDITOR
@@ -171,12 +189,11 @@ public class ExtractionZone : MonoBehaviour
         {
             doorButton.DoorOpened -= HandleDoorOpened;
         }
-=======
->>>>>>> parent of 461e4d5 (Merge pull request #32 from DanstenEM/codex/create-extraction-zone-prefab-with-trigger)
     }
 
     void OnTriggerEnter(Collider other)
     {
+        if (!isActive) return;
         if (!other.CompareTag("Player")) return;
 
         playerInside = true;
@@ -188,6 +205,7 @@ public class ExtractionZone : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
+        if (!isActive) return;
         if (!other.CompareTag("Player")) return;
 
         playerInside = false;
