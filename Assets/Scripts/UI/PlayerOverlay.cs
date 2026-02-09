@@ -208,7 +208,7 @@ public class PlayerOverlay : MonoBehaviour
         if (playerMovement != null)
         {
             float currentStamina = Mathf.Clamp01(playerMovement.StaminaNormalized) * 100f;
-            staminaText.text = $"Stamina: {currentStamina:0}/100";
+            staminaText.text = $"Stamina: {currentStamina:0}";
         }
     }
 
@@ -498,7 +498,7 @@ public class PlayerOverlay : MonoBehaviour
         staminaText.color = textColor;
         staminaText.fontSize = 20;
         staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
-        staminaText.text = "Stamina: 100/100";
+        staminaText.text = "Stamina: 100";
         staminaText.raycastTarget = false;
 
         if (staminaText.font == null)
