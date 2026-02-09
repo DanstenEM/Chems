@@ -16,6 +16,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     [SerializeField] float maxStamina = 100f;
     [SerializeField] float staminaDrainRate = 10f;
     [SerializeField] float staminaRegenRate = 10f;
+    [SerializeField] float staminaRegenDelay = 2f;
 
     public float CurrentSpeed { get; private set; }
     public float StaminaNormalized => maxStamina > 0f ? stamina / maxStamina : 0f;
@@ -34,6 +35,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     Vector3 velocity;
     float stamina;
+    float lastSprintTime = float.NegativeInfinity;
 
     void Update()
     {
@@ -146,8 +148,9 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
         if (isSprinting)
         {
             stamina = Mathf.Max(0f, stamina - staminaDrainRate * Time.deltaTime);
+            lastSprintTime = Time.time;
         }
-        else
+        else if (Time.time - lastSprintTime >= staminaRegenDelay)
         {
             stamina = Mathf.Min(maxStamina, stamina + staminaRegenRate * Time.deltaTime);
         }
