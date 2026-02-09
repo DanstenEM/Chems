@@ -1,6 +1,9 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class ExtractionZone : MonoBehaviour
 {
@@ -60,6 +63,13 @@ public class ExtractionZone : MonoBehaviour
 
         // TODO: finish game / load scene / disable player
         enabled = false;
+
+#if UNITY_EDITOR
+        if (EditorApplication.isPlaying)
+        {
+            EditorApplication.isPlaying = false;
+        }
+#endif
     }
 
     private void BuildOverlay()
