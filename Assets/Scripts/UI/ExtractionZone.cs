@@ -1,13 +1,31 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class ExtractionZone : MonoBehaviour
 {
     public float extractTime = 5f;
     public TMP_Text timerText;
 
+    [Header("Overlay Defaults")]
+    [SerializeField] private bool autoCreateOverlay = true;
+    [SerializeField] private TMP_FontAsset fallbackFont;
+    [SerializeField] private int overlayFontSize = 36;
+    [SerializeField] private Color overlayTextColor = Color.white;
+    [SerializeField] private Vector2 overlayOffset = new Vector2(0f, -120f);
+
     float timer;
     bool playerInside;
+    Canvas overlayCanvas;
+    RectTransform overlayRoot;
+
+    void Awake()
+    {
+        if (timerText == null && autoCreateOverlay)
+        {
+            BuildOverlay();
+        }
+    }
 
     void Start()
     {
@@ -42,6 +60,46 @@ public class ExtractionZone : MonoBehaviour
 
         // TODO: finish game / load scene / disable player
         enabled = false;
+    }
+
+    private void BuildOverlay()
+    {
+        var canvasObject = new GameObject("ExtractionOverlayCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        overlayCanvas = canvasObject.GetComponent<Canvas>();
+        overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        overlayCanvas.sortingOrder = 50;
+
+        var scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        overlayRoot = canvasObject.GetComponent<RectTransform>();
+        overlayRoot.anchorMin = Vector2.zero;
+        overlayRoot.anchorMax = Vector2.one;
+        overlayRoot.offsetMin = Vector2.zero;
+        overlayRoot.offsetMax = Vector2.zero;
+
+        var textObject = new GameObject("ExtractionTimerText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(overlayRoot, false);
+
+        var textTransform = textObject.GetComponent<RectTransform>();
+        textTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        textTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        textTransform.anchoredPosition = overlayOffset;
+        textTransform.sizeDelta = new Vector2(600f, 80f);
+
+        var text = textObject.GetComponent<TextMeshProUGUI>();
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = overlayFontSize;
+        text.color = overlayTextColor;
+        if (fallbackFont != null)
+        {
+            text.font = fallbackFont;
+        }
+
+        timerText = text;
+        timerText.gameObject.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
