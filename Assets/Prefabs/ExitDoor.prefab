@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5444462227218815262}
   - component: {fileID: 7972014212124643144}
   - component: {fileID: 383816939019116261}
+  - component: {fileID: 8450001234567891234}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -107,12 +108,31 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8450001234567891234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103457488089579189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68ae7e8deafe402d80db1658e2a72884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyType: 0
+  doorAnimator: {fileID: 6947478812841729629}
+  openStateName: ExtractDoorOpen
+  lockAfterOpen: 1
+  hintText: {fileID: 0}
+  hintOffset: {x: 0, y: 0.35, z: 0}
+  hintFormat: PRESS {0} OPEN
 --- !u!1 &691354485123319049
 GameObject:
   m_ObjectHideFlags: 0
