@@ -203,7 +203,7 @@ public class PlayerOverlay : MonoBehaviour
             return;
         }
 
-        if (playerMovement == null)
+        if (playerMovement == null || !playerMovement.isActiveAndEnabled)
         {
             playerMovement = FindPlayerMovement();
         }
@@ -214,7 +214,7 @@ public class PlayerOverlay : MonoBehaviour
 
         if (staminaRoot != null)
         {
-            staminaRoot.gameObject.SetActive(normalized < 0.999f);
+            staminaRoot.gameObject.SetActive(playerMovement != null && normalized < 0.999f);
         }
     }
 
@@ -354,13 +354,21 @@ public class PlayerOverlay : MonoBehaviour
         var movers = FindObjectsOfType<ThirdPersonMovement>();
         foreach (var candidate in movers)
         {
-            if (candidate != null && candidate.CompareTag("Player"))
+            if (candidate != null && candidate.CompareTag("Player") && candidate.isActiveAndEnabled)
             {
                 return candidate;
             }
         }
 
-        return movers.Length > 0 ? movers[0] : null;
+        foreach (var candidate in movers)
+        {
+            if (candidate != null && candidate.isActiveAndEnabled)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     private void BuildDefaultLayout()
