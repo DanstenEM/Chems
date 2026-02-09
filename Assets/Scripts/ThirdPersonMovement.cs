@@ -13,9 +13,9 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     [SerializeField] float groundCheckDistance = 0.2f;
     [SerializeField] LayerMask groundMask = ~0;
     [Header("Stamina")]
-    [SerializeField] float maxStamina = 7f;
-    [SerializeField] float staminaDrainRate = 1f;
-    [SerializeField] float staminaRegenRate = 1f;
+    [SerializeField] float maxStamina = 100f;
+    [SerializeField] float staminaDrainRate = 10f;
+    [SerializeField] float staminaRegenRate = 10f;
 
     public float CurrentSpeed { get; private set; }
     public float StaminaNormalized => maxStamina > 0f ? stamina / maxStamina : 0f;
