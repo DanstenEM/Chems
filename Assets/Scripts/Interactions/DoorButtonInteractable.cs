@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using Assets.Scripts.Interactions.Abstract;
 using TMPro;
@@ -23,9 +24,12 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
     [SerializeField] private string hintFormat = DefaultHintFormat;
 
     private bool hasOpened;
+    private Coroutine stopRoutine;
+    private Collider cachedCollider;
 
     private void Awake()
     {
+        cachedCollider = GetComponent<Collider>();
         EnsureHint();
     }
 
@@ -59,6 +63,14 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
             return;
         }
 
+        hasOpened = true;
+        DisableInteraction();
+
+        if (stopRoutine != null)
+        {
+            StopCoroutine(stopRoutine);
+        }
+
         if (!string.IsNullOrWhiteSpace(openTriggerName))
         {
             doorAnimator.SetTrigger(openTriggerName);
@@ -67,7 +79,8 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         {
             doorAnimator.Play(openStateName, 0, 0f);
         }
-        hasOpened = true;
+
+        stopRoutine = StartCoroutine(StopAnimatorAfterPlay());
     }
 
     public void Active(InputBinding input)
@@ -117,5 +130,43 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
         hintText.gameObject.SetActive(false);
+    }
+
+    private void DisableInteraction()
+    {
+        if (cachedCollider != null)
+        {
+            cachedCollider.enabled = false;
+        }
+
+        Deactive();
+    }
+
+    private IEnumerator StopAnimatorAfterPlay()
+    {
+        var clipLength = GetAnimationClipLength(openStateName);
+        if (clipLength > 0f)
+        {
+            yield return new WaitForSeconds(clipLength);
+            doorAnimator.enabled = false;
+        }
+    }
+
+    private float GetAnimationClipLength(string clipName)
+    {
+        if (doorAnimator == null || doorAnimator.runtimeAnimatorController == null)
+        {
+            return 0f;
+        }
+
+        foreach (var clip in doorAnimator.runtimeAnimatorController.animationClips)
+        {
+            if (clip != null && clip.name == clipName)
+            {
+                return clip.length;
+            }
+        }
+
+        return 0f;
     }
 }
