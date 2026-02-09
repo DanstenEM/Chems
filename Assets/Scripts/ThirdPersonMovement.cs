@@ -9,6 +9,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     public float sprintSpeed = 7f;
     public float rotationSpeed = 12f;
     public float gravity = -20f;
+    public float jumpHeight = 1.5f;
 
     public float CurrentSpeed { get; private set; }
 
@@ -21,12 +22,14 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
     InputAction moveAction;
     InputAction sprintAction;
+    InputAction jumpAction;
 
     Vector3 velocity;
 
     void Update()
     {
         HandleMovement();
+        HandleJump();
         HandleGravity();
     }
 
@@ -80,6 +83,19 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
         controller.Move(velocity * Time.deltaTime);
     }
 
+    void HandleJump()
+    {
+        if (LootCrateUI.IsAnyLootMenuOpen)
+        {
+            return;
+        }
+
+        if (controller.isGrounded && jumpAction.triggered)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        }
+    }
+
     public void Initialize()
     {
         controller = GetComponent<CharacterController>();
@@ -89,5 +105,6 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
 
         moveAction = input.actions["Move"];
         sprintAction = input.actions["Sprint"];
+        jumpAction = input.actions["Jump"];
     }
 }
