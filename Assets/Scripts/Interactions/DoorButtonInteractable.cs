@@ -22,6 +22,8 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
     [SerializeField] private TMP_Text hintText;
     [SerializeField] private Vector3 hintOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private string hintFormat = DefaultHintFormat;
+    [SerializeField, Range(-1f, 1f)] private float lookDotThreshold = 0.75f;
+    private bool isActive;
 
     private void Awake()
     {
@@ -40,13 +42,20 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
 
     private void LateUpdate()
     {
-        if (hintText == null || !hintText.gameObject.activeSelf)
+        if (hintText == null || !isActive)
         {
             return;
         }
 
         var cameraTarget = Camera.main;
         if (cameraTarget == null)
+        {
+            return;
+        }
+
+        UpdateLookHint(cameraTarget);
+
+        if (!hintText.gameObject.activeSelf)
         {
             return;
         }
@@ -85,6 +94,7 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         }
 
         activeHintOwner = this;
+        isActive = true;
 
         var keyLabel = InputControlPath.ToHumanReadableString(
             input.path,
@@ -95,7 +105,7 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         }
 
         hintText.text = string.Format(CultureInfo.InvariantCulture, hintFormat, keyLabel.ToUpperInvariant());
-        hintText.gameObject.SetActive(true);
+        UpdateLookHint(Camera.main);
     }
 
     public void Deactive()
@@ -106,6 +116,7 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         }
 
         hintText.gameObject.SetActive(false);
+        isActive = false;
 
         if (activeHintOwner == this)
         {
@@ -131,5 +142,17 @@ public class DoorButtonInteractable : MonoBehaviour, IInteractable
         hintText.alignment = TextAlignmentOptions.Center;
         hintText.color = Color.white;
         hintText.gameObject.SetActive(false);
+    }
+
+    private void UpdateLookHint(Camera cameraTarget)
+    {
+        if (cameraTarget == null || hintText == null)
+        {
+            return;
+        }
+
+        var direction = (transform.position - cameraTarget.transform.position).normalized;
+        float dot = Vector3.Dot(cameraTarget.transform.forward, direction);
+        hintText.gameObject.SetActive(dot >= lookDotThreshold);
     }
 }
