@@ -13,6 +13,10 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private string healthLabel = "Health";
     [SerializeField] private TMP_FontAsset fallbackFont;
 
+    [Header("Stamina")]
+    [SerializeField] private ThirdPersonMovement playerMovement;
+    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, 20f);
+
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
     [SerializeField] private Vector2 panelOffset = new Vector2(24f, 24f);
@@ -24,6 +28,8 @@ public class PlayerOverlay : MonoBehaviour
     [SerializeField] private Canvas overlayCanvas;
     [SerializeField] private RectTransform overlayRoot;
     [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private RectTransform staminaRoot;
+    [SerializeField] private TextMeshProUGUI staminaText;
     [SerializeField] private RectTransform weaponSlotsRoot;
 
     [Header("Weapon Slots")]
@@ -67,18 +73,25 @@ public class PlayerOverlay : MonoBehaviour
             health = FindPlayerHealth();
         }
 
+        if (playerMovement == null)
+        {
+            playerMovement = FindPlayerMovement();
+        }
+
         if (inventorySystem == null)
         {
             inventorySystem = InventorySystem.GameplayInventory;
         }
 
         UpdateHealthText();
+        UpdateStaminaBar();
         UpdateWeaponSlots();
     }
 
     private void Update()
     {
         UpdateHealthText();
+        UpdateStaminaBar();
         UpdateWeaponSlots();
         HandleWeaponSlotInput();
     }
@@ -179,6 +192,26 @@ public class PlayerOverlay : MonoBehaviour
             }
         }
     }
+
+    private void UpdateStaminaBar()
+    {
+        if (staminaText == null)
+        {
+            return;
+        }
+
+        if (playerMovement == null || !playerMovement.isActiveAndEnabled)
+        {
+            playerMovement = FindPlayerMovement();
+        }
+
+        if (playerMovement != null)
+        {
+            float currentStamina = Mathf.Clamp01(playerMovement.StaminaNormalized) * 100f;
+            staminaText.text = $"Stamina: {currentStamina:0}";
+        }
+    }
+
 
     private InventorySlot[] GetInventorySlots()
     {
@@ -311,11 +344,34 @@ public class PlayerOverlay : MonoBehaviour
         return healths.Length > 0 ? healths[0] : null;
     }
 
+    private ThirdPersonMovement FindPlayerMovement()
+    {
+        var movers = FindObjectsOfType<ThirdPersonMovement>();
+        foreach (var candidate in movers)
+        {
+            if (candidate != null && candidate.CompareTag("Player") && candidate.isActiveAndEnabled)
+            {
+                return candidate;
+            }
+        }
+
+        foreach (var candidate in movers)
+        {
+            if (candidate != null && candidate.isActiveAndEnabled)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
     private void BuildDefaultLayout()
     {
         overlayCanvas = CreateCanvas("PlayerOverlayCanvas");
         overlayRoot = CreatePanel(overlayCanvas.transform, "PlayerOverlayPanel");
         healthText = CreateLabel(overlayRoot, "HealthText");
+        staminaRoot = CreateStaminaBar(overlayRoot, "StaminaBar");
         weaponSlotsRoot = CreateWeaponSlots(overlayCanvas.transform, "WeaponSlotsOverlay");
     }
 
@@ -410,6 +466,46 @@ public class PlayerOverlay : MonoBehaviour
             weaponSlotImages[i] = slot.background;
             weaponIconImages[i] = slot.icon;
             weaponCountTexts[i] = slot.count;
+        }
+
+        return rectTransform;
+    }
+
+    private RectTransform CreateStaminaBar(Transform parent, string name)
+    {
+        var barObject = new GameObject(name, typeof(RectTransform));
+        barObject.layer = LayerMask.NameToLayer("UI");
+        barObject.transform.SetParent(parent, false);
+
+        var rectTransform = barObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0f, 0f);
+        rectTransform.anchorMax = new Vector2(0f, 0f);
+        rectTransform.pivot = new Vector2(0f, 0f);
+        rectTransform.sizeDelta = new Vector2(180f, 24f);
+        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, staminaTextOffset.y);
+
+        var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.layer = LayerMask.NameToLayer("UI");
+        textObject.transform.SetParent(barObject.transform, false);
+
+        var textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0f, 0f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.offsetMin = new Vector2(0f, 12f);
+        textRect.offsetMax = new Vector2(0f, 32f);
+
+        staminaText = textObject.GetComponent<TextMeshProUGUI>();
+        staminaText.color = textColor;
+        staminaText.fontSize = 20;
+        staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
+        staminaText.enableWordWrapping = false;
+        staminaText.overflowMode = TextOverflowModes.Overflow;
+        staminaText.text = "Stamina: 100";
+        staminaText.raycastTarget = false;
+
+        if (staminaText.font == null)
+        {
+            staminaText.font = fallbackFont != null ? fallbackFont : TMP_Settings.defaultFontAsset;
         }
 
         return rectTransform;
