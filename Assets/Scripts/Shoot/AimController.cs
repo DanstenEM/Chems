@@ -52,14 +52,7 @@ public class AimController : MonoBehaviour
         if (!shooter)
             shooter = GetComponent<Shooter>();
 
-        if (aimAction.action != null)
-        {
-            aimAction.action.Enable();
-        }
-        else
-        {
-            Debug.LogWarning("AimController: Aim action not assigned.", this);
-        }
+        aimAction.action.Enable();
 
         if (health)
             health.isDie.Changed += IsDie_Changed;
@@ -85,14 +78,7 @@ public class AimController : MonoBehaviour
             return;
         }
 
-        if (aimAction.action == null)
-        {
-            isAiming = false;
-        }
-        else
-        {
-            isAiming = aimAction.action.IsPressed();
-        }
+        isAiming = aimAction.action.IsPressed();
 
         if (ik)
             ik.SetAiming(isAiming);
@@ -131,13 +117,5 @@ public class AimController : MonoBehaviour
     public bool IsAiming()
     {
         return isAiming;
-    }
-
-    void OnDestroy()
-    {
-        if (health)
-        {
-            health.isDie.Changed -= IsDie_Changed;
-        }
     }
 }

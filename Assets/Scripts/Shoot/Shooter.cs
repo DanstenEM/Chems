@@ -35,14 +35,7 @@ public class Shooter : MonoBehaviour
             inventorySystem = InventorySystem.GameplayInventory;
         }
 
-        if (fireAction.action != null)
-        {
-            fireAction.action.Enable();
-        }
-        else
-        {
-            Debug.LogWarning("Shooter: Fire action not assigned.", this);
-        }
+        fireAction.action.Enable();
     }
 
     void Update()
@@ -58,7 +51,7 @@ public class Shooter : MonoBehaviour
             return;
         }
 
-        if (fireAction.action == null || !fireAction.action.IsPressed())
+        if (!fireAction.action.IsPressed())
         {
             IsFiring = false;
             return;
