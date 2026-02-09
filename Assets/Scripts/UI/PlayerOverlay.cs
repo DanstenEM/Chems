@@ -15,7 +15,7 @@ public class PlayerOverlay : MonoBehaviour
 
     [Header("Stamina")]
     [SerializeField] private ThirdPersonMovement playerMovement;
-    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, -10f);
+    [SerializeField] private Vector2 staminaTextOffset = new Vector2(12f, 20f);
 
     [Header("Layout")]
     [SerializeField] private Vector2 panelPadding = new Vector2(18f, 12f);
@@ -482,8 +482,7 @@ public class PlayerOverlay : MonoBehaviour
         rectTransform.anchorMax = new Vector2(0f, 0f);
         rectTransform.pivot = new Vector2(0f, 0f);
         rectTransform.sizeDelta = new Vector2(180f, 24f);
-        var alignedStaminaY = panelPadding.y + staminaTextOffset.y;
-        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, alignedStaminaY);
+        rectTransform.anchoredPosition = new Vector2(panelSize.x + staminaTextOffset.x, staminaTextOffset.y);
 
         var textObject = new GameObject($"{name}_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.layer = LayerMask.NameToLayer("UI");
@@ -497,7 +496,7 @@ public class PlayerOverlay : MonoBehaviour
 
         staminaText = textObject.GetComponent<TextMeshProUGUI>();
         staminaText.color = textColor;
-        staminaText.fontSize = fontSize;
+        staminaText.fontSize = 20;
         staminaText.alignment = TextAlignmentOptions.Left | TextAlignmentOptions.Midline;
         staminaText.enableWordWrapping = false;
         staminaText.overflowMode = TextOverflowModes.Overflow;
