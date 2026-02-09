@@ -368,7 +368,7 @@ public class PlayerOverlay : MonoBehaviour
         overlayCanvas = CreateCanvas("PlayerOverlayCanvas");
         overlayRoot = CreatePanel(overlayCanvas.transform, "PlayerOverlayPanel");
         healthText = CreateLabel(overlayRoot, "HealthText");
-        staminaRoot = CreateStaminaBar(overlayRoot, "StaminaBar");
+        staminaRoot = CreateStaminaBar(overlayCanvas.transform, "StaminaBar");
         weaponSlotsRoot = CreateWeaponSlots(overlayCanvas.transform, "WeaponSlotsOverlay");
     }
 
@@ -402,9 +402,9 @@ public class PlayerOverlay : MonoBehaviour
         panelObject.transform.SetParent(parent, false);
 
         var rectTransform = panelObject.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMin = new Vector2(0f, 0f);
+        rectTransform.anchorMax = new Vector2(0f, 0f);
+        rectTransform.pivot = new Vector2(0f, 0f);
         rectTransform.sizeDelta = panelSize;
         rectTransform.anchoredPosition = panelOffset;
 
