@@ -108,7 +108,9 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             }
 
             var slotItem = item.GetComponentInChildren<InventoryItem>();
-            if (slotItem != null && slotItem.itemObj == inventoryItemObj && CanMergeIntoSlot(slotItem))
+            if (slotItem != null && slotItem.itemObj == inventoryItemObj &&
+                slotItem.count < slotItem.itemObj.stackCount
+                && slotItem.itemObj.isStackable == true)
             {
                 slotItem.count += 1;
                 slotItem.RefrashCount();
@@ -346,26 +348,6 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
             _ => itemObj.category == InventoryItemObj.ItemCategory.Regular
         };
-    }
-
-    private static bool CanMergeIntoSlot(InventoryItem slotItem)
-    {
-        if (slotItem == null || slotItem.itemObj == null)
-        {
-            return false;
-        }
-
-        if (slotItem.itemObj.category == InventoryItemObj.ItemCategory.Weapon)
-        {
-            return false;
-        }
-
-        if (!slotItem.itemObj.isStackable)
-        {
-            return true;
-        }
-
-        return slotItem.itemObj.stackCount <= 0 || slotItem.count < slotItem.itemObj.stackCount;
     }
 
     public void SetSlots(InventorySlot[] newSlots)
