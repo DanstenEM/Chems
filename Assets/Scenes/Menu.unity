@@ -912,6 +912,12 @@ MonoBehaviour:
   stashKey: 50
   exitKey: 51
   alternateExitKey: 27
+  playOption: {fileID: 2022}
+  stashOption: {fileID: 2032}
+  exitOption: {fileID: 2042}
+  buttonNormalColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.55}
+  buttonHoverColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.8}
+  buttonPressedColor: {r: 0.05, g: 0.05, b: 0.05, a: 0.95}
 --- !u!114 &3004
 MonoBehaviour:
   m_ObjectHideFlags: 0
