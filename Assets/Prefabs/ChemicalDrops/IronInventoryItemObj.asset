@@ -17,4 +17,4 @@ MonoBehaviour:
   isStackable: 0
   isDefaultItem: 0
   category: 1
-  dropPrefab: {fileID: 5810819430574658661, guid: 32500db01dae1474599702691cc6d138, type: 3}
+  dropPrefab: {fileID: 100000, guid: f5c4e8f3f1a54f0e9d6de2f7f0e93f15, type: 3}
