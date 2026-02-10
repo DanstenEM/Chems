@@ -38,7 +38,12 @@ public class InventorySlot : MonoBehaviour, IDropHandler
 
     private bool IsItemAllowed(InventoryItem item)
     {
-        if (item == null || item.itemObj == null)
+        return item != null && IsItemAllowed(item.itemObj);
+    }
+
+    public bool IsItemAllowed(InventoryItemObj itemObj)
+    {
+        if (itemObj == null)
         {
             return false;
         }
@@ -49,9 +54,9 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         return slotCategory switch
         {
             InventorySlotMarker.SlotCategory.Universal => true,
-            InventorySlotMarker.SlotCategory.Chemical => item.itemObj.category == InventoryItemObj.ItemCategory.Chemical,
-            InventorySlotMarker.SlotCategory.Weapon => item.itemObj.category == InventoryItemObj.ItemCategory.Weapon,
-            _ => item.itemObj.category == InventoryItemObj.ItemCategory.Regular
+            InventorySlotMarker.SlotCategory.Chemical => itemObj.category == InventoryItemObj.ItemCategory.Chemical,
+            InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            _ => itemObj.category == InventoryItemObj.ItemCategory.Regular
         };
     }
 }
