@@ -204,7 +204,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 963fe24ef35e18a428851e79072afab2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -228,6 +228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItem
   <itemObj>k__BackingField: {fileID: 0}
   <count>k__BackingField: 1
-  image: {fileID: 5704675481285914900}
-  counter: {fileID: 4493496614552801140}
+  image: {fileID: 0}
+  counter: {fileID: 0}
+  dropDragMinDistance: 60
   parentAfterDrag: {fileID: 0}
