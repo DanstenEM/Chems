@@ -13,6 +13,8 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
     private InventorySystem inventorySystem;
     private Vector2 beginDragPosition;
+    private Transform splitSourceParent;
+    private InventoryItem splitStackRemainder;
 
     public Transform parentAfterDrag;
 
@@ -55,6 +57,30 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         image.raycastTarget = false;
         parentAfterDrag = transform.parent;
         beginDragPosition = eventData.position;
+
+        splitSourceParent = null;
+        splitStackRemainder = null;
+
+        if (count > 1 && parentAfterDrag != null)
+        {
+            splitSourceParent = parentAfterDrag;
+            splitStackRemainder = Instantiate(this, splitSourceParent);
+            splitStackRemainder.transform.SetAsFirstSibling();
+            splitStackRemainder.parentAfterDrag = splitSourceParent;
+            splitStackRemainder.inventorySystem = inventorySystem;
+            splitStackRemainder.splitSourceParent = null;
+            splitStackRemainder.splitStackRemainder = null;
+            splitStackRemainder.count = count - 1;
+            if (splitStackRemainder.image != null)
+            {
+                splitStackRemainder.image.raycastTarget = true;
+            }
+            splitStackRemainder.RefrashCount();
+
+            count = 1;
+            RefrashCount();
+        }
+
         transform.SetParent(transform.root);
     }
 
@@ -79,6 +105,15 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             return;
         }
 
+        if (splitStackRemainder != null && splitSourceParent != null && parentAfterDrag == splitSourceParent)
+        {
+            count += splitStackRemainder.count;
+            RefrashCount();
+            Destroy(splitStackRemainder.gameObject);
+        }
+
+        splitSourceParent = null;
+        splitStackRemainder = null;
     }
 
     public void OnDrag(PointerEventData eventData)
