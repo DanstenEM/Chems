@@ -104,7 +104,7 @@ public class MainMenuController : MonoBehaviour
         buttonGo.transform.SetParent(parent, false);
 
         var image = buttonGo.GetComponent<Image>();
-        image.color = new Color(1f, 1f, 1f, 0.92f);
+        image.color = new Color(0.45f, 0.45f, 0.45f, 1f);
 
         var layoutElement = buttonGo.GetComponent<LayoutElement>();
         layoutElement.preferredHeight = 56f;
@@ -126,7 +126,7 @@ public class MainMenuController : MonoBehaviour
         text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         text.text = label;
         text.alignment = TextAnchor.MiddleCenter;
-        text.color = new Color(0.12f, 0.16f, 0.22f, 1f);
+        text.color = Color.white;
         text.fontSize = 32;
     }
 }
