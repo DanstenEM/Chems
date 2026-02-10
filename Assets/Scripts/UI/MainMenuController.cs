@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class MainMenuController : MonoBehaviour
 {
     [Header("Scene Names")]
-    [SerializeField] private string playSceneName = "SampleScene";
+    [SerializeField] private string playSceneName = "Main";
     [SerializeField] private string stashSceneName = "Inventory";
 
     [Header("UI")]

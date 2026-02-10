@@ -556,6 +556,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4cd8edddce24de8a2f5ed34ad429ce8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
-  playSceneName: SampleScene
+  playSceneName: Main
   stashSceneName: Inventory
   targetCanvas: {fileID: 2002}
