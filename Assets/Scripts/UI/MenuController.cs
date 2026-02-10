@@ -19,15 +19,40 @@ public class MenuController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playOption;
     [SerializeField] private TextMeshProUGUI stashOption;
     [SerializeField] private TextMeshProUGUI exitOption;
-    [SerializeField] private Color buttonNormalColor = new(0.1f, 0.1f, 0.1f, 0.55f);
-    [SerializeField] private Color buttonHoverColor = new(0.2f, 0.2f, 0.2f, 0.8f);
-    [SerializeField] private Color buttonPressedColor = new(0.05f, 0.05f, 0.05f, 0.95f);
+    [SerializeField] private Color buttonNormalColor = new Color(0.1f, 0.1f, 0.1f, 0.55f);
+    [SerializeField] private Color buttonHoverColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+    [SerializeField] private Color buttonPressedColor = new Color(0.05f, 0.05f, 0.05f, 0.95f);
 
-    private void Awake()
+    private void Start()
     {
+        AutoAssignIfMissing();
         ConfigureButton(playOption, PlayGame);
         ConfigureButton(stashOption, OpenStash);
         ConfigureButton(exitOption, ExitGame);
+    }
+
+    private void AutoAssignIfMissing()
+    {
+        if (playOption == null)
+        {
+            playOption = FindMenuOption("PlayOption");
+        }
+
+        if (stashOption == null)
+        {
+            stashOption = FindMenuOption("StashOption");
+        }
+
+        if (exitOption == null)
+        {
+            exitOption = FindMenuOption("ExitOption");
+        }
+    }
+
+    private static TextMeshProUGUI FindMenuOption(string optionName)
+    {
+        var option = GameObject.Find(optionName);
+        return option != null ? option.GetComponent<TextMeshProUGUI>() : null;
     }
 
     private void Update()
