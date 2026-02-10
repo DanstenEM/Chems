@@ -1,9 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerClickHandler
 {
     [field: SerializeField] public InventoryItemObj itemObj { get; private set; }
     [field: SerializeField] public int count { get; set; } = 1;
@@ -100,6 +101,8 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.anchoredPosition = Vector2.zero;
         }
 
+        UpdateOwnerInventoryFromParent();
+
         if (shouldTryWorldDrop && inventorySystem != null && inventorySystem.TryDropDraggedItem(this))
         {
             return;
@@ -119,6 +122,49 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = inventorySystem.mousePosition;
+    }
+
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (!keyboard.leftShiftKey.isPressed && !keyboard.rightShiftKey.isPressed)
+        {
+            return;
+        }
+
+        inventorySystem?.TryQuickTransferItem(this);
+    }
+
+
+    private void UpdateOwnerInventoryFromParent()
+    {
+        if (parentAfterDrag == null)
+        {
+            return;
+        }
+
+        var slot = parentAfterDrag.GetComponent<InventorySlot>();
+        if (slot == null)
+        {
+            return;
+        }
+
+        var ownerInventory = InventorySystem.FindInventoryBySlot(slot);
+        if (ownerInventory != null)
+        {
+            inventorySystem = ownerInventory;
+        }
     }
 
     private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
