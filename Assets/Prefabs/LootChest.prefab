@@ -127,7 +127,8 @@ MonoBehaviour:
   lootItems: []
   defaultLootPool:
   - {fileID: 11400000, guid: 7e5d902740a64957a3f3ad8f85ae2b7b, type: 2}
-  chemicalLootPool: []
+  chemicalLootPool:
+  - {fileID: 11400000, guid: 5f34cfa95cc34af4ab4a8f552ac6d76a, type: 2}
   weaponLootPool: []
   generateRandomLootOnStart: 1
 --- !u!114 &100006
