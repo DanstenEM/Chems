@@ -108,22 +108,9 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         bool useRegularOnly = inventoryItemObj != null && inventoryItemObj.isDefaultItem;
 
-        foreach (var item in slots)
+        if (TryAddToExistingStack(inventoryItemObj, useRegularOnly))
         {
-            if (!IsSlotCompatible(item, inventoryItemObj, useRegularOnly))
-            {
-                continue;
-            }
-
-            var slotItem = item.GetComponentInChildren<InventoryItem>();
-            if (slotItem != null && slotItem.itemObj == inventoryItemObj &&
-                slotItem.count < slotItem.itemObj.stackCount
-                && slotItem.itemObj.isStackable == true)
-            {
-                slotItem.count += 1;
-                slotItem.RefrashCount();
-                return true;
-            }
+            return true;
         }
 
         foreach (var item in slots)
@@ -139,6 +126,29 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
                 SpawnNewItem(inventoryItemObj, item);
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private bool TryAddToExistingStack(InventoryItemObj inventoryItemObj, bool useRegularOnly)
+    {
+        foreach (var slot in slots)
+        {
+            if (!IsSlotCompatible(slot, inventoryItemObj, useRegularOnly))
+            {
+                continue;
+            }
+
+            var slotItem = slot.GetComponentInChildren<InventoryItem>();
+            if (slotItem == null || slotItem.itemObj != inventoryItemObj)
+            {
+                continue;
+            }
+
+            slotItem.count += 1;
+            slotItem.RefrashCount();
+            return true;
         }
 
         return false;

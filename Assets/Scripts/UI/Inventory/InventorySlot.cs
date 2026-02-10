@@ -10,19 +10,31 @@ public class InventorySlot : MonoBehaviour, IDropHandler
     [SerializeField] private Color selectColor, notSelectColor;
     public void OnDrop(PointerEventData eventData)
     {
-        if(transform.childCount == 0)
+        if (!eventData.pointerDrag.TryGetComponent(out InventoryItem draggedItem))
         {
-            if(eventData.pointerDrag.TryGetComponent(out InventoryItem item))
-            {
-                if (!IsItemAllowed(item))
-                {
-                    return;
-                }
-
-                item.parentAfterDrag = transform;
-                //inventoryItem = item;
-            }
+            return;
         }
+
+        if (!IsItemAllowed(draggedItem))
+        {
+            return;
+        }
+
+        var existingItem = GetComponentInChildren<InventoryItem>();
+        if (existingItem == null)
+        {
+            draggedItem.parentAfterDrag = transform;
+            return;
+        }
+
+        if (ReferenceEquals(existingItem, draggedItem) || existingItem.itemObj != draggedItem.itemObj)
+        {
+            return;
+        }
+
+        existingItem.count += draggedItem.count;
+        existingItem.RefrashCount();
+        Destroy(draggedItem.gameObject);
     }
 
     public void Select() => image.color = selectColor;
