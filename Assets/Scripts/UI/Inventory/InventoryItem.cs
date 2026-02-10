@@ -31,11 +31,15 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         }
         if (image != null)
         {
-            image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
             if (itemObj != null && itemObj.icon != null)
             {
+                image.color = Color.white;
                 image.sprite = itemObj.icon;
                 image.preserveAspect = true;
+            }
+            else
+            {
+                image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
             }
         }
         RefrashCount();
