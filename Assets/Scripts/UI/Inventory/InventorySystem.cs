@@ -184,18 +184,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             return false;
         }
 
-        int originalCount = item.count;
-        int movedCount = 0;
-
-        for (int i = 0; i < originalCount; i++)
-        {
-            if (!targetInventory.AddItem(item.itemObj))
-            {
-                break;
-            }
-
-            movedCount++;
-        }
+        int movedCount = targetInventory.TransferItemStack(item.itemObj, item.count);
 
         if (movedCount == 0)
         {
@@ -213,6 +202,81 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         }
 
         return true;
+    }
+
+    private int TransferItemStack(InventoryItemObj itemObj, int count)
+    {
+        if (itemObj == null || count <= 0 || slots == null || slots.Length == 0)
+        {
+            return 0;
+        }
+
+        int remaining = count;
+        bool useRegularOnly = itemObj.isDefaultItem;
+
+        if (itemObj.isStackable)
+        {
+            foreach (var slot in slots)
+            {
+                if (!IsQuickTransferTargetSlot(slot, itemObj, useRegularOnly))
+                {
+                    continue;
+                }
+
+                var slotItem = slot.GetComponentInChildren<InventoryItem>();
+                if (slotItem == null || slotItem.itemObj != itemObj)
+                {
+                    continue;
+                }
+
+                int stackCapacity = Mathf.Max(1, slotItem.itemObj.stackCount);
+                int freeSpace = stackCapacity - slotItem.count;
+                if (freeSpace <= 0)
+                {
+                    continue;
+                }
+
+                int toMove = Mathf.Min(remaining, freeSpace);
+                slotItem.count += toMove;
+                slotItem.RefrashCount();
+                remaining -= toMove;
+
+                if (remaining <= 0)
+                {
+                    return count;
+                }
+            }
+        }
+
+        int maxPerSlot = itemObj.isStackable ? Mathf.Max(1, itemObj.stackCount) : 1;
+
+        foreach (var slot in slots)
+        {
+            if (!IsQuickTransferTargetSlot(slot, itemObj, useRegularOnly))
+            {
+                continue;
+            }
+
+            var slotItem = slot.GetComponentInChildren<InventoryItem>();
+            if (slotItem != null)
+            {
+                continue;
+            }
+
+            int toMove = Mathf.Min(remaining, maxPerSlot);
+            var newItem = Instantiate(inventoryPrefab, slot.transform);
+            newItem.Construct(this, itemObj);
+            newItem.count = toMove;
+            newItem.RefrashCount();
+
+            remaining -= toMove;
+            if (remaining <= 0)
+            {
+                break;
+            }
+        }
+
+        return count - remaining;
     }
 
     public void SpawnNewItem(InventoryItemObj inventoryItemObj, InventorySlot inventorySlot)
@@ -519,19 +583,37 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             return false;
         }
 
+        bool useRegularOnly = itemObj != null && itemObj.isDefaultItem;
+
         foreach (var slot in slots)
         {
-            if (slot == null || !slot.gameObject.activeInHierarchy)
+            if (!IsQuickTransferTargetSlot(slot, itemObj, useRegularOnly))
             {
                 continue;
             }
 
-            if (slot.IsItemAllowed(itemObj))
+            var slotItem = slot.GetComponentInChildren<InventoryItem>();
+            if (slotItem == null)
+            {
+                return true;
+            }
+
+            if (itemObj != null && itemObj.isStackable && slotItem.itemObj == itemObj && slotItem.count < Mathf.Max(1, itemObj.stackCount))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static bool IsQuickTransferTargetSlot(InventorySlot slot, InventoryItemObj itemObj, bool useRegularOnly)
+    {
+        if (slot == null || !slot.gameObject.activeInHierarchy)
+        {
+            return false;
+        }
+
+        return IsSlotCompatible(slot, itemObj, useRegularOnly);
     }
 }
