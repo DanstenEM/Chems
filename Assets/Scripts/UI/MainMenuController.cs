@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -25,6 +26,9 @@ public class MainMenuController : MonoBehaviour
             Debug.LogError("MainMenuController could not find a Canvas in the scene.");
             return;
         }
+
+        targetCanvas.overrideSorting = true;
+        targetCanvas.sortingOrder = 100;
 
         if (targetCanvas.transform.Find(MenuRootName) == null)
         {
@@ -70,7 +74,7 @@ public class MainMenuController : MonoBehaviour
 
     private void BuildMenuUi(Transform parent)
     {
-        var root = new GameObject(MenuRootName, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        var root = new GameObject(MenuRootName, typeof(RectTransform), typeof(VerticalLayoutGroup));
         root.transform.SetParent(parent, false);
 
         var rootRect = (RectTransform)root.transform;
@@ -78,7 +82,7 @@ public class MainMenuController : MonoBehaviour
         rootRect.anchorMax = new Vector2(0.5f, 0.5f);
         rootRect.pivot = new Vector2(0.5f, 0.5f);
         rootRect.anchoredPosition = Vector2.zero;
-        rootRect.sizeDelta = new Vector2(360f, 260f);
+        rootRect.sizeDelta = new Vector2(420f, 300f);
 
         var layout = root.GetComponent<VerticalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
@@ -88,10 +92,6 @@ public class MainMenuController : MonoBehaviour
         layout.childForceExpandWidth = true;
         layout.spacing = 16f;
         layout.padding = new RectOffset(24, 24, 24, 24);
-
-        var sizeFitter = root.GetComponent<ContentSizeFitter>();
-        sizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-        sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         CreateButton(root.transform, "Play", Play);
         CreateButton(root.transform, "Stash", OpenStash);
@@ -107,13 +107,14 @@ public class MainMenuController : MonoBehaviour
         image.color = new Color(0.45f, 0.45f, 0.45f, 1f);
 
         var layoutElement = buttonGo.GetComponent<LayoutElement>();
-        layoutElement.preferredHeight = 56f;
+        layoutElement.preferredHeight = 64f;
+        layoutElement.minHeight = 64f;
 
         var button = buttonGo.GetComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(onClick);
 
-        var textGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+        var textGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
         textGo.transform.SetParent(buttonGo.transform, false);
 
         var textRect = (RectTransform)textGo.transform;
@@ -122,11 +123,13 @@ public class MainMenuController : MonoBehaviour
         textRect.offsetMin = Vector2.zero;
         textRect.offsetMax = Vector2.zero;
 
-        var text = textGo.GetComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        var text = textGo.GetComponent<TextMeshProUGUI>();
         text.text = label;
-        text.alignment = TextAnchor.MiddleCenter;
+        text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
-        text.fontSize = 32;
+        text.fontSize = 42;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 20;
+        text.fontSizeMax = 42;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerOverlay : MonoBehaviour
@@ -50,6 +51,12 @@ public class PlayerOverlay : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureOverlayExists()
     {
+        var activeSceneName = SceneManager.GetActiveScene().name;
+        if (activeSceneName == "Menu" || activeSceneName == "Inventory")
+        {
+            return;
+        }
+
         if (hasAutoSpawned || FindObjectOfType<PlayerOverlay>() != null)
         {
             return;
