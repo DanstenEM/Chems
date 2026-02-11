@@ -293,7 +293,7 @@ public class MainMenuController : MonoBehaviour
 
         for (int i = 0; i < slotCount; i++)
         {
-            targetSlots.Add(CreateStashSlot(content.transform, i + 1, filter));
+            targetSlots.Add(CreateStashSlot(content.transform, i + 1, filter, StashSlot.SlotOwner.ExtractedInventory));
         }
     }
 
@@ -372,7 +372,7 @@ public class MainMenuController : MonoBehaviour
             for (int col = 0; col < columns; col++)
             {
                 int slotIndex = row * columns + col + 1;
-                targetSlots.Add(CreateStashSlot(content.transform, slotIndex, slotFilter));
+                targetSlots.Add(CreateStashSlot(content.transform, slotIndex, slotFilter, StashSlot.SlotOwner.Stash));
             }
         }
         return column.GetComponent<RectTransform>();
@@ -404,7 +404,7 @@ public class MainMenuController : MonoBehaviour
         CreateButton(row.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f));
     }
 
-    private StashSlot CreateStashSlot(Transform parent, int slotIndex, StashSlot.SlotFilter filter)
+    private StashSlot CreateStashSlot(Transform parent, int slotIndex, StashSlot.SlotFilter filter, StashSlot.SlotOwner owner)
     {
         var slotGo = new GameObject($"Slot_{slotIndex}", typeof(RectTransform), typeof(Image), typeof(StashSlot));
         slotGo.transform.SetParent(parent, false);
@@ -413,7 +413,7 @@ public class MainMenuController : MonoBehaviour
         slotImage.color = new Color(0.65f, 0.65f, 0.65f, 0.28f);
 
         var stashSlot = slotGo.GetComponent<StashSlot>();
-        stashSlot.Configure(slotImage, filter);
+        stashSlot.Configure(slotImage, filter, owner);
 
         return stashSlot;
     }

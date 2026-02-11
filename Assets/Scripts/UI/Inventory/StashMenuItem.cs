@@ -1,9 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerClickHandler
 {
     [SerializeField] private Image image;
     [SerializeField] private TMP_Text countText;
@@ -80,6 +81,37 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
         transform.SetParent(parentAfterDrag);
 
+        SnapToParent();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        transform.position = eventData.position;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (!keyboard.leftShiftKey.isPressed && !keyboard.rightShiftKey.isPressed)
+        {
+            return;
+        }
+
+        StashSlot.TryQuickTransferItem(this);
+    }
+
+    public void SnapToParent()
+    {
         var rectTransform = GetComponent<RectTransform>();
         if (rectTransform != null)
         {
@@ -89,11 +121,6 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.offsetMax = Vector2.zero;
             rectTransform.anchoredPosition = Vector2.zero;
         }
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        transform.position = eventData.position;
     }
 
     private void RefreshCount()
