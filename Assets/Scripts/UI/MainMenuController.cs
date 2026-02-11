@@ -400,7 +400,7 @@ public class MainMenuController : MonoBehaviour
             if (i < source.Count)
             {
                 var item = source[i];
-                texts[i].text = item.itemObj != null ? $"{item.itemObj.itemName}\nx{item.count}" : "Empty";
+                texts[i].text = item.itemObj != null ? $"{item.itemObj.name}\nx{item.count}" : "Empty";
             }
             else
             {
