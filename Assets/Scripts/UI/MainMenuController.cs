@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,8 +15,18 @@ public class MainMenuController : MonoBehaviour
     [Header("Stash Overlay")]
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 10;
+    [SerializeField] private int inventoryRows = 5;
+    [SerializeField] private int inventoryColumns = 5;
+
+    [Header("Data Sources")]
+    [SerializeField] private InventorySystem playerInventorySystem;
 
     private const string MenuRootName = "MainMenuRoot";
+
+    private readonly List<ItemStackData> stashItems = new List<ItemStackData>();
+    private readonly List<ItemStackData> playerItems = new List<ItemStackData>();
+    private readonly List<TextMeshProUGUI> stashSlotTexts = new List<TextMeshProUGUI>();
+    private readonly List<TextMeshProUGUI> playerSlotTexts = new List<TextMeshProUGUI>();
 
     private GameObject mainPanel;
     private GameObject stashPanel;
@@ -33,6 +44,15 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        if (playerInventorySystem == null)
+        {
+            playerInventorySystem = InventorySystem.GameplayInventory;
+            if (playerInventorySystem == null)
+            {
+                playerInventorySystem = FindObjectOfType<InventorySystem>();
+            }
+        }
+
         targetCanvas.overrideSorting = true;
         targetCanvas.sortingOrder = 100;
 
@@ -40,6 +60,9 @@ public class MainMenuController : MonoBehaviour
         {
             BuildMenuUi(targetCanvas.transform);
         }
+
+        RefreshInventoryMirror();
+        RefreshAllSlotTexts();
     }
 
     public void Play()
@@ -49,6 +72,8 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenStash()
     {
+        RefreshInventoryMirror();
+        RefreshAllSlotTexts();
         SetStashVisible(true);
     }
 
@@ -150,78 +175,238 @@ public class MainMenuController : MonoBehaviour
         panelRect.anchorMin = new Vector2(1f, 0.5f);
         panelRect.anchorMax = new Vector2(1f, 0.5f);
         panelRect.pivot = new Vector2(1f, 0.5f);
-        panelRect.anchoredPosition = new Vector2(-40f, 0f);
-        panelRect.sizeDelta = new Vector2(980f, 620f);
+        panelRect.anchoredPosition = new Vector2(-24f, 0f);
+        panelRect.sizeDelta = new Vector2(1520f, 640f);
 
         var panelImage = panel.GetComponent<Image>();
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
 
-        CreateText(panel.transform, "StashTitle", "Stash", 52, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -88f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
-        CreateText(panel.transform, "StashSubtitle", "Player resources", 28, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -132f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
+        CreateText(panel.transform, "StashTitle", "Inventory Transfer", 48, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -80f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
+        CreateText(panel.transform, "HelpText", "Click left slot to move item to stash. Click right slot to return item to inventory.", 22, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -126f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
 
-        var viewport = new GameObject("GridViewport", typeof(RectTransform), typeof(Image), typeof(Mask));
-        viewport.transform.SetParent(panel.transform, false);
+        var leftSection = CreateSection(panel.transform, "PlayerInventorySection", "Player Inventory", new Vector2(0f, 0.5f), new Vector2(0.48f, 0.5f), new Vector2(740f, 460f), new Vector2(16f, -30f));
+        var rightSection = CreateSection(panel.transform, "StashSection", "Stash", new Vector2(1f, 0.5f), new Vector2(0.52f, 0.5f), new Vector2(740f, 460f), new Vector2(-16f, -30f));
 
-        var viewportRect = (RectTransform)viewport.transform;
-        viewportRect.anchorMin = new Vector2(0.5f, 0.5f);
-        viewportRect.anchorMax = new Vector2(0.5f, 0.5f);
-        viewportRect.pivot = new Vector2(0.5f, 0.5f);
-        viewportRect.sizeDelta = new Vector2(900f, 420f);
-        viewportRect.anchoredPosition = new Vector2(0f, -16f);
-
-        var viewportImage = viewport.GetComponent<Image>();
-        viewportImage.color = new Color(1f, 1f, 1f, 0.04f);
-
-        var viewportMask = viewport.GetComponent<Mask>();
-        viewportMask.showMaskGraphic = false;
-
-        var content = new GameObject("GridContent", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
-        content.transform.SetParent(viewport.transform, false);
-
-        var contentRect = (RectTransform)content.transform;
-        contentRect.anchorMin = new Vector2(0.5f, 0.5f);
-        contentRect.anchorMax = new Vector2(0.5f, 0.5f);
-        contentRect.pivot = new Vector2(0.5f, 0.5f);
-
-        var grid = content.GetComponent<GridLayoutGroup>();
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = Mathf.Max(1, stashColumns);
-        grid.cellSize = new Vector2(80f, 80f);
-        grid.spacing = new Vector2(8f, 8f);
-        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
-        grid.childAlignment = TextAnchor.UpperCenter;
-
-        var fitter = content.GetComponent<ContentSizeFitter>();
-        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        var safeRows = Mathf.Max(1, stashRows);
-        var safeColumns = Mathf.Max(1, stashColumns);
-
-        for (var row = 0; row < safeRows; row++)
-        {
-            for (var column = 0; column < safeColumns; column++)
-            {
-                var slotIndex = row * safeColumns + column + 1;
-                CreateStashSlot(content.transform, slotIndex);
-            }
-        }
+        BuildSlotGrid(leftSection, inventoryRows, inventoryColumns, playerSlotTexts, OnPlayerSlotClicked);
+        BuildSlotGrid(rightSection, stashRows, stashColumns, stashSlotTexts, OnStashSlotClicked);
 
         CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f));
 
         return panel;
     }
 
-    private void CreateStashSlot(Transform parent, int slotIndex)
+    private RectTransform CreateSection(Transform parent, string name, string title, Vector2 anchor, Vector2 pivot, Vector2 size, Vector2 anchoredPosition)
     {
-        var slotGo = new GameObject($"Slot_{slotIndex}", typeof(RectTransform), typeof(Image));
+        var section = new GameObject(name, typeof(RectTransform), typeof(Image));
+        section.transform.SetParent(parent, false);
+
+        var sectionRect = (RectTransform)section.transform;
+        sectionRect.anchorMin = anchor;
+        sectionRect.anchorMax = anchor;
+        sectionRect.pivot = pivot;
+        sectionRect.sizeDelta = size;
+        sectionRect.anchoredPosition = anchoredPosition;
+
+        var sectionImage = section.GetComponent<Image>();
+        sectionImage.color = new Color(1f, 1f, 1f, 0.03f);
+
+        CreateText(section.transform, "SectionTitle", title, 30, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(12f, -42f), new Vector2(-12f, -6f), TextAlignmentOptions.Center);
+
+        var gridRoot = new GameObject("GridRoot", typeof(RectTransform));
+        gridRoot.transform.SetParent(section.transform, false);
+
+        var gridRect = (RectTransform)gridRoot.transform;
+        gridRect.anchorMin = new Vector2(0.5f, 0.5f);
+        gridRect.anchorMax = new Vector2(0.5f, 0.5f);
+        gridRect.pivot = new Vector2(0.5f, 0.5f);
+        gridRect.sizeDelta = new Vector2(size.x - 24f, size.y - 96f);
+        gridRect.anchoredPosition = new Vector2(0f, -14f);
+
+        return gridRect;
+    }
+
+    private void BuildSlotGrid(RectTransform parent, int rows, int columns, List<TextMeshProUGUI> targetTextList, System.Action<int> onClick)
+    {
+        var gridObject = new GameObject("Grid", typeof(RectTransform), typeof(GridLayoutGroup));
+        gridObject.transform.SetParent(parent, false);
+
+        var gridRect = (RectTransform)gridObject.transform;
+        gridRect.anchorMin = new Vector2(0.5f, 0.5f);
+        gridRect.anchorMax = new Vector2(0.5f, 0.5f);
+        gridRect.pivot = new Vector2(0.5f, 0.5f);
+
+        var safeRows = Mathf.Max(1, rows);
+        var safeColumns = Mathf.Max(1, columns);
+
+        var grid = gridObject.GetComponent<GridLayoutGroup>();
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = safeColumns;
+        grid.cellSize = new Vector2(66f, 66f);
+        grid.spacing = new Vector2(6f, 6f);
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.childAlignment = TextAnchor.UpperCenter;
+
+        for (var row = 0; row < safeRows; row++)
+        {
+            for (var column = 0; column < safeColumns; column++)
+            {
+                var index = row * safeColumns + column;
+                var text = CreateTransferSlot(gridObject.transform, index, onClick);
+                targetTextList.Add(text);
+            }
+        }
+
+        var width = (grid.cellSize.x * safeColumns) + (grid.spacing.x * (safeColumns - 1));
+        var height = (grid.cellSize.y * safeRows) + (grid.spacing.y * (safeRows - 1));
+        gridRect.sizeDelta = new Vector2(width, height);
+    }
+
+    private TextMeshProUGUI CreateTransferSlot(Transform parent, int index, System.Action<int> onClick)
+    {
+        var slotGo = new GameObject($"Slot_{index + 1}", typeof(RectTransform), typeof(Image), typeof(Button));
         slotGo.transform.SetParent(parent, false);
 
         var slotImage = slotGo.GetComponent<Image>();
         slotImage.color = new Color(0.65f, 0.65f, 0.65f, 0.45f);
 
-        CreateText(slotGo.transform, "SlotIndex", slotIndex.ToString(), 20, Vector2.zero, Vector2.one, new Vector2(0f, 0f), Vector2.zero, TextAlignmentOptions.Center);
+        var button = slotGo.GetComponent<Button>();
+        button.targetGraphic = slotImage;
+        button.onClick.AddListener(() => onClick(index));
+
+        return CreateText(slotGo.transform, "SlotText", "Empty", 14, Vector2.zero, Vector2.one, new Vector2(2f, 2f), new Vector2(-2f, -2f), TextAlignmentOptions.Center);
+    }
+
+    private void OnPlayerSlotClicked(int index)
+    {
+        if (index < 0 || index >= playerItems.Count)
+        {
+            return;
+        }
+
+        var item = playerItems[index];
+        if (item == null || item.itemObj == null)
+        {
+            return;
+        }
+
+        if (playerInventorySystem != null && !playerInventorySystem.TryConsumeOne(item.itemObj))
+        {
+            return;
+        }
+
+        item.count -= 1;
+        if (item.count <= 0)
+        {
+            playerItems.RemoveAt(index);
+        }
+
+        AddToList(stashItems, item.itemObj, 1);
+        RefreshInventoryMirrorIfNeeded();
+        RefreshAllSlotTexts();
+    }
+
+    private void OnStashSlotClicked(int index)
+    {
+        if (index < 0 || index >= stashItems.Count)
+        {
+            return;
+        }
+
+        var item = stashItems[index];
+        if (item == null || item.itemObj == null)
+        {
+            return;
+        }
+
+        if (playerInventorySystem != null && !playerInventorySystem.AddItem(item.itemObj))
+        {
+            return;
+        }
+
+        item.count -= 1;
+        if (item.count <= 0)
+        {
+            stashItems.RemoveAt(index);
+        }
+
+        AddToList(playerItems, item.itemObj, 1);
+        RefreshInventoryMirrorIfNeeded();
+        RefreshAllSlotTexts();
+    }
+
+    private void RefreshInventoryMirror()
+    {
+        playerItems.Clear();
+
+        if (playerInventorySystem == null)
+        {
+            return;
+        }
+
+        var snapshot = playerInventorySystem.GetItemCounts();
+        foreach (var pair in snapshot)
+        {
+            if (pair.Key == null || pair.Value <= 0)
+            {
+                continue;
+            }
+
+            playerItems.Add(new ItemStackData(pair.Key, pair.Value));
+        }
+    }
+
+    private void RefreshInventoryMirrorIfNeeded()
+    {
+        if (playerInventorySystem == null)
+        {
+            return;
+        }
+
+        RefreshInventoryMirror();
+    }
+
+    private void AddToList(List<ItemStackData> targetList, InventoryItemObj itemObj, int amount)
+    {
+        if (itemObj == null || amount <= 0)
+        {
+            return;
+        }
+
+        foreach (var item in targetList)
+        {
+            if (item.itemObj != itemObj)
+            {
+                continue;
+            }
+
+            item.count += amount;
+            return;
+        }
+
+        targetList.Add(new ItemStackData(itemObj, amount));
+    }
+
+    private void RefreshAllSlotTexts()
+    {
+        RefreshSlotTextList(playerSlotTexts, playerItems);
+        RefreshSlotTextList(stashSlotTexts, stashItems);
+    }
+
+    private void RefreshSlotTextList(List<TextMeshProUGUI> texts, List<ItemStackData> source)
+    {
+        for (var i = 0; i < texts.Count; i++)
+        {
+            if (i < source.Count)
+            {
+                var item = source[i];
+                texts[i].text = item.itemObj != null ? $"{item.itemObj.itemName}\nx{item.count}" : "Empty";
+            }
+            else
+            {
+                texts[i].text = "Empty";
+            }
+        }
     }
 
     private void CreateButton(
@@ -273,7 +458,7 @@ public class MainMenuController : MonoBehaviour
         CreateText(buttonGo.transform, "Label", label, 42, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, TextAlignmentOptions.Center, true);
     }
 
-    private void CreateText(
+    private TextMeshProUGUI CreateText(
         Transform parent,
         string objectName,
         string label,
@@ -303,8 +488,22 @@ public class MainMenuController : MonoBehaviour
 
         if (autoSize)
         {
-            text.fontSizeMin = 20;
+            text.fontSizeMin = 12;
             text.fontSizeMax = fontSize;
+        }
+
+        return text;
+    }
+
+    private sealed class ItemStackData
+    {
+        public InventoryItemObj itemObj;
+        public int count;
+
+        public ItemStackData(InventoryItemObj itemObj, int count)
+        {
+            this.itemObj = itemObj;
+            this.count = count;
         }
     }
 }
