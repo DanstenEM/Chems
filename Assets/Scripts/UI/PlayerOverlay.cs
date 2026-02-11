@@ -2,11 +2,19 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerOverlay : MonoBehaviour
 {
     private static bool hasAutoSpawned;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneLoadedHandler()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
     [Header("Health")]
     [SerializeField] private Health health;
@@ -50,6 +58,21 @@ public class PlayerOverlay : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureOverlayExists()
     {
+        TrySpawnOverlayForScene(SceneManager.GetActiveScene().name);
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TrySpawnOverlayForScene(scene.name);
+    }
+
+    private static void TrySpawnOverlayForScene(string sceneName)
+    {
+        if (sceneName == "Menu" || sceneName == "Inventory")
+        {
+            return;
+        }
+
         if (hasAutoSpawned || FindObjectOfType<PlayerOverlay>() != null)
         {
             return;
