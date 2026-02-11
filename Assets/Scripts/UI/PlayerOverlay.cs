@@ -9,6 +9,13 @@ public class PlayerOverlay : MonoBehaviour
 {
     private static bool hasAutoSpawned;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneLoadedHandler()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
     [Header("Health")]
     [SerializeField] private Health health;
     [SerializeField] private string healthLabel = "Health";
@@ -51,8 +58,17 @@ public class PlayerOverlay : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void EnsureOverlayExists()
     {
-        var activeSceneName = SceneManager.GetActiveScene().name;
-        if (activeSceneName == "Menu" || activeSceneName == "Inventory")
+        TrySpawnOverlayForScene(SceneManager.GetActiveScene().name);
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TrySpawnOverlayForScene(scene.name);
+    }
+
+    private static void TrySpawnOverlayForScene(string sceneName)
+    {
+        if (sceneName == "Menu" || sceneName == "Inventory")
         {
             return;
         }
