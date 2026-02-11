@@ -16,6 +16,8 @@ public class MainMenuController : MonoBehaviour
 
     private void Awake()
     {
+        EnsureCursorIsInteractive();
+
         if (targetCanvas == null)
         {
             targetCanvas = FindObjectOfType<Canvas>();
@@ -34,6 +36,12 @@ public class MainMenuController : MonoBehaviour
         {
             BuildMenuUi(targetCanvas.transform);
         }
+    }
+
+    private void EnsureCursorIsInteractive()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void Play()

@@ -1,9 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Collider))]
 public class ExtractionZone : MonoBehaviour
@@ -21,6 +19,9 @@ public class ExtractionZone : MonoBehaviour
     [Header("Activation")]
     [SerializeField] private DoorButtonInteractable doorButton;
     [SerializeField] private bool requireDoorOpen = true;
+
+    [Header("Scene Flow")]
+    [SerializeField] private string mainMenuSceneName = "Menu";
 
     float timer;
     bool playerInside;
@@ -83,12 +84,19 @@ public class ExtractionZone : MonoBehaviour
         // TODO: finish game / load scene / disable player
         enabled = false;
 
-#if UNITY_EDITOR
-        if (EditorApplication.isPlaying)
+        if (string.IsNullOrWhiteSpace(mainMenuSceneName))
         {
-            EditorApplication.isPlaying = false;
+            Debug.LogError("Main menu scene name is empty.");
+            return;
         }
-#endif
+
+        if (!Application.CanStreamedLevelBeLoaded(mainMenuSceneName))
+        {
+            Debug.LogError($"Scene '{mainMenuSceneName}' is not in Build Settings.");
+            return;
+        }
+
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 
     private void HandleDoorOpened()
