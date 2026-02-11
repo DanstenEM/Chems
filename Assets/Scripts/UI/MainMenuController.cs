@@ -298,30 +298,31 @@ public class MainMenuController : MonoBehaviour
 
     private void RenderItemStack(Transform slotTransform, InventoryItemObj itemObj, int count)
     {
-        var iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-        iconGo.transform.SetParent(slotTransform, false);
+        var itemVisual = new GameObject("ItemVisual", typeof(RectTransform), typeof(Image));
+        itemVisual.transform.SetParent(slotTransform, false);
 
-        var iconRect = (RectTransform)iconGo.transform;
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-        iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.sizeDelta = new Vector2(64f, 64f);
+        var itemRect = (RectTransform)itemVisual.transform;
+        itemRect.anchorMin = Vector2.zero;
+        itemRect.anchorMax = Vector2.one;
+        itemRect.offsetMin = Vector2.zero;
+        itemRect.offsetMax = Vector2.zero;
 
-        var iconImage = iconGo.GetComponent<Image>();
-        iconImage.preserveAspect = true;
+        var itemImage = itemVisual.GetComponent<Image>();
+        itemImage.preserveAspect = true;
 
         if (itemObj.icon != null)
         {
-            iconImage.sprite = itemObj.icon;
-            iconImage.color = Color.white;
+            itemImage.sprite = itemObj.icon;
+            itemImage.color = Color.white;
         }
         else
         {
-            iconImage.color = GetCategoryColor(itemObj.category);
+            // Match the same category fallback style used by in-game inventory items.
+            itemImage.color = GetCategoryColor(itemObj.category);
         }
 
         var countGo = new GameObject("Count", typeof(RectTransform), typeof(TextMeshProUGUI));
-        countGo.transform.SetParent(slotTransform, false);
+        countGo.transform.SetParent(itemVisual.transform, false);
 
         var countRect = (RectTransform)countGo.transform;
         countRect.anchorMin = new Vector2(1f, 0f);
@@ -334,7 +335,7 @@ public class MainMenuController : MonoBehaviour
         countText.alignment = TextAlignmentOptions.BottomRight;
         countText.fontSize = 24;
         countText.color = Color.white;
-        countText.text = $"x{count}";
+        countText.text = count.ToString();
     }
 
     private void RenderMissingItemStack(Transform slotTransform, SavedItemStack stack)
