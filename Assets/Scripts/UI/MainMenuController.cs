@@ -264,33 +264,48 @@ public class MainMenuController : MonoBehaviour
         var stashInventory = InventoryPersistenceService.LoadStash();
         int renderedStacks = 0;
 
+        bool stashModified = false;
+
         if (stashInventory != null && stashInventory.stacks != null)
         {
             var orderedStacks = new List<SavedItemStack>(stashInventory.stacks);
             orderedStacks.Sort((left, right) => string.Compare(left?.itemId, right?.itemId, System.StringComparison.Ordinal));
+            var sanitizedStacks = new List<SavedItemStack>(orderedStacks.Count);
 
             foreach (var stack in orderedStacks)
             {
                 if (stack == null || string.IsNullOrWhiteSpace(stack.itemId) || stack.count <= 0)
                 {
+                    stashModified = true;
                     continue;
-                }
-
-                if (renderedStacks >= stashSlots.Count)
-                {
-                    Debug.LogWarning("Stash has more stacks than available menu slots. Remaining stacks are hidden.");
-                    break;
                 }
 
                 if (!stashItemLookup.TryGetValue(stack.itemId, out var itemObj) || itemObj == null)
                 {
-                    RenderMissingItemStack(stashSlots[renderedStacks].transform, stack);
-                    renderedStacks++;
+                    stashModified = true;
+                    continue;
+                }
+
+                sanitizedStacks.Add(stack);
+
+                if (renderedStacks >= stashSlots.Count)
+                {
                     continue;
                 }
 
                 RenderItemStack(stashSlots[renderedStacks].transform, itemObj, stack.count, stack.itemId);
                 renderedStacks++;
+            }
+
+            if (sanitizedStacks.Count > stashSlots.Count)
+            {
+                Debug.LogWarning("Stash has more valid stacks than available menu slots. Remaining stacks are hidden.");
+            }
+
+            if (stashModified || sanitizedStacks.Count != stashInventory.stacks.Count)
+            {
+                stashInventory.stacks = sanitizedStacks;
+                InventoryPersistenceService.SaveStash(stashInventory);
             }
         }
 
@@ -332,24 +347,6 @@ public class MainMenuController : MonoBehaviour
         var stashItem = itemVisual.GetComponent<StashMenuItem>();
         stashItem.SetupComponents(itemImage, countText);
         stashItem.Construct(itemId, itemObj.icon, GetCategoryColor(itemObj.category), count);
-    }
-
-    private void RenderMissingItemStack(Transform slotTransform, SavedItemStack stack)
-    {
-        var textGo = new GameObject("Missing", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textGo.transform.SetParent(slotTransform, false);
-
-        var textRect = (RectTransform)textGo.transform;
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.offsetMin = Vector2.zero;
-        textRect.offsetMax = Vector2.zero;
-
-        var text = textGo.GetComponent<TextMeshProUGUI>();
-        text.alignment = TextAlignmentOptions.Center;
-        text.fontSize = 18;
-        text.color = new Color(1f, 0.45f, 0.45f, 1f);
-        text.text = $"?\n{stack.count}";
     }
 
     private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
