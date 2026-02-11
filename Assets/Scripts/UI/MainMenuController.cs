@@ -12,7 +12,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Canvas targetCanvas;
 
     [Header("Stash Overlay")]
-    [SerializeField] private int stashRows = 10;
+    [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 10;
 
     private const string MenuRootName = "MainMenuRoot";
@@ -151,7 +151,7 @@ public class MainMenuController : MonoBehaviour
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(1040f, 760f);
+        panelRect.sizeDelta = new Vector2(980f, 620f);
 
         var panelImage = panel.GetComponent<Image>();
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
@@ -166,8 +166,8 @@ public class MainMenuController : MonoBehaviour
         viewportRect.anchorMin = new Vector2(0.5f, 0.5f);
         viewportRect.anchorMax = new Vector2(0.5f, 0.5f);
         viewportRect.pivot = new Vector2(0.5f, 0.5f);
-        viewportRect.sizeDelta = new Vector2(920f, 540f);
-        viewportRect.anchoredPosition = new Vector2(0f, -20f);
+        viewportRect.sizeDelta = new Vector2(900f, 420f);
+        viewportRect.anchoredPosition = new Vector2(0f, -16f);
 
         var viewportImage = viewport.GetComponent<Image>();
         viewportImage.color = new Color(1f, 1f, 1f, 0.04f);
