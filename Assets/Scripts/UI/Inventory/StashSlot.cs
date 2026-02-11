@@ -21,14 +21,17 @@ public class StashSlot : MonoBehaviour, IDropHandler
     [SerializeField] private Image image;
     [SerializeField] private SlotFilter filter = SlotFilter.Universal;
     [SerializeField] private SlotOwner owner = SlotOwner.Stash;
+    [SerializeField] private int slotIndex;
 
     public SlotOwner Owner => owner;
+    public int SlotIndex => slotIndex;
 
-    public void Configure(Image slotImage, SlotFilter slotFilter = SlotFilter.Universal, SlotOwner slotOwner = SlotOwner.Stash)
+    public void Configure(Image slotImage, SlotFilter slotFilter = SlotFilter.Universal, SlotOwner slotOwner = SlotOwner.Stash, int index = 0)
     {
         image = slotImage;
         filter = slotFilter;
         owner = slotOwner;
+        slotIndex = Mathf.Max(0, index);
     }
 
     public void OnDrop(PointerEventData eventData)
@@ -95,6 +98,7 @@ public class StashSlot : MonoBehaviour, IDropHandler
             : SlotOwner.ExtractedInventory;
 
         var allSlots = Object.FindObjectsOfType<StashSlot>(true);
+        System.Array.Sort(allSlots, CompareBySlotIndex);
 
         // Prefer merging into an existing stack first.
         foreach (var candidate in allSlots)
@@ -140,5 +144,31 @@ public class StashSlot : MonoBehaviour, IDropHandler
         }
 
         return false;
+    }
+
+    private static int CompareBySlotIndex(StashSlot left, StashSlot right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return 0;
+        }
+
+        if (left == null)
+        {
+            return 1;
+        }
+
+        if (right == null)
+        {
+            return -1;
+        }
+
+        int indexCompare = left.slotIndex.CompareTo(right.slotIndex);
+        if (indexCompare != 0)
+        {
+            return indexCompare;
+        }
+
+        return left.transform.GetSiblingIndex().CompareTo(right.transform.GetSiblingIndex());
     }
 }

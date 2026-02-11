@@ -293,7 +293,8 @@ public class MainMenuController : MonoBehaviour
 
         for (int i = 0; i < slotCount; i++)
         {
-            targetSlots.Add(CreateStashSlot(content.transform, i + 1, filter, StashSlot.SlotOwner.ExtractedInventory));
+            int slotOrder = targetSlots.Count + 1;
+            targetSlots.Add(CreateStashSlot(content.transform, slotOrder, filter, StashSlot.SlotOwner.ExtractedInventory));
         }
     }
 
@@ -371,8 +372,8 @@ public class MainMenuController : MonoBehaviour
         {
             for (int col = 0; col < columns; col++)
             {
-                int slotIndex = row * columns + col + 1;
-                targetSlots.Add(CreateStashSlot(content.transform, slotIndex, slotFilter, StashSlot.SlotOwner.Stash));
+                int slotOrder = row * columns + col + 1;
+                targetSlots.Add(CreateStashSlot(content.transform, slotOrder, slotFilter, StashSlot.SlotOwner.Stash));
             }
         }
         return column.GetComponent<RectTransform>();
@@ -404,16 +405,16 @@ public class MainMenuController : MonoBehaviour
         CreateButton(row.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f));
     }
 
-    private StashSlot CreateStashSlot(Transform parent, int slotIndex, StashSlot.SlotFilter filter, StashSlot.SlotOwner owner)
+    private StashSlot CreateStashSlot(Transform parent, int slotOrder, StashSlot.SlotFilter filter, StashSlot.SlotOwner owner)
     {
-        var slotGo = new GameObject($"Slot_{slotIndex}", typeof(RectTransform), typeof(Image), typeof(StashSlot));
+        var slotGo = new GameObject($"Slot_{slotOrder}", typeof(RectTransform), typeof(Image), typeof(StashSlot));
         slotGo.transform.SetParent(parent, false);
 
         var slotImage = slotGo.GetComponent<Image>();
         slotImage.color = new Color(0.65f, 0.65f, 0.65f, 0.28f);
 
         var stashSlot = slotGo.GetComponent<StashSlot>();
-        stashSlot.Configure(slotImage, filter, owner);
+        stashSlot.Configure(slotImage, filter, owner, slotOrder);
 
         return stashSlot;
     }
