@@ -82,6 +82,8 @@ MonoBehaviour:
   aimController: {fileID: 0}
   animator: {fileID: 0}
   playerMovement: {fileID: 0}
+  volume: {fileID: 0}
+  colorAjusmentComponent: {fileID: 0}
 --- !u!114 &3535526605884399318
 MonoBehaviour:
   m_ObjectHideFlags: 0

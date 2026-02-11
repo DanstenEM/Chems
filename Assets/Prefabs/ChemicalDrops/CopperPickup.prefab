@@ -13,10 +13,8 @@ GameObject:
   - component: {fileID: 100003}
   - component: {fileID: 100004}
   - component: {fileID: 100005}
-  - component: {fileID: 100006}
-  - component: {fileID: 100007}
   m_Layer: 0
-  m_Name: LootChest
+  m_Name: CopperPickup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -116,81 +114,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1009302a173448408e84817856b440ec, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c0f73fe5c37d1d4a8ef40b83de5115d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   keyType: 0
+  itemObj: {fileID: 11400000, guid: 7e5d902740a64957a3f3ad8f85ae2b7b, type: 2}
   hintText: {fileID: 0}
   hintOffset: {x: 0, y: 1.2, z: 0}
-  hintFormat: PRESS {0} INTERACT
-  lootCrateUI: {fileID: 100006}
-  lootItems: []
-  defaultLootPool:
-  - {fileID: 11400000, guid: 7e5d902740a64957a3f3ad8f85ae2b7b, type: 2}
-  chemicalLootPool:
-  - {fileID: 11400000, guid: 5f34cfa95cc34af4ab4a8f552ac6d76a, type: 2}
-  weaponLootPool: []
-  generateRandomLootOnStart: 1
---- !u!114 &100006
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96530efa300b482a89b4e6aa0a5939b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  panelSize: {x: 500, y: 360}
-  slotSize: {x: 80, y: 80}
-  slotSpacing: {x: 8, y: 8}
-  slotCount: 15
-  columns: 5
-  panelOffset: {x: 40, y: 0}
-  startHidden: 1
-  inventorySystem: {fileID: 100007}
-  slotSelectedColor: {r: 1, g: 0.4292453, b: 0.4292453, a: 1}
-  slotDeselectedColor: {r: 0.6, g: 0.6, b: 0.6, a: 0.35}
-  lootCanvas: {fileID: 0}
-  panelRoot: {fileID: 0}
-  slotsRoot: {fileID: 0}
---- !u!114 &100007
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bd3b9e7298713e44bef04ff9c7daf0f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  slots: []
-  inventoryPrefab: {fileID: 5638737629825818885, guid: 10ea5169612f1ee4f88a7c1a0e7a94f7, type: 3}
-  inventoryObj: {fileID: 0}
-  selectSlot: -1
-  isGameplayInventory: 0
-  mouseAction:
-    m_UseReference: 0
-    m_Action:
-      m_Name: Mouse
-      m_Type: 0
-      m_ExpectedControlType: Vector2
-      m_Id: 249190d5-2a2d-4cbe-818c-86e9411b9675
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings:
-      - m_Name: 
-        m_Id: 230e5867-2e83-4413-b649-7008b426bb35
-        m_Path: <Mouse>/position
-        m_Interactions: 
-        m_Processors: 
-        m_Groups: 
-        m_Action: Mouse
-        m_Flags: 0
-      m_Flags: 0
-    m_Reference: {fileID: 0}
-  mousePosition: {x: 0, y: 0}
+  hintFormat: PRESS {0} TAKE
+  groundRaycastHeight: 1.5
+  groundRaycastDistance: 6
+  groundOffset: 0.02
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  pickupAreaMultiplier: 3

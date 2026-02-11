@@ -10,19 +10,31 @@ public class InventorySlot : MonoBehaviour, IDropHandler
     [SerializeField] private Color selectColor, notSelectColor;
     public void OnDrop(PointerEventData eventData)
     {
-        if(transform.childCount == 0)
+        if (!eventData.pointerDrag.TryGetComponent(out InventoryItem draggedItem))
         {
-            if(eventData.pointerDrag.TryGetComponent(out InventoryItem item))
-            {
-                if (!IsItemAllowed(item))
-                {
-                    return;
-                }
-
-                item.parentAfterDrag = transform;
-                //inventoryItem = item;
-            }
+            return;
         }
+
+        if (!IsItemAllowed(draggedItem))
+        {
+            return;
+        }
+
+        var existingItem = GetComponentInChildren<InventoryItem>();
+        if (existingItem == null)
+        {
+            draggedItem.parentAfterDrag = transform;
+            return;
+        }
+
+        if (ReferenceEquals(existingItem, draggedItem) || existingItem.itemObj != draggedItem.itemObj)
+        {
+            return;
+        }
+
+        existingItem.count += draggedItem.count;
+        existingItem.RefrashCount();
+        Destroy(draggedItem.gameObject);
     }
 
     public void Select() => image.color = selectColor;
@@ -38,7 +50,12 @@ public class InventorySlot : MonoBehaviour, IDropHandler
 
     private bool IsItemAllowed(InventoryItem item)
     {
-        if (item == null || item.itemObj == null)
+        return item != null && IsItemAllowed(item.itemObj);
+    }
+
+    public bool IsItemAllowed(InventoryItemObj itemObj)
+    {
+        if (itemObj == null)
         {
             return false;
         }
@@ -49,9 +66,9 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         return slotCategory switch
         {
             InventorySlotMarker.SlotCategory.Universal => true,
-            InventorySlotMarker.SlotCategory.Chemical => item.itemObj.category == InventoryItemObj.ItemCategory.Chemical,
-            InventorySlotMarker.SlotCategory.Weapon => item.itemObj.category == InventoryItemObj.ItemCategory.Weapon,
-            _ => item.itemObj.category == InventoryItemObj.ItemCategory.Regular
+            InventorySlotMarker.SlotCategory.Chemical => itemObj.category == InventoryItemObj.ItemCategory.Chemical,
+            InventorySlotMarker.SlotCategory.Weapon => itemObj.category == InventoryItemObj.ItemCategory.Weapon,
+            _ => itemObj.category == InventoryItemObj.ItemCategory.Regular
         };
     }
 }

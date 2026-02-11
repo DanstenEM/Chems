@@ -7,6 +7,7 @@ using Zenject;
 public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 {
     private static InventorySystem gameplayInventory;
+    private static readonly List<InventorySystem> registeredInventories = new List<InventorySystem>();
 
     [SerializeField] private InventorySlot[] slots;
     [SerializeField] private InventoryItem inventoryPrefab;
@@ -46,6 +47,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     private void Awake()
     {
+        if (!registeredInventories.Contains(this))
+        {
+            registeredInventories.Add(this);
+        }
+
         if (isGameplayInventory)
         {
             gameplayInventory = this;
@@ -61,6 +67,8 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     private void OnDestroy()
     {
+        registeredInventories.Remove(this);
+
         if (ReferenceEquals(gameplayInventory, this))
         {
             gameplayInventory = null;
@@ -100,22 +108,9 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
         bool useRegularOnly = inventoryItemObj != null && inventoryItemObj.isDefaultItem;
 
-        foreach (var item in slots)
+        if (TryAddToExistingStack(inventoryItemObj, useRegularOnly))
         {
-            if (!IsSlotCompatible(item, inventoryItemObj, useRegularOnly))
-            {
-                continue;
-            }
-
-            var slotItem = item.GetComponentInChildren<InventoryItem>();
-            if (slotItem != null && slotItem.itemObj == inventoryItemObj &&
-                slotItem.count < slotItem.itemObj.stackCount
-                && slotItem.itemObj.isStackable == true)
-            {
-                slotItem.count += 1;
-                slotItem.RefrashCount();
-                return true;
-            }
+            return true;
         }
 
         foreach (var item in slots)
@@ -134,6 +129,100 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         }
 
         return false;
+    }
+
+    private bool TryAddToExistingStack(InventoryItemObj inventoryItemObj, bool useRegularOnly)
+    {
+        foreach (var slot in slots)
+        {
+            if (!IsSlotCompatible(slot, inventoryItemObj, useRegularOnly))
+            {
+                continue;
+            }
+
+            var slotItem = slot.GetComponentInChildren<InventoryItem>();
+            if (slotItem == null || slotItem.itemObj != inventoryItemObj)
+            {
+                continue;
+            }
+
+            slotItem.count += 1;
+            slotItem.RefrashCount();
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public static InventorySystem FindInventoryBySlot(InventorySlot slot)
+    {
+        if (slot == null)
+        {
+            return null;
+        }
+
+        foreach (var inventory in registeredInventories)
+        {
+            if (inventory == null || inventory.slots == null)
+            {
+                continue;
+            }
+
+            foreach (var inventorySlot in inventory.slots)
+            {
+                if (ReferenceEquals(inventorySlot, slot))
+                {
+                    return inventory;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public bool TryQuickTransferItem(InventoryItem item)
+    {
+        if (item == null || item.itemObj == null)
+        {
+            return false;
+        }
+
+        var targetInventory = FindQuickTransferTarget(item.itemObj);
+        if (targetInventory == null)
+        {
+            return false;
+        }
+
+        int originalCount = item.count;
+        int movedCount = 0;
+
+        for (int i = 0; i < originalCount; i++)
+        {
+            if (!targetInventory.AddItem(item.itemObj))
+            {
+                break;
+            }
+
+            movedCount++;
+        }
+
+        if (movedCount == 0)
+        {
+            return false;
+        }
+
+        item.count -= movedCount;
+        if (item.count <= 0)
+        {
+            Destroy(item.gameObject);
+        }
+        else
+        {
+            item.RefrashCount();
+        }
+
+        return true;
     }
 
     public void SpawnNewItem(InventoryItemObj inventoryItemObj, InventorySlot inventorySlot)
@@ -404,5 +493,55 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
         }
 
         return null;
+    }
+
+    private InventorySystem FindQuickTransferTarget(InventoryItemObj itemObj)
+    {
+        InventorySystem fallbackTarget = null;
+
+        foreach (var candidate in registeredInventories)
+        {
+            if (candidate == null || candidate == this)
+            {
+                continue;
+            }
+
+            if (!candidate.CanReceiveForQuickTransfer(itemObj))
+            {
+                continue;
+            }
+
+            if (!isGameplayInventory && candidate.isGameplayInventory)
+            {
+                return candidate;
+            }
+
+            fallbackTarget ??= candidate;
+        }
+
+        return fallbackTarget;
+    }
+
+    private bool CanReceiveForQuickTransfer(InventoryItemObj itemObj)
+    {
+        if (!isActiveAndEnabled || slots == null || slots.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (var slot in slots)
+        {
+            if (slot == null || !slot.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            if (slot.IsItemAllowed(itemObj))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -1,9 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerClickHandler
 {
     [field: SerializeField] public InventoryItemObj itemObj { get; private set; }
     [field: SerializeField] public int count { get; set; } = 1;
@@ -13,6 +14,8 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
     private InventorySystem inventorySystem;
     private Vector2 beginDragPosition;
+    private Transform splitSourceParent;
+    private InventoryItem splitStackRemainder;
 
     public Transform parentAfterDrag;
 
@@ -31,11 +34,15 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         }
         if (image != null)
         {
-            image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
             if (itemObj != null && itemObj.icon != null)
             {
+                image.color = Color.white;
                 image.sprite = itemObj.icon;
                 image.preserveAspect = true;
+            }
+            else
+            {
+                image.color = itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f);
             }
         }
         RefrashCount();
@@ -51,6 +58,30 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         image.raycastTarget = false;
         parentAfterDrag = transform.parent;
         beginDragPosition = eventData.position;
+
+        splitSourceParent = null;
+        splitStackRemainder = null;
+
+        if (count > 1 && parentAfterDrag != null)
+        {
+            splitSourceParent = parentAfterDrag;
+            splitStackRemainder = Instantiate(this, splitSourceParent);
+            splitStackRemainder.transform.SetAsFirstSibling();
+            splitStackRemainder.parentAfterDrag = splitSourceParent;
+            splitStackRemainder.inventorySystem = inventorySystem;
+            splitStackRemainder.splitSourceParent = null;
+            splitStackRemainder.splitStackRemainder = null;
+            splitStackRemainder.count = count - 1;
+            if (splitStackRemainder.image != null)
+            {
+                splitStackRemainder.image.raycastTarget = true;
+            }
+            splitStackRemainder.RefrashCount();
+
+            count = 1;
+            RefrashCount();
+        }
+
         transform.SetParent(transform.root);
     }
 
@@ -70,16 +101,70 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.anchoredPosition = Vector2.zero;
         }
 
+        UpdateOwnerInventoryFromParent();
+
         if (shouldTryWorldDrop && inventorySystem != null && inventorySystem.TryDropDraggedItem(this))
         {
             return;
         }
 
+        if (splitStackRemainder != null && splitSourceParent != null && parentAfterDrag == splitSourceParent)
+        {
+            count += splitStackRemainder.count;
+            RefrashCount();
+            Destroy(splitStackRemainder.gameObject);
+        }
+
+        splitSourceParent = null;
+        splitStackRemainder = null;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = inventorySystem.mousePosition;
+    }
+
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (!keyboard.leftShiftKey.isPressed && !keyboard.rightShiftKey.isPressed)
+        {
+            return;
+        }
+
+        inventorySystem?.TryQuickTransferItem(this);
+    }
+
+
+    private void UpdateOwnerInventoryFromParent()
+    {
+        if (parentAfterDrag == null)
+        {
+            return;
+        }
+
+        var slot = parentAfterDrag.GetComponent<InventorySlot>();
+        if (slot == null)
+        {
+            return;
+        }
+
+        var ownerInventory = InventorySystem.FindInventoryBySlot(slot);
+        if (ownerInventory != null)
+        {
+            inventorySystem = ownerInventory;
+        }
     }
 
     private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
