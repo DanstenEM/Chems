@@ -15,6 +15,7 @@ public class MainMenuController : MonoBehaviour
     [Header("Stash Overlay")]
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 10;
+    [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
 
     private const string MenuRootName = "MainMenuRoot";
 
@@ -248,7 +249,9 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
-        stashItemLookup ??= InventorySnapshotMapper.BuildLookupFromResources();
+        stashItemLookup ??= InventorySnapshotMapper.BuildLookupWithFallbacks(
+            InventorySnapshotMapper.BuildLookupFromResources(),
+            stashLookupFallbackItems);
 
         foreach (var slot in stashSlots)
         {

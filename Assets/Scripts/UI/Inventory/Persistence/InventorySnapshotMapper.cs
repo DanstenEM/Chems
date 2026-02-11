@@ -126,27 +126,52 @@ public static class InventorySnapshotMapper
     {
         var lookup = new Dictionary<string, InventoryItemObj>();
         var allItems = Resources.LoadAll<InventoryItemObj>(string.Empty);
+        AddItemsToLookup(lookup, allItems, false);
+        return lookup;
+    }
 
-        foreach (var itemObj in allItems)
+    public static IReadOnlyDictionary<string, InventoryItemObj> BuildLookupWithFallbacks(IReadOnlyDictionary<string, InventoryItemObj> baseLookup, IEnumerable<InventoryItemObj> fallbackItems)
+    {
+        var lookup = baseLookup != null
+            ? new Dictionary<string, InventoryItemObj>(baseLookup)
+            : new Dictionary<string, InventoryItemObj>();
+
+        AddItemsToLookup(lookup, fallbackItems, true);
+        return lookup;
+    }
+
+    private static void AddItemsToLookup(IDictionary<string, InventoryItemObj> lookup, IEnumerable<InventoryItemObj> items, bool logDuplicates)
+    {
+        if (lookup == null || items == null)
+        {
+            return;
+        }
+
+        foreach (var itemObj in items)
         {
             if (itemObj == null)
             {
                 continue;
             }
 
-            string itemId = itemObj.ItemId;
-            if (string.IsNullOrWhiteSpace(itemId))
-            {
-                continue;
-            }
+            TryAddLookupKey(lookup, itemObj.ItemId, itemObj, logDuplicates);
 
-            if (!lookup.TryAdd(itemId, itemObj))
-            {
-                Debug.LogWarning($"Duplicate inventory item id '{itemId}' found. Keeping first occurrence.");
-            }
+            // Backward compatibility for older stash files that used ScriptableObject name before itemId existed.
+            TryAddLookupKey(lookup, itemObj.name, itemObj, false);
+        }
+    }
+
+    private static void TryAddLookupKey(IDictionary<string, InventoryItemObj> lookup, string key, InventoryItemObj itemObj, bool logDuplicates)
+    {
+        if (string.IsNullOrWhiteSpace(key) || itemObj == null)
+        {
+            return;
         }
 
-        return lookup;
+        if (!lookup.TryAdd(key, itemObj) && logDuplicates)
+        {
+            Debug.LogWarning($"Duplicate inventory item lookup key '{key}' found. Keeping first occurrence.");
+        }
     }
 
     private static void AddSnapshotToTotals(SavedInventory snapshot, IDictionary<string, int> totals)
