@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,11 +15,16 @@ public class MainMenuController : MonoBehaviour
     [Header("Stash Overlay")]
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 10;
+    [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
 
     private const string MenuRootName = "MainMenuRoot";
 
+    private readonly List<StashSlot> stashSlots = new List<StashSlot>();
+
     private GameObject mainPanel;
     private GameObject stashPanel;
+    private TextMeshProUGUI stashSubtitleText;
+    private IReadOnlyDictionary<string, InventoryItemObj> stashItemLookup;
 
     private void Awake()
     {
@@ -42,6 +48,8 @@ public class MainMenuController : MonoBehaviour
         {
             BuildMenuUi(targetCanvas.transform);
         }
+
+        RefreshStashView();
     }
 
     private void EnsureCursorIsInteractive()
@@ -57,6 +65,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenStash()
     {
+        RefreshStashView();
         SetStashVisible(true);
     }
 
@@ -165,7 +174,7 @@ public class MainMenuController : MonoBehaviour
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
 
         CreateText(panel.transform, "StashTitle", "Stash", 52, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -88f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
-        CreateText(panel.transform, "StashSubtitle", "Player resources", 28, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -132f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
+        stashSubtitleText = CreateText(panel.transform, "StashSubtitle", "Loading stash...", 28, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -132f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
 
         var viewport = new GameObject("GridViewport", typeof(RectTransform), typeof(Image), typeof(Mask));
         viewport.transform.SetParent(panel.transform, false);
@@ -204,6 +213,7 @@ public class MainMenuController : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+        stashSlots.Clear();
         var safeRows = Mathf.Max(1, stashRows);
         var safeColumns = Mathf.Max(1, stashColumns);
 
@@ -212,7 +222,7 @@ public class MainMenuController : MonoBehaviour
             for (var column = 0; column < safeColumns; column++)
             {
                 var slotIndex = row * safeColumns + column + 1;
-                CreateStashSlot(content.transform, slotIndex);
+                stashSlots.Add(CreateStashSlot(content.transform, slotIndex));
             }
         }
 
@@ -221,15 +231,143 @@ public class MainMenuController : MonoBehaviour
         return panel;
     }
 
-    private void CreateStashSlot(Transform parent, int slotIndex)
+    private StashSlot CreateStashSlot(Transform parent, int slotIndex)
     {
-        var slotGo = new GameObject($"Slot_{slotIndex}", typeof(RectTransform), typeof(Image));
+        var slotGo = new GameObject($"Slot_{slotIndex}", typeof(RectTransform), typeof(Image), typeof(StashSlot));
         slotGo.transform.SetParent(parent, false);
 
         var slotImage = slotGo.GetComponent<Image>();
-        slotImage.color = new Color(0.65f, 0.65f, 0.65f, 0.45f);
+        slotImage.color = new Color(0.65f, 0.65f, 0.65f, 0.28f);
 
-        CreateText(slotGo.transform, "SlotIndex", slotIndex.ToString(), 20, Vector2.zero, Vector2.one, new Vector2(0f, 0f), Vector2.zero, TextAlignmentOptions.Center);
+        var stashSlot = slotGo.GetComponent<StashSlot>();
+        stashSlot.Configure(slotImage);
+
+        return stashSlot;
+    }
+
+    private void RefreshStashView()
+    {
+        if (stashSlots.Count == 0)
+        {
+            return;
+        }
+
+        stashItemLookup ??= InventorySnapshotMapper.BuildLookupWithFallbacks(
+            InventorySnapshotMapper.BuildLookupFromResources(),
+            stashLookupFallbackItems);
+
+        foreach (var slot in stashSlots)
+        {
+            ClearChildren(slot.transform);
+        }
+
+        var stashInventory = InventoryPersistenceService.LoadStash();
+        int renderedStacks = 0;
+
+        if (stashInventory != null && stashInventory.stacks != null)
+        {
+            var orderedStacks = new List<SavedItemStack>(stashInventory.stacks);
+            orderedStacks.Sort((left, right) => string.Compare(left?.itemId, right?.itemId, System.StringComparison.Ordinal));
+
+            foreach (var stack in orderedStacks)
+            {
+                if (stack == null || string.IsNullOrWhiteSpace(stack.itemId) || stack.count <= 0)
+                {
+                    continue;
+                }
+
+                if (renderedStacks >= stashSlots.Count)
+                {
+                    Debug.LogWarning("Stash has more stacks than available menu slots. Remaining stacks are hidden.");
+                    break;
+                }
+
+                if (!stashItemLookup.TryGetValue(stack.itemId, out var itemObj) || itemObj == null)
+                {
+                    RenderMissingItemStack(stashSlots[renderedStacks].transform, stack);
+                    renderedStacks++;
+                    continue;
+                }
+
+                RenderItemStack(stashSlots[renderedStacks].transform, itemObj, stack.count, stack.itemId);
+                renderedStacks++;
+            }
+        }
+
+        if (stashSubtitleText != null)
+        {
+            stashSubtitleText.text = renderedStacks == 0
+                ? "No extracted loot yet"
+                : $"Stored stacks: {renderedStacks}";
+        }
+    }
+
+    private void RenderItemStack(Transform slotTransform, InventoryItemObj itemObj, int count, string itemId)
+    {
+        var itemVisual = new GameObject("ItemVisual", typeof(RectTransform), typeof(Image), typeof(StashMenuItem));
+        itemVisual.transform.SetParent(slotTransform, false);
+
+        var itemRect = (RectTransform)itemVisual.transform;
+        itemRect.anchorMin = Vector2.zero;
+        itemRect.anchorMax = Vector2.one;
+        itemRect.offsetMin = Vector2.zero;
+        itemRect.offsetMax = Vector2.zero;
+
+        var countGo = new GameObject("Count", typeof(RectTransform), typeof(TextMeshProUGUI));
+        countGo.transform.SetParent(itemVisual.transform, false);
+
+        var countRect = (RectTransform)countGo.transform;
+        countRect.anchorMin = new Vector2(1f, 0f);
+        countRect.anchorMax = new Vector2(1f, 0f);
+        countRect.pivot = new Vector2(1f, 0f);
+        countRect.anchoredPosition = new Vector2(-4f, 4f);
+        countRect.sizeDelta = new Vector2(72f, 28f);
+
+        var countText = countGo.GetComponent<TextMeshProUGUI>();
+        countText.alignment = TextAlignmentOptions.BottomRight;
+        countText.fontSize = 24;
+        countText.color = Color.white;
+
+        var itemImage = itemVisual.GetComponent<Image>();
+        var stashItem = itemVisual.GetComponent<StashMenuItem>();
+        stashItem.SetupComponents(itemImage, countText);
+        stashItem.Construct(itemId, itemObj.icon, GetCategoryColor(itemObj.category), count);
+    }
+
+    private void RenderMissingItemStack(Transform slotTransform, SavedItemStack stack)
+    {
+        var textGo = new GameObject("Missing", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textGo.transform.SetParent(slotTransform, false);
+
+        var textRect = (RectTransform)textGo.transform;
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        var text = textGo.GetComponent<TextMeshProUGUI>();
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = 18;
+        text.color = new Color(1f, 0.45f, 0.45f, 1f);
+        text.text = $"?\n{stack.count}";
+    }
+
+    private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
+    {
+        return category switch
+        {
+            InventoryItemObj.ItemCategory.Chemical => new Color(0.2f, 0.9f, 0.2f, 1f),
+            InventoryItemObj.ItemCategory.Weapon => new Color(0.95f, 0.2f, 0.2f, 1f),
+            _ => new Color(1f, 0.85f, 0.2f, 1f)
+        };
+    }
+
+    private static void ClearChildren(Transform parent)
+    {
+        for (int i = parent.childCount - 1; i >= 0; i--)
+        {
+            Destroy(parent.GetChild(i).gameObject);
+        }
     }
 
     private void CreateButton(
@@ -281,7 +419,7 @@ public class MainMenuController : MonoBehaviour
         CreateText(buttonGo.transform, "Label", label, 42, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, TextAlignmentOptions.Center, true);
     }
 
-    private void CreateText(
+    private TextMeshProUGUI CreateText(
         Transform parent,
         string objectName,
         string label,
@@ -314,5 +452,7 @@ public class MainMenuController : MonoBehaviour
             text.fontSizeMin = 20;
             text.fontSizeMax = fontSize;
         }
+
+        return text;
     }
 }

@@ -10,6 +10,8 @@ public class InventoryItemObj : ScriptableObject
         Weapon
     }
 
+    [SerializeField] private string itemId;
+
     public int stackCount;
     public Sprite icon;
 
@@ -17,4 +19,29 @@ public class InventoryItemObj : ScriptableObject
     public bool isDefaultItem = true;
     public ItemCategory category = ItemCategory.Regular;
     public GameObject dropPrefab;
+
+    public string ItemId => string.IsNullOrWhiteSpace(itemId) ? name : itemId;
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
+        var assetGuid = string.IsNullOrWhiteSpace(assetPath)
+            ? string.Empty
+            : UnityEditor.AssetDatabase.AssetPathToGUID(assetPath);
+
+        if (string.IsNullOrWhiteSpace(assetGuid))
+        {
+            return;
+        }
+
+        if (itemId == assetGuid)
+        {
+            return;
+        }
+
+        itemId = assetGuid;
+        UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
 }
