@@ -19,7 +19,6 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private int extractedWeaponSlots = 2;
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 5;
-    [SerializeField] private Vector2 stashPanelSize = new Vector2(1800f, 1120f);
     [SerializeField] private Vector2 extractedColumnSize = new Vector2(700f, 800f);
     [SerializeField] private Vector2 stashColumnSize = new Vector2(1000f, 900f);
     [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
@@ -181,11 +180,11 @@ public class MainMenuController : MonoBehaviour
         panel.transform.SetParent(parent, false);
 
         var panelRect = (RectTransform)panel.transform;
-        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
         panelRect.pivot = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = stashPanelSize;
+        panelRect.sizeDelta = Vector2.zero;
 
         var panelImage = panel.GetComponent<Image>();
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
