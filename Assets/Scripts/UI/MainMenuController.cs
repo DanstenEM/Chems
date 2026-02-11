@@ -19,8 +19,9 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private int extractedWeaponSlots = 2;
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 5;
-    [SerializeField] private Vector2 stashPanelSize = new Vector2(1460f, 760f);
-    [SerializeField] private float extractedColumnPreferredWidth = 560f;
+    [SerializeField] private Vector2 stashPanelSize = new Vector2(1800f, 1120f);
+    [SerializeField] private Vector2 extractedColumnSize = new Vector2(700f, 800f);
+    [SerializeField] private Vector2 stashColumnSize = new Vector2(1000f, 900f);
     [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
 
     private const string MenuRootName = "MainMenuRoot";
@@ -197,22 +198,20 @@ public class MainMenuController : MonoBehaviour
         var columnsRect = (RectTransform)columns.transform;
         columnsRect.anchorMin = new Vector2(0f, 0f);
         columnsRect.anchorMax = new Vector2(1f, 1f);
-        columnsRect.offsetMin = new Vector2(24f, 120f);
+        columnsRect.offsetMin = new Vector2(24f, 24f);
         columnsRect.offsetMax = new Vector2(-24f, -110f);
 
         var columnsLayout = columns.GetComponent<HorizontalLayoutGroup>();
         columnsLayout.childAlignment = TextAnchor.UpperCenter;
         columnsLayout.childControlHeight = true;
         columnsLayout.childControlWidth = true;
-        columnsLayout.childForceExpandWidth = true;
-        columnsLayout.childForceExpandHeight = true;
+        columnsLayout.childForceExpandWidth = false;
+        columnsLayout.childForceExpandHeight = false;
         columnsLayout.spacing = 16f;
 
         BuildExtractedInventoryColumn(columns.transform, "ExtractedInventory", out extractedSubtitleText);
-        BuildInventoryColumn(columns.transform, "StashInventory", "Stash", "Loading stash...", stashSlots, Mathf.Max(1, stashRows), Mathf.Max(1, stashColumns), out stashSubtitleText, StashSlot.SlotFilter.Universal);
-
-        CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-150f, 36f));
-        CreateButton(panel.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(160f, 36f));
+        var stashColumn = BuildInventoryColumn(columns.transform, "StashInventory", "Stash", "Loading stash...", stashSlots, Mathf.Max(1, stashRows), Mathf.Max(1, stashColumns), out stashSubtitleText, StashSlot.SlotFilter.Universal);
+        BuildStashButtonsRow(stashColumn);
 
         return panel;
     }
@@ -226,8 +225,10 @@ public class MainMenuController : MonoBehaviour
         column.transform.SetParent(parent, false);
 
         var extractedLayoutElement = column.AddComponent<LayoutElement>();
-        extractedLayoutElement.preferredWidth = extractedColumnPreferredWidth;
+        extractedLayoutElement.preferredWidth = extractedColumnSize.x;
+        extractedLayoutElement.preferredHeight = extractedColumnSize.y;
         extractedLayoutElement.flexibleWidth = 0f;
+        extractedLayoutElement.flexibleHeight = 0f;
 
         var columnImage = column.GetComponent<Image>();
         columnImage.color = new Color(1f, 1f, 1f, 0.04f);
@@ -297,7 +298,7 @@ public class MainMenuController : MonoBehaviour
         }
     }
 
-    private void BuildInventoryColumn(
+    private RectTransform BuildInventoryColumn(
         Transform parent,
         string objectName,
         string title,
@@ -312,7 +313,10 @@ public class MainMenuController : MonoBehaviour
         column.transform.SetParent(parent, false);
 
         var stashLayoutElement = column.AddComponent<LayoutElement>();
-        stashLayoutElement.flexibleWidth = 1f;
+        stashLayoutElement.preferredWidth = stashColumnSize.x;
+        stashLayoutElement.preferredHeight = stashColumnSize.y;
+        stashLayoutElement.flexibleWidth = 0f;
+        stashLayoutElement.flexibleHeight = 0f;
 
         var columnImage = column.GetComponent<Image>();
         columnImage.color = new Color(1f, 1f, 1f, 0.04f);
@@ -339,8 +343,8 @@ public class MainMenuController : MonoBehaviour
         viewportMask.showMaskGraphic = false;
 
         var viewportElement = viewport.GetComponent<LayoutElement>();
-        viewportElement.flexibleHeight = 1f;
-        viewportElement.preferredHeight = 500f;
+        viewportElement.flexibleHeight = 0f;
+        viewportElement.preferredHeight = stashColumnSize.y - 220f;
 
         var content = new GameObject($"{objectName}_GridContent", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
         content.transform.SetParent(viewport.transform, false);
@@ -372,6 +376,33 @@ public class MainMenuController : MonoBehaviour
                 targetSlots.Add(CreateStashSlot(content.transform, slotIndex, slotFilter));
             }
         }
+        return column.GetComponent<RectTransform>();
+    }
+
+    private void BuildStashButtonsRow(Transform parent)
+    {
+        if (parent == null)
+        {
+            return;
+        }
+
+        var row = new GameObject("StashButtons", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        row.transform.SetParent(parent, false);
+
+        var rowLayout = row.GetComponent<HorizontalLayoutGroup>();
+        rowLayout.childAlignment = TextAnchor.MiddleCenter;
+        rowLayout.spacing = 16f;
+        rowLayout.childControlWidth = true;
+        rowLayout.childControlHeight = true;
+        rowLayout.childForceExpandWidth = false;
+        rowLayout.childForceExpandHeight = false;
+
+        var rowElement = row.GetComponent<LayoutElement>();
+        rowElement.preferredHeight = 80f;
+        rowElement.minHeight = 80f;
+
+        CreateButton(row.transform, "Back", CloseStash, new Vector2(220f, 64f));
+        CreateButton(row.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f));
     }
 
     private StashSlot CreateStashSlot(Transform parent, int slotIndex, StashSlot.SlotFilter filter)
