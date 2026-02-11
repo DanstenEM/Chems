@@ -86,8 +86,13 @@ public class MainMenuController : MonoBehaviour
 
     public void ClearStash()
     {
-        InventoryPersistenceService.ClearStash();
-        RefreshStashView();
+        InventoryPersistenceService.SaveStash(new SavedInventory());
+        ClearRenderedSlots(stashSlots);
+
+        if (stashSubtitleText != null)
+        {
+            stashSubtitleText.text = "No stash loot";
+        }
     }
 
     public void Exit()
@@ -602,6 +607,24 @@ public class MainMenuController : MonoBehaviour
         }
 
         return snapshot;
+    }
+
+    private static void ClearRenderedSlots(IEnumerable<StashSlot> slots)
+    {
+        if (slots == null)
+        {
+            return;
+        }
+
+        foreach (var slot in slots)
+        {
+            if (slot == null)
+            {
+                continue;
+            }
+
+            ClearChildren(slot.transform);
+        }
     }
 
     private void RenderItemStack(Transform slotTransform, InventoryItemObj itemObj, int count, string itemId)
