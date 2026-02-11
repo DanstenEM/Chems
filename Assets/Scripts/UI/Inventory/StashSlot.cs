@@ -63,6 +63,11 @@ public class StashSlot : MonoBehaviour, IDropHandler
             return;
         }
 
+        if (draggedItem.Category == InventoryItemObj.ItemCategory.Weapon)
+        {
+            return;
+        }
+
         existingItem.SetCount(existingItem.Count + draggedItem.Count);
         Destroy(draggedItem.gameObject);
     }
@@ -115,6 +120,11 @@ public class StashSlot : MonoBehaviour, IDropHandler
             }
 
             if (!string.Equals(existingItem.ItemId, item.ItemId, System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (item.Category == InventoryItemObj.ItemCategory.Weapon)
             {
                 continue;
             }

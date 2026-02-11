@@ -32,6 +32,11 @@ public class InventorySlot : MonoBehaviour, IDropHandler
             return;
         }
 
+        if (draggedItem.itemObj != null && draggedItem.itemObj.category == InventoryItemObj.ItemCategory.Weapon)
+        {
+            return;
+        }
+
         existingItem.count += draggedItem.count;
         existingItem.RefrashCount();
         Destroy(draggedItem.gameObject);

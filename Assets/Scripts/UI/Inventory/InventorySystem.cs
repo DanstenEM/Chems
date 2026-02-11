@@ -133,6 +133,11 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     private bool TryAddToExistingStack(InventoryItemObj inventoryItemObj, bool useRegularOnly)
     {
+        if (inventoryItemObj != null && inventoryItemObj.category == InventoryItemObj.ItemCategory.Weapon)
+        {
+            return false;
+        }
+
         foreach (var slot in slots)
         {
             if (!IsSlotCompatible(slot, inventoryItemObj, useRegularOnly))

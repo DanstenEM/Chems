@@ -493,15 +493,26 @@ public class MainMenuController : MonoBehaviour
                     continue;
                 }
 
-                int availableSlotIndex = FindNextCompatibleEmptySlotIndex(targetSlots, 0, itemObj.category);
-                if (availableSlotIndex < 0)
-                {
-                    Debug.LogWarning("Inventory has more valid stacks than available menu slots. Remaining stacks are hidden.");
-                    continue;
-                }
+                int renderCount = itemObj.category == InventoryItemObj.ItemCategory.Weapon
+                    ? stack.count
+                    : 1;
 
-                RenderItemStack(targetSlots[availableSlotIndex].transform, itemObj, stack.count, stack.itemId);
-                renderedStacks++;
+                for (int i = 0; i < renderCount; i++)
+                {
+                    int countToRender = itemObj.category == InventoryItemObj.ItemCategory.Weapon
+                        ? 1
+                        : stack.count;
+
+                    int availableSlotIndex = FindNextCompatibleEmptySlotIndex(targetSlots, 0, itemObj.category);
+                    if (availableSlotIndex < 0)
+                    {
+                        Debug.LogWarning("Inventory has more valid stacks than available menu slots. Remaining stacks are hidden.");
+                        break;
+                    }
+
+                    RenderItemStack(targetSlots[availableSlotIndex].transform, itemObj, countToRender, stack.itemId);
+                    renderedStacks++;
+                }
             }
         }
 
