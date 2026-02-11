@@ -127,6 +127,11 @@ public static class InventorySnapshotMapper
         var lookup = new Dictionary<string, InventoryItemObj>();
         var allItems = Resources.LoadAll<InventoryItemObj>(string.Empty);
         AddItemsToLookup(lookup, allItems, false);
+
+#if UNITY_EDITOR
+        AddItemsToLookup(lookup, BuildLookupInEditor(), false);
+#endif
+
         return lookup;
     }
 
@@ -139,6 +144,23 @@ public static class InventorySnapshotMapper
         AddItemsToLookup(lookup, fallbackItems, true);
         return lookup;
     }
+
+
+#if UNITY_EDITOR
+    private static IEnumerable<InventoryItemObj> BuildLookupInEditor()
+    {
+        var guids = UnityEditor.AssetDatabase.FindAssets("t:InventoryItemObj");
+        foreach (var guid in guids)
+        {
+            var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            var item = UnityEditor.AssetDatabase.LoadAssetAtPath<InventoryItemObj>(path);
+            if (item != null)
+            {
+                yield return item;
+            }
+        }
+    }
+#endif
 
     private static void AddItemsToLookup(IDictionary<string, InventoryItemObj> lookup, IEnumerable<InventoryItemObj> items, bool logDuplicates)
     {
