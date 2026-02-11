@@ -25,12 +25,22 @@ public class InventoryItemObj : ScriptableObject
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (!string.IsNullOrWhiteSpace(itemId))
+        var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
+        var assetGuid = string.IsNullOrWhiteSpace(assetPath)
+            ? string.Empty
+            : UnityEditor.AssetDatabase.AssetPathToGUID(assetPath);
+
+        if (string.IsNullOrWhiteSpace(assetGuid))
         {
             return;
         }
 
-        itemId = UnityEditor.GUID.Generate().ToString();
+        if (itemId == assetGuid)
+        {
+            return;
+        }
+
+        itemId = assetGuid;
         UnityEditor.EditorUtility.SetDirty(this);
     }
 #endif

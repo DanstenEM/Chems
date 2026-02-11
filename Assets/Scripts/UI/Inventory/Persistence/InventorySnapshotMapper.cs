@@ -180,6 +180,14 @@ public static class InventorySnapshotMapper
 
             // Backward compatibility for older stash files that used ScriptableObject name before itemId existed.
             TryAddLookupKey(lookup, itemObj.name, itemObj, false);
+
+#if UNITY_EDITOR
+            var itemPath = UnityEditor.AssetDatabase.GetAssetPath(itemObj);
+            var assetGuid = string.IsNullOrWhiteSpace(itemPath)
+                ? string.Empty
+                : UnityEditor.AssetDatabase.AssetPathToGUID(itemPath);
+            TryAddLookupKey(lookup, assetGuid, itemObj, false);
+#endif
         }
     }
 
