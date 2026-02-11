@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -13,16 +14,20 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private Canvas targetCanvas;
 
     [Header("Stash Overlay")]
+    [SerializeField] private int extractedRows = 5;
+    [SerializeField] private int extractedColumns = 5;
     [SerializeField] private int stashRows = 5;
-    [SerializeField] private int stashColumns = 10;
+    [SerializeField] private int stashColumns = 5;
     [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
 
     private const string MenuRootName = "MainMenuRoot";
 
+    private readonly List<StashSlot> extractedSlots = new List<StashSlot>();
     private readonly List<StashSlot> stashSlots = new List<StashSlot>();
 
     private GameObject mainPanel;
     private GameObject stashPanel;
+    private TextMeshProUGUI extractedSubtitleText;
     private TextMeshProUGUI stashSubtitleText;
     private IReadOnlyDictionary<string, InventoryItemObj> stashItemLookup;
 
@@ -60,6 +65,7 @@ public class MainMenuController : MonoBehaviour
 
     public void Play()
     {
+        PersistStashView();
         LoadSceneByName(playSceneName);
     }
 
@@ -71,6 +77,7 @@ public class MainMenuController : MonoBehaviour
 
     public void CloseStash()
     {
+        PersistStashView();
         SetStashVisible(false);
     }
 
@@ -170,35 +177,85 @@ public class MainMenuController : MonoBehaviour
         panel.transform.SetParent(parent, false);
 
         var panelRect = (RectTransform)panel.transform;
-        panelRect.anchorMin = new Vector2(1f, 0.5f);
-        panelRect.anchorMax = new Vector2(1f, 0.5f);
-        panelRect.pivot = new Vector2(1f, 0.5f);
-        panelRect.anchoredPosition = new Vector2(-40f, 0f);
-        panelRect.sizeDelta = new Vector2(980f, 620f);
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.sizeDelta = new Vector2(1600f, 760f);
 
         var panelImage = panel.GetComponent<Image>();
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
 
-        CreateText(panel.transform, "StashTitle", "Stash", 52, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -88f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
-        stashSubtitleText = CreateText(panel.transform, "StashSubtitle", "Loading stash...", 28, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -132f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
+        CreateText(panel.transform, "StashTitle", "Stash Management", 52, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -88f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
 
-        var viewport = new GameObject("GridViewport", typeof(RectTransform), typeof(Image), typeof(Mask));
-        viewport.transform.SetParent(panel.transform, false);
+        var columns = new GameObject("Columns", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        columns.transform.SetParent(panel.transform, false);
 
-        var viewportRect = (RectTransform)viewport.transform;
-        viewportRect.anchorMin = new Vector2(0.5f, 0.5f);
-        viewportRect.anchorMax = new Vector2(0.5f, 0.5f);
-        viewportRect.pivot = new Vector2(0.5f, 0.5f);
-        viewportRect.sizeDelta = new Vector2(900f, 420f);
-        viewportRect.anchoredPosition = new Vector2(0f, -16f);
+        var columnsRect = (RectTransform)columns.transform;
+        columnsRect.anchorMin = new Vector2(0f, 0f);
+        columnsRect.anchorMax = new Vector2(1f, 1f);
+        columnsRect.offsetMin = new Vector2(24f, 120f);
+        columnsRect.offsetMax = new Vector2(-24f, -110f);
+
+        var columnsLayout = columns.GetComponent<HorizontalLayoutGroup>();
+        columnsLayout.childAlignment = TextAnchor.UpperCenter;
+        columnsLayout.childControlHeight = true;
+        columnsLayout.childControlWidth = true;
+        columnsLayout.childForceExpandWidth = true;
+        columnsLayout.childForceExpandHeight = true;
+        columnsLayout.spacing = 16f;
+
+        BuildInventoryColumn(columns.transform, "ExtractedInventory", "Extracted Inventory", "Loading extracted loot...", extractedSlots, Mathf.Max(1, extractedRows), Mathf.Max(1, extractedColumns), out extractedSubtitleText);
+        BuildInventoryColumn(columns.transform, "StashInventory", "Stash", "Loading stash...", stashSlots, Mathf.Max(1, stashRows), Mathf.Max(1, stashColumns), out stashSubtitleText);
+
+        CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-150f, 36f));
+        CreateButton(panel.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(160f, 36f));
+
+        return panel;
+    }
+
+    private void BuildInventoryColumn(
+        Transform parent,
+        string objectName,
+        string title,
+        string subtitle,
+        List<StashSlot> targetSlots,
+        int rows,
+        int columns,
+        out TextMeshProUGUI subtitleText)
+    {
+        var column = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+        column.transform.SetParent(parent, false);
+
+        var columnImage = column.GetComponent<Image>();
+        columnImage.color = new Color(1f, 1f, 1f, 0.04f);
+
+        var columnLayout = column.GetComponent<VerticalLayoutGroup>();
+        columnLayout.padding = new RectOffset(16, 16, 16, 16);
+        columnLayout.spacing = 10f;
+        columnLayout.childAlignment = TextAnchor.UpperCenter;
+        columnLayout.childControlHeight = true;
+        columnLayout.childControlWidth = true;
+        columnLayout.childForceExpandHeight = false;
+        columnLayout.childForceExpandWidth = true;
+
+        CreateText(column.transform, $"{objectName}_Title", title, 34, new Vector2(0f, 0f), new Vector2(1f, 0f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
+        subtitleText = CreateText(column.transform, $"{objectName}_Subtitle", subtitle, 24, new Vector2(0f, 0f), new Vector2(1f, 0f), Vector2.zero, Vector2.zero, TextAlignmentOptions.Center);
+
+        var viewport = new GameObject($"{objectName}_GridViewport", typeof(RectTransform), typeof(Image), typeof(Mask), typeof(LayoutElement));
+        viewport.transform.SetParent(column.transform, false);
 
         var viewportImage = viewport.GetComponent<Image>();
-        viewportImage.color = new Color(1f, 1f, 1f, 0.04f);
+        viewportImage.color = new Color(1f, 1f, 1f, 0.02f);
 
         var viewportMask = viewport.GetComponent<Mask>();
         viewportMask.showMaskGraphic = false;
 
-        var content = new GameObject("GridContent", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
+        var viewportElement = viewport.GetComponent<LayoutElement>();
+        viewportElement.flexibleHeight = 1f;
+        viewportElement.preferredHeight = 500f;
+
+        var content = new GameObject($"{objectName}_GridContent", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
         content.transform.SetParent(viewport.transform, false);
 
         var contentRect = (RectTransform)content.transform;
@@ -208,7 +265,7 @@ public class MainMenuController : MonoBehaviour
 
         var grid = content.GetComponent<GridLayoutGroup>();
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = Mathf.Max(1, stashColumns);
+        grid.constraintCount = columns;
         grid.cellSize = new Vector2(80f, 80f);
         grid.spacing = new Vector2(8f, 8f);
         grid.startAxis = GridLayoutGroup.Axis.Horizontal;
@@ -219,23 +276,15 @@ public class MainMenuController : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        stashSlots.Clear();
-        var safeRows = Mathf.Max(1, stashRows);
-        var safeColumns = Mathf.Max(1, stashColumns);
-
-        for (var row = 0; row < safeRows; row++)
+        targetSlots.Clear();
+        for (int row = 0; row < rows; row++)
         {
-            for (var column = 0; column < safeColumns; column++)
+            for (int col = 0; col < columns; col++)
             {
-                var slotIndex = row * safeColumns + column + 1;
-                stashSlots.Add(CreateStashSlot(content.transform, slotIndex));
+                int slotIndex = row * columns + col + 1;
+                targetSlots.Add(CreateStashSlot(content.transform, slotIndex));
             }
         }
-
-        CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 92f));
-        CreateButton(panel.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f));
-
-        return panel;
     }
 
     private StashSlot CreateStashSlot(Transform parent, int slotIndex)
@@ -254,7 +303,7 @@ public class MainMenuController : MonoBehaviour
 
     private void RefreshStashView()
     {
-        if (stashSlots.Count == 0)
+        if (extractedSlots.Count == 0 || stashSlots.Count == 0)
         {
             return;
         }
@@ -263,65 +312,123 @@ public class MainMenuController : MonoBehaviour
             InventorySnapshotMapper.BuildLookupFromResources(),
             stashLookupFallbackItems);
 
-        foreach (var slot in stashSlots)
+        RenderSnapshotToSlots(InventoryPersistenceService.LoadPostExtractionInventory(), extractedSlots, extractedSubtitleText, "No extracted loot", "Extracted stacks: {0}");
+        RenderSnapshotToSlots(InventoryPersistenceService.LoadStash(), stashSlots, stashSubtitleText, "No stash loot", "Stored stacks: {0}");
+    }
+
+    private void PersistStashView()
+    {
+        if (extractedSlots.Count == 0 || stashSlots.Count == 0)
         {
-            ClearChildren(slot.transform);
+            return;
         }
 
-        var stashInventory = InventoryPersistenceService.LoadStash();
-        int renderedStacks = 0;
+        bool extractedSaved = InventoryPersistenceService.SavePostExtractionInventory(BuildSnapshotFromSlots(extractedSlots));
+        bool stashSaved = InventoryPersistenceService.SaveStash(BuildSnapshotFromSlots(stashSlots));
 
-        bool stashModified = false;
-
-        if (stashInventory != null && stashInventory.stacks != null)
+        if (!extractedSaved || !stashSaved)
         {
-            var orderedStacks = new List<SavedItemStack>(stashInventory.stacks);
-            orderedStacks.Sort((left, right) => string.Compare(left?.itemId, right?.itemId, System.StringComparison.Ordinal));
-            var sanitizedStacks = new List<SavedItemStack>(orderedStacks.Count);
+            Debug.LogError("Failed to persist stash management inventories.");
+        }
+    }
 
-            foreach (var stack in orderedStacks)
+    private void RenderSnapshotToSlots(
+        SavedInventory snapshot,
+        List<StashSlot> targetSlots,
+        TextMeshProUGUI subtitleTarget,
+        string emptyLabel,
+        string countLabelFormat)
+    {
+        foreach (var slot in targetSlots)
+        {
+            if (slot != null)
+            {
+                ClearChildren(slot.transform);
+            }
+        }
+
+        int renderedStacks = 0;
+        if (snapshot != null && snapshot.stacks != null)
+        {
+            var sanitizedStacks = new List<SavedItemStack>(snapshot.stacks.Count);
+            foreach (var stack in snapshot.stacks)
             {
                 if (stack == null || string.IsNullOrWhiteSpace(stack.itemId) || stack.count <= 0)
                 {
-                    stashModified = true;
                     continue;
                 }
 
                 if (!stashItemLookup.TryGetValue(stack.itemId, out var itemObj) || itemObj == null)
                 {
-                    stashModified = true;
                     continue;
                 }
 
                 sanitizedStacks.Add(stack);
+            }
 
-                if (renderedStacks >= stashSlots.Count)
+            sanitizedStacks.Sort((left, right) => string.Compare(left?.itemId, right?.itemId, StringComparison.Ordinal));
+
+            foreach (var stack in sanitizedStacks)
+            {
+                if (renderedStacks >= targetSlots.Count)
                 {
-                    continue;
+                    Debug.LogWarning("Inventory has more valid stacks than available menu slots. Remaining stacks are hidden.");
+                    break;
                 }
 
-                RenderItemStack(stashSlots[renderedStacks].transform, itemObj, stack.count, stack.itemId);
+                stashItemLookup.TryGetValue(stack.itemId, out var itemObj);
+                RenderItemStack(targetSlots[renderedStacks].transform, itemObj, stack.count, stack.itemId);
                 renderedStacks++;
             }
-
-            if (sanitizedStacks.Count > stashSlots.Count)
-            {
-                Debug.LogWarning("Stash has more valid stacks than available menu slots. Remaining stacks are hidden.");
-            }
-
-            if (stashModified || sanitizedStacks.Count != stashInventory.stacks.Count)
-            {
-                stashInventory.stacks = sanitizedStacks;
-                InventoryPersistenceService.SaveStash(stashInventory);
-            }
         }
 
-        if (stashSubtitleText != null)
+        if (subtitleTarget != null)
         {
-            stashSubtitleText.text = renderedStacks == 0
-                ? "No extracted loot yet"
-                : $"Stored stacks: {renderedStacks}";
+            subtitleTarget.text = renderedStacks == 0
+                ? emptyLabel
+                : string.Format(countLabelFormat, renderedStacks);
         }
+    }
+
+    private static SavedInventory BuildSnapshotFromSlots(IEnumerable<StashSlot> sourceSlots)
+    {
+        var snapshot = new SavedInventory();
+        var countByItemId = new Dictionary<string, int>();
+
+        if (sourceSlots == null)
+        {
+            return snapshot;
+        }
+
+        foreach (var slot in sourceSlots)
+        {
+            if (slot == null)
+            {
+                continue;
+            }
+
+            var item = slot.GetComponentInChildren<StashMenuItem>();
+            if (item == null || string.IsNullOrWhiteSpace(item.ItemId) || item.Count <= 0)
+            {
+                continue;
+            }
+
+            if (!countByItemId.TryAdd(item.ItemId, item.Count))
+            {
+                countByItemId[item.ItemId] += item.Count;
+            }
+        }
+
+        foreach (var pair in countByItemId)
+        {
+            snapshot.stacks.Add(new SavedItemStack
+            {
+                itemId = pair.Key,
+                count = pair.Value
+            });
+        }
+
+        return snapshot;
     }
 
     private void RenderItemStack(Transform slotTransform, InventoryItemObj itemObj, int count, string itemId)
@@ -353,7 +460,7 @@ public class MainMenuController : MonoBehaviour
         var itemImage = itemVisual.GetComponent<Image>();
         var stashItem = itemVisual.GetComponent<StashMenuItem>();
         stashItem.SetupComponents(itemImage, countText);
-        stashItem.Construct(itemId, itemObj.icon, GetCategoryColor(itemObj.category), count);
+        stashItem.Construct(itemId, itemObj != null ? itemObj.icon : null, itemObj != null ? GetCategoryColor(itemObj.category) : new Color(1f, 0.85f, 0.2f, 1f), count);
     }
 
     private static Color GetCategoryColor(InventoryItemObj.ItemCategory category)
