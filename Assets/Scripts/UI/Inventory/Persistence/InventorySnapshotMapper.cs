@@ -176,6 +176,47 @@ public static class InventorySnapshotMapper
         }
     }
 
+
+    public static List<InventoryItemObj> BuildItemList(SavedInventory snapshot, IReadOnlyDictionary<string, InventoryItemObj> itemLookup)
+    {
+        var items = new List<InventoryItemObj>();
+        if (snapshot == null || snapshot.stacks == null || itemLookup == null)
+        {
+            return items;
+        }
+
+        foreach (var stack in snapshot.stacks)
+        {
+            if (stack == null || string.IsNullOrWhiteSpace(stack.itemId) || stack.count <= 0)
+            {
+                continue;
+            }
+
+            if (!itemLookup.TryGetValue(stack.itemId, out var itemObj) || itemObj == null)
+            {
+                Debug.LogWarning($"Could not map item '{stack.itemId}' to InventoryItemObj.");
+                continue;
+            }
+
+            for (int i = 0; i < stack.count; i++)
+            {
+                items.Add(itemObj);
+            }
+        }
+
+        return items;
+    }
+
+    public static void ClearInventoryContents(InventorySystem inventorySystem)
+    {
+        if (inventorySystem == null)
+        {
+            return;
+        }
+
+        ClearInventory(inventorySystem);
+    }
+
     private static void ClearInventory(InventorySystem inventorySystem)
     {
         var slots = inventorySystem.GetSlots();
