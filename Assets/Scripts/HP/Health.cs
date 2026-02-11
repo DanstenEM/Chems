@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
@@ -12,9 +13,13 @@ public class Health : MonoBehaviour
     [SerializeField] private GameObject deathDropPrefab;
     [SerializeField] private Transform dropSpawnPoint;
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
+    [Header("Player Death Loot")]
+    [SerializeField] private GameObject playerDeathLootCratePrefab;
+    [SerializeField] private bool clearPlayerInventoryOnDeath = true;
     private ColorAjusmentComponent colorAjusment;
 
     bool dead;
+    private bool playerLootTransferredThisDeath;
 
     [SerializeField] bool isPlayer;
     public ReactiveProperty<bool> isDie = new ReactiveProperty<bool>();
@@ -57,6 +62,8 @@ public class Health : MonoBehaviour
 
         if (isPlayer)
         {
+            HandlePlayerDeathLootTransfer();
+
             var move = GetComponent<ThirdPersonMovement>();
             if (move) move.enabled = false;
 
@@ -84,19 +91,73 @@ public class Health : MonoBehaviour
 
         if (deathDropPrefab)
         {
-            Vector3 spawnPosition = dropSpawnPoint
-                ? dropSpawnPoint.position
-                : transform.position + dropOffset;
+            Vector3 spawnPosition = GetDropSpawnPosition();
             Instantiate(deathDropPrefab, spawnPosition, Quaternion.identity);
         }
 
         Destroy(gameObject);
     }
+
+    private void HandlePlayerDeathLootTransfer()
+    {
+        if (playerLootTransferredThisDeath)
+        {
+            return;
+        }
+
+        var gameplayInventory = InventorySystem.GameplayInventory;
+        var snapshot = InventorySnapshotMapper.BuildSnapshot(gameplayInventory);
+
+        bool hasLoot = snapshot != null && snapshot.stacks != null && snapshot.stacks.Count > 0;
+        if (hasLoot)
+        {
+            SpawnPlayerDeathLootCrate(snapshot);
+        }
+
+        if (clearPlayerInventoryOnDeath)
+        {
+            InventorySnapshotMapper.ClearInventoryContents(gameplayInventory);
+        }
+
+        playerLootTransferredThisDeath = true;
+    }
+
+    private void SpawnPlayerDeathLootCrate(SavedInventory snapshot)
+    {
+        var cratePrefab = playerDeathLootCratePrefab != null ? playerDeathLootCratePrefab : deathDropPrefab;
+        if (cratePrefab == null)
+        {
+            Debug.LogWarning("No player death loot crate prefab configured.");
+            return;
+        }
+
+        Vector3 spawnPosition = GetDropSpawnPosition();
+        var crate = Instantiate(cratePrefab, spawnPosition, Quaternion.identity);
+        var interactable = crate.GetComponentInChildren<InteractableCube>();
+        if (interactable == null)
+        {
+            Debug.LogWarning("Spawned player death crate has no InteractableCube for loot transfer.");
+            return;
+        }
+
+        IReadOnlyDictionary<string, InventoryItemObj> lookup = InventorySnapshotMapper.BuildLookupFromResources();
+        List<InventoryItemObj> lootItems = InventorySnapshotMapper.BuildItemList(snapshot, lookup);
+        interactable.SetLootItems(lootItems);
+    }
+
+    private Vector3 GetDropSpawnPosition()
+    {
+        return dropSpawnPoint
+            ? dropSpawnPoint.position
+            : transform.position + dropOffset;
+    }
+
     void Respawn()
     {
         Debug.Log("RESPAWN");
 
         dead = false;
+        playerLootTransferredThisDeath = false;
         CurrentHealth = maxHealth;
         isDie.Value = false;
 

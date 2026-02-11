@@ -80,6 +80,31 @@ public class InteractableCube : MonoBehaviour, IInteractable
         }
     }
 
+    public void SetLootItems(IReadOnlyList<InventoryItemObj> items, bool disableRandomGeneration = true)
+    {
+        if (items == null)
+        {
+            lootItems = System.Array.Empty<InventoryItemObj>();
+            hasGeneratedLoot = false;
+        }
+        else
+        {
+            var mappedItems = new InventoryItemObj[items.Count];
+            for (int i = 0; i < items.Count; i++)
+            {
+                mappedItems[i] = items[i];
+            }
+
+            lootItems = mappedItems;
+            hasGeneratedLoot = lootItems.Length > 0;
+        }
+
+        if (disableRandomGeneration)
+        {
+            generateRandomLootOnStart = false;
+        }
+    }
+
     public void Active(InputBinding input)
     {
         if (hintText == null)

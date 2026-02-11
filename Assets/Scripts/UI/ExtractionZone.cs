@@ -22,6 +22,7 @@ public class ExtractionZone : MonoBehaviour
 
     [Header("Scene Flow")]
     [SerializeField] private string mainMenuSceneName = "Menu";
+    [SerializeField] private bool requireSuccessfulSaveBeforeSceneLoad = true;
 
     float timer;
     bool playerInside;
@@ -81,7 +82,20 @@ public class ExtractionZone : MonoBehaviour
         if (timerText)
             timerText.gameObject.SetActive(false);
 
-        // TODO: finish game / load scene / disable player
+        if (!TryPersistExtractedLoot())
+        {
+            if (requireSuccessfulSaveBeforeSceneLoad)
+            {
+                Debug.LogError("Extraction aborted because stash save failed.");
+                enabled = true;
+                playerInside = false;
+                timer = 0f;
+                return;
+            }
+
+            Debug.LogWarning("Stash save failed, but extraction will continue because strict save is disabled.");
+        }
+
         enabled = false;
 
         if (string.IsNullOrWhiteSpace(mainMenuSceneName))
@@ -97,6 +111,27 @@ public class ExtractionZone : MonoBehaviour
         }
 
         SceneManager.LoadScene(mainMenuSceneName);
+    }
+
+    private bool TryPersistExtractedLoot()
+    {
+        var gameplayInventory = InventorySystem.GameplayInventory;
+        if (gameplayInventory == null)
+        {
+            Debug.LogWarning("Gameplay inventory not found. Saving empty extraction payload.");
+        }
+
+        SavedInventory extractedSnapshot = InventorySnapshotMapper.BuildSnapshot(gameplayInventory);
+        SavedInventory existingStash = InventoryPersistenceService.LoadStash();
+        SavedInventory merged = InventorySnapshotMapper.MergeSnapshots(existingStash, extractedSnapshot);
+
+        bool saved = InventoryPersistenceService.SaveStash(merged);
+        if (saved)
+        {
+            Debug.Log($"Stash saved after extraction. Merged stack count: {merged.stacks.Count}.");
+        }
+
+        return saved;
     }
 
     private void HandleDoorOpened()
