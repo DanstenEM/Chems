@@ -118,17 +118,17 @@ public class ExtractionZone : MonoBehaviour
         var gameplayInventory = InventorySystem.GameplayInventory;
         if (gameplayInventory == null)
         {
-            Debug.LogWarning("Gameplay inventory not found. Saving empty extraction payload.");
+            Debug.LogWarning("Gameplay inventory not found. Saving empty post-extraction inventory payload.");
         }
 
         SavedInventory extractedSnapshot = InventorySnapshotMapper.BuildSnapshot(gameplayInventory);
-        SavedInventory existingStash = InventoryPersistenceService.LoadStash();
-        SavedInventory merged = InventorySnapshotMapper.MergeSnapshots(existingStash, extractedSnapshot);
-
-        bool saved = InventoryPersistenceService.SaveStash(merged);
+        bool saved = InventoryPersistenceService.SavePostExtractionInventory(extractedSnapshot);
         if (saved)
         {
-            Debug.Log($"Stash saved after extraction. Merged stack count: {merged.stacks.Count}.");
+            int stackCount = extractedSnapshot != null && extractedSnapshot.stacks != null
+                ? extractedSnapshot.stacks.Count
+                : 0;
+            Debug.Log($"Post-extraction inventory saved. Stack count: {stackCount}.");
         }
 
         return saved;
