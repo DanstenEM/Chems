@@ -17,6 +17,7 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
     [SerializeField] float staminaDrainRate = 10f;
     [SerializeField] float staminaRegenRate = 10f;
     [SerializeField] float staminaRegenDelay = 2f;
+    [SerializeField] float jumpStaminaCost = 10f;
 
     public float CurrentSpeed { get; private set; }
     public float StaminaNormalized => maxStamina > 0f ? stamina / maxStamina : 0f;
@@ -110,9 +111,11 @@ public class ThirdPersonMovement : MonoBehaviour, IInitializable
             return;
         }
 
-        if (IsGrounded() && jumpAction.triggered)
+        if (IsGrounded() && jumpAction.triggered && stamina >= jumpStaminaCost)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            stamina = Mathf.Max(0f, stamina - jumpStaminaCost);
+            lastSprintTime = Time.time;
         }
     }
 
