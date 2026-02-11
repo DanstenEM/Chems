@@ -19,6 +19,8 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private int extractedWeaponSlots = 2;
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 5;
+    [SerializeField] private Vector2 stashPanelSize = new Vector2(1460f, 760f);
+    [SerializeField] private float extractedColumnPreferredWidth = 560f;
     [SerializeField] private InventoryItemObj[] stashLookupFallbackItems;
 
     private const string MenuRootName = "MainMenuRoot";
@@ -182,7 +184,7 @@ public class MainMenuController : MonoBehaviour
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.pivot = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(1600f, 760f);
+        panelRect.sizeDelta = stashPanelSize;
 
         var panelImage = panel.GetComponent<Image>();
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
@@ -222,6 +224,10 @@ public class MainMenuController : MonoBehaviour
     {
         var column = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
         column.transform.SetParent(parent, false);
+
+        var extractedLayoutElement = column.AddComponent<LayoutElement>();
+        extractedLayoutElement.preferredWidth = extractedColumnPreferredWidth;
+        extractedLayoutElement.flexibleWidth = 0f;
 
         var columnImage = column.GetComponent<Image>();
         columnImage.color = new Color(1f, 1f, 1f, 0.04f);
@@ -304,6 +310,9 @@ public class MainMenuController : MonoBehaviour
     {
         var column = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
         column.transform.SetParent(parent, false);
+
+        var stashLayoutElement = column.AddComponent<LayoutElement>();
+        stashLayoutElement.flexibleWidth = 1f;
 
         var columnImage = column.GetComponent<Image>();
         columnImage.color = new Color(1f, 1f, 1f, 0.04f);
