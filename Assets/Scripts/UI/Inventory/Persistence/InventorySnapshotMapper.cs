@@ -61,6 +61,26 @@ public static class InventorySnapshotMapper
         return snapshot;
     }
 
+    public static SavedInventory MergeSnapshots(SavedInventory baseSnapshot, SavedInventory addedSnapshot)
+    {
+        var merged = new SavedInventory();
+        var totalByItemId = new Dictionary<string, int>();
+
+        AddSnapshotToTotals(baseSnapshot, totalByItemId);
+        AddSnapshotToTotals(addedSnapshot, totalByItemId);
+
+        foreach (var pair in totalByItemId)
+        {
+            merged.stacks.Add(new SavedItemStack
+            {
+                itemId = pair.Key,
+                count = pair.Value
+            });
+        }
+
+        return merged;
+    }
+
     public static int RestoreSnapshot(InventorySystem inventorySystem, SavedInventory snapshot, IReadOnlyDictionary<string, InventoryItemObj> itemLookup, bool clearBeforeRestore = true)
     {
         if (inventorySystem == null || snapshot == null || itemLookup == null)
@@ -127,6 +147,33 @@ public static class InventorySnapshotMapper
         }
 
         return lookup;
+    }
+
+    private static void AddSnapshotToTotals(SavedInventory snapshot, IDictionary<string, int> totals)
+    {
+        if (snapshot == null || snapshot.stacks == null)
+        {
+            return;
+        }
+
+        foreach (var stack in snapshot.stacks)
+        {
+            if (stack == null || string.IsNullOrWhiteSpace(stack.itemId))
+            {
+                continue;
+            }
+
+            int count = Mathf.Max(0, stack.count);
+            if (count <= 0)
+            {
+                continue;
+            }
+
+            if (!totals.TryAdd(stack.itemId, count))
+            {
+                totals[stack.itemId] += count;
+            }
+        }
     }
 
     private static void ClearInventory(InventorySystem inventorySystem)
