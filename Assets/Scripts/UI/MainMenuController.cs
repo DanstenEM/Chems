@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -15,8 +16,11 @@ public class MainMenuController : MonoBehaviour
     [Header("Stash Overlay")]
     [SerializeField] private int stashRows = 5;
     [SerializeField] private int stashColumns = 10;
-    [SerializeField] private int inventoryRows = 5;
-    [SerializeField] private int inventoryColumns = 5;
+
+    [Header("Player Inventory Layout (matches main scene)")]
+    [SerializeField] private int regularSlotCount = 15;
+    [SerializeField] private int chemicalSlotCount = 4;
+    [SerializeField] private int weaponSlotCount = 2;
 
     [Header("Data Sources")]
     [SerializeField] private InventorySystem playerInventorySystem;
@@ -24,12 +28,24 @@ public class MainMenuController : MonoBehaviour
     private const string MenuRootName = "MainMenuRoot";
 
     private readonly List<ItemStackData> stashItems = new List<ItemStackData>();
-    private readonly List<ItemStackData> playerItems = new List<ItemStackData>();
+    private readonly List<ItemStackData> playerRegularItems = new List<ItemStackData>();
+    private readonly List<ItemStackData> playerChemicalItems = new List<ItemStackData>();
+    private readonly List<ItemStackData> playerWeaponItems = new List<ItemStackData>();
+
     private readonly List<TextMeshProUGUI> stashSlotTexts = new List<TextMeshProUGUI>();
-    private readonly List<TextMeshProUGUI> playerSlotTexts = new List<TextMeshProUGUI>();
+    private readonly List<TextMeshProUGUI> playerRegularSlotTexts = new List<TextMeshProUGUI>();
+    private readonly List<TextMeshProUGUI> playerChemicalSlotTexts = new List<TextMeshProUGUI>();
+    private readonly List<TextMeshProUGUI> playerWeaponSlotTexts = new List<TextMeshProUGUI>();
 
     private GameObject mainPanel;
     private GameObject stashPanel;
+
+    private enum SlotGroup
+    {
+        Regular,
+        Chemical,
+        Weapon
+    }
 
     private void Awake()
     {
@@ -182,12 +198,12 @@ public class MainMenuController : MonoBehaviour
         panelImage.color = new Color(0f, 0f, 0f, 0.82f);
 
         CreateText(panel.transform, "StashTitle", "Inventory Transfer", 48, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -80f), new Vector2(-24f, -16f), TextAlignmentOptions.Center);
-        CreateText(panel.transform, "HelpText", "Click left slot to move item to stash. Click right slot to return item to inventory.", 22, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -126f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
+        CreateText(panel.transform, "HelpText", "Left side uses original inventory layout (15 regular, 4 chemical, 2 weapon).", 22, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(24f, -126f), new Vector2(-24f, -64f), TextAlignmentOptions.Center);
 
         var leftSection = CreateSection(panel.transform, "PlayerInventorySection", "Player Inventory", new Vector2(0f, 0.5f), new Vector2(0.48f, 0.5f), new Vector2(740f, 460f), new Vector2(16f, -30f));
         var rightSection = CreateSection(panel.transform, "StashSection", "Stash", new Vector2(1f, 0.5f), new Vector2(0.52f, 0.5f), new Vector2(740f, 460f), new Vector2(-16f, -30f));
 
-        BuildSlotGrid(leftSection, inventoryRows, inventoryColumns, playerSlotTexts, OnPlayerSlotClicked);
+        BuildPlayerInventoryLayout(leftSection);
         BuildSlotGrid(rightSection, stashRows, stashColumns, stashSlotTexts, OnStashSlotClicked);
 
         CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f));
@@ -212,20 +228,83 @@ public class MainMenuController : MonoBehaviour
 
         CreateText(section.transform, "SectionTitle", title, 30, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(12f, -42f), new Vector2(-12f, -6f), TextAlignmentOptions.Center);
 
-        var gridRoot = new GameObject("GridRoot", typeof(RectTransform));
-        gridRoot.transform.SetParent(section.transform, false);
+        var contentRoot = new GameObject("ContentRoot", typeof(RectTransform));
+        contentRoot.transform.SetParent(section.transform, false);
 
-        var gridRect = (RectTransform)gridRoot.transform;
-        gridRect.anchorMin = new Vector2(0.5f, 0.5f);
-        gridRect.anchorMax = new Vector2(0.5f, 0.5f);
-        gridRect.pivot = new Vector2(0.5f, 0.5f);
-        gridRect.sizeDelta = new Vector2(size.x - 24f, size.y - 96f);
-        gridRect.anchoredPosition = new Vector2(0f, -14f);
+        var contentRect = (RectTransform)contentRoot.transform;
+        contentRect.anchorMin = new Vector2(0.5f, 0.5f);
+        contentRect.anchorMax = new Vector2(0.5f, 0.5f);
+        contentRect.pivot = new Vector2(0.5f, 0.5f);
+        contentRect.sizeDelta = new Vector2(size.x - 24f, size.y - 96f);
+        contentRect.anchoredPosition = new Vector2(0f, -14f);
 
-        return gridRect;
+        return contentRect;
     }
 
-    private void BuildSlotGrid(RectTransform parent, int rows, int columns, List<TextMeshProUGUI> targetTextList, System.Action<int> onClick)
+    private void BuildPlayerInventoryLayout(RectTransform parent)
+    {
+        BuildCategoryBlock(parent, "Regular", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), regularSlotCount, 5, playerRegularSlotTexts, SlotGroup.Regular);
+        BuildCategoryBlock(parent, "Chemical", new Vector2(0.5f, 0.45f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0f), chemicalSlotCount, 4, playerChemicalSlotTexts, SlotGroup.Chemical);
+        BuildCategoryBlock(parent, "Weapon", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0f), weaponSlotCount, 2, playerWeaponSlotTexts, SlotGroup.Weapon);
+    }
+
+    private void BuildCategoryBlock(
+        RectTransform parent,
+        string title,
+        Vector2 anchor,
+        Vector2 pivot,
+        Vector2 anchoredPosition,
+        int slotCount,
+        int columnCount,
+        List<TextMeshProUGUI> targetTextList,
+        SlotGroup group)
+    {
+        var block = new GameObject($"{title}Block", typeof(RectTransform));
+        block.transform.SetParent(parent, false);
+
+        var blockRect = (RectTransform)block.transform;
+        blockRect.anchorMin = anchor;
+        blockRect.anchorMax = anchor;
+        blockRect.pivot = pivot;
+        blockRect.anchoredPosition = anchoredPosition;
+
+        CreateText(block.transform, "Title", title, 20, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -24f), new Vector2(0f, 0f), TextAlignmentOptions.Center);
+
+        var gridRoot = new GameObject("Grid", typeof(RectTransform), typeof(GridLayoutGroup));
+        gridRoot.transform.SetParent(block.transform, false);
+
+        var gridRect = (RectTransform)gridRoot.transform;
+        gridRect.anchorMin = new Vector2(0.5f, 1f);
+        gridRect.anchorMax = new Vector2(0.5f, 1f);
+        gridRect.pivot = new Vector2(0.5f, 1f);
+        gridRect.anchoredPosition = new Vector2(0f, -30f);
+
+        var safeSlots = Mathf.Max(1, slotCount);
+        var safeColumns = Mathf.Max(1, columnCount);
+        var rows = Mathf.CeilToInt(safeSlots / (float)safeColumns);
+
+        var grid = gridRoot.GetComponent<GridLayoutGroup>();
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = safeColumns;
+        grid.cellSize = new Vector2(62f, 62f);
+        grid.spacing = new Vector2(6f, 6f);
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.childAlignment = TextAnchor.UpperCenter;
+
+        for (var i = 0; i < safeSlots; i++)
+        {
+            var index = i;
+            var text = CreateTransferSlot(gridRoot.transform, index, idx => OnPlayerSlotClicked(group, idx));
+            targetTextList.Add(text);
+        }
+
+        var width = (grid.cellSize.x * safeColumns) + (grid.spacing.x * (safeColumns - 1));
+        var height = (grid.cellSize.y * rows) + (grid.spacing.y * (rows - 1));
+        gridRect.sizeDelta = new Vector2(width, height);
+        blockRect.sizeDelta = new Vector2(width, 34f + height);
+    }
+
+    private void BuildSlotGrid(RectTransform parent, int rows, int columns, List<TextMeshProUGUI> targetTextList, Action<int> onClick)
     {
         var gridObject = new GameObject("Grid", typeof(RectTransform), typeof(GridLayoutGroup));
         gridObject.transform.SetParent(parent, false);
@@ -262,7 +341,7 @@ public class MainMenuController : MonoBehaviour
         gridRect.sizeDelta = new Vector2(width, height);
     }
 
-    private TextMeshProUGUI CreateTransferSlot(Transform parent, int index, System.Action<int> onClick)
+    private TextMeshProUGUI CreateTransferSlot(Transform parent, int index, Action<int> onClick)
     {
         var slotGo = new GameObject($"Slot_{index + 1}", typeof(RectTransform), typeof(Image), typeof(Button));
         slotGo.transform.SetParent(parent, false);
@@ -277,14 +356,15 @@ public class MainMenuController : MonoBehaviour
         return CreateText(slotGo.transform, "SlotText", "Empty", 14, Vector2.zero, Vector2.one, new Vector2(2f, 2f), new Vector2(-2f, -2f), TextAlignmentOptions.Center);
     }
 
-    private void OnPlayerSlotClicked(int index)
+    private void OnPlayerSlotClicked(SlotGroup group, int index)
     {
-        if (index < 0 || index >= playerItems.Count)
+        var source = GetPlayerGroupItems(group);
+        if (index < 0 || index >= source.Count)
         {
             return;
         }
 
-        var item = playerItems[index];
+        var item = source[index];
         if (item == null || item.itemObj == null)
         {
             return;
@@ -295,14 +375,8 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
-        item.count -= 1;
-        if (item.count <= 0)
-        {
-            playerItems.RemoveAt(index);
-        }
-
         AddToList(stashItems, item.itemObj, 1);
-        RefreshInventoryMirrorIfNeeded();
+        RefreshInventoryMirror();
         RefreshAllSlotTexts();
     }
 
@@ -330,14 +404,25 @@ public class MainMenuController : MonoBehaviour
             stashItems.RemoveAt(index);
         }
 
-        AddToList(playerItems, item.itemObj, 1);
-        RefreshInventoryMirrorIfNeeded();
+        RefreshInventoryMirror();
         RefreshAllSlotTexts();
+    }
+
+    private List<ItemStackData> GetPlayerGroupItems(SlotGroup group)
+    {
+        return group switch
+        {
+            SlotGroup.Chemical => playerChemicalItems,
+            SlotGroup.Weapon => playerWeaponItems,
+            _ => playerRegularItems
+        };
     }
 
     private void RefreshInventoryMirror()
     {
-        playerItems.Clear();
+        playerRegularItems.Clear();
+        playerChemicalItems.Clear();
+        playerWeaponItems.Clear();
 
         if (playerInventorySystem == null)
         {
@@ -352,18 +437,19 @@ public class MainMenuController : MonoBehaviour
                 continue;
             }
 
-            playerItems.Add(new ItemStackData(pair.Key, pair.Value));
+            switch (pair.Key.category)
+            {
+                case InventoryItemObj.ItemCategory.Chemical:
+                    playerChemicalItems.Add(new ItemStackData(pair.Key, pair.Value));
+                    break;
+                case InventoryItemObj.ItemCategory.Weapon:
+                    playerWeaponItems.Add(new ItemStackData(pair.Key, pair.Value));
+                    break;
+                default:
+                    playerRegularItems.Add(new ItemStackData(pair.Key, pair.Value));
+                    break;
+            }
         }
-    }
-
-    private void RefreshInventoryMirrorIfNeeded()
-    {
-        if (playerInventorySystem == null)
-        {
-            return;
-        }
-
-        RefreshInventoryMirror();
     }
 
     private void AddToList(List<ItemStackData> targetList, InventoryItemObj itemObj, int amount)
@@ -389,7 +475,9 @@ public class MainMenuController : MonoBehaviour
 
     private void RefreshAllSlotTexts()
     {
-        RefreshSlotTextList(playerSlotTexts, playerItems);
+        RefreshSlotTextList(playerRegularSlotTexts, playerRegularItems);
+        RefreshSlotTextList(playerChemicalSlotTexts, playerChemicalItems);
+        RefreshSlotTextList(playerWeaponSlotTexts, playerWeaponItems);
         RefreshSlotTextList(stashSlotTexts, stashItems);
     }
 
