@@ -147,10 +147,10 @@ public class MainMenuController : MonoBehaviour
         panel.transform.SetParent(parent, false);
 
         var panelRect = (RectTransform)panel.transform;
-        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.anchorMin = new Vector2(1f, 0.5f);
+        panelRect.anchorMax = new Vector2(1f, 0.5f);
+        panelRect.pivot = new Vector2(1f, 0.5f);
+        panelRect.anchoredPosition = new Vector2(-40f, 0f);
         panelRect.sizeDelta = new Vector2(980f, 620f);
 
         var panelImage = panel.GetComponent<Image>();
