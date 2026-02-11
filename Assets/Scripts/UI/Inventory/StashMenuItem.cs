@@ -10,6 +10,7 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
     public string ItemId { get; private set; }
     public int Count { get; private set; }
+    public InventoryItemObj.ItemCategory Category { get; private set; }
 
     public Transform parentAfterDrag;
 
@@ -19,10 +20,11 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         countText = targetCountText;
     }
 
-    public void Construct(string itemId, Sprite icon, Color fallbackColor, int count)
+    public void Construct(string itemId, Sprite icon, Color fallbackColor, int count, InventoryItemObj.ItemCategory category)
     {
         ItemId = itemId;
         Count = Mathf.Max(1, count);
+        Category = category;
 
         if (image != null)
         {
