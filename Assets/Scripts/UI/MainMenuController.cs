@@ -74,6 +74,12 @@ public class MainMenuController : MonoBehaviour
         SetStashVisible(false);
     }
 
+    public void ClearStash()
+    {
+        InventoryPersistenceService.ClearStash();
+        RefreshStashView();
+    }
+
     public void Exit()
     {
 #if UNITY_EDITOR
@@ -226,7 +232,8 @@ public class MainMenuController : MonoBehaviour
             }
         }
 
-        CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f));
+        CreateButton(panel.transform, "Back", CloseStash, new Vector2(220f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 92f));
+        CreateButton(panel.transform, "Clear Stash", ClearStash, new Vector2(280f, 64f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f));
 
         return panel;
     }
