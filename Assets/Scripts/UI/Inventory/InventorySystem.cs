@@ -16,7 +16,6 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     [SerializeField] private bool addStarterItems;
     [SerializeField] private int starterItemCount = 0;
     [SerializeField] private bool isGameplayInventory = true;
-    [SerializeField] private bool restoreFromPostExtractionOnInitialize = true;
     [SerializeField] private float dropForwardDistance = 1.5f;
     [SerializeField] private float dropHeightOffset = 0.4f;
     [SerializeField] private string playerTag = "Player";
@@ -83,9 +82,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
 
     public void Initialize()
     {
-        bool restoredFromPostExtraction = TryRestoreFromPostExtraction();
-
-        if (!restoredFromPostExtraction && addStarterItems && inventoryObj != null)
+        if (addStarterItems && inventoryObj != null)
         {
             for (int i = 0; i < starterItemCount; i++)
             {
@@ -100,24 +97,6 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
                 ChangeSelectSlot(0);
             }
         }
-    }
-
-    private bool TryRestoreFromPostExtraction()
-    {
-        if (!isGameplayInventory || !restoreFromPostExtractionOnInitialize)
-        {
-            return false;
-        }
-
-        if (!InventoryPersistenceService.HasPostExtractionInventorySave())
-        {
-            return false;
-        }
-
-        SavedInventory snapshot = InventoryPersistenceService.LoadPostExtractionInventory();
-        IReadOnlyDictionary<string, InventoryItemObj> lookup = InventorySnapshotMapper.BuildLookupFromResources();
-        InventorySnapshotMapper.RestoreSnapshot(this, snapshot, lookup, true);
-        return true;
     }
 
     public bool AddItem(InventoryItemObj inventoryItemObj)

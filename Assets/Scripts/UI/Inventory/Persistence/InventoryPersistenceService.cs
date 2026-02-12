@@ -32,11 +32,6 @@ public static class InventoryPersistenceService
         Delete(DefaultPostExtractionKey);
     }
 
-    public static bool HasPostExtractionInventorySave()
-    {
-        return Exists(DefaultPostExtractionKey);
-    }
-
     public static void ClearStash()
     {
         Delete(DefaultStashKey);
@@ -111,19 +106,6 @@ public static class InventoryPersistenceService
         catch (Exception exception)
         {
             Debug.LogError($"Failed to delete inventory save: {exception.Message}");
-        }
-    }
-
-    public static bool Exists(string key)
-    {
-        try
-        {
-            return File.Exists(GetSavePath(key));
-        }
-        catch (Exception exception)
-        {
-            Debug.LogError($"Failed to check inventory save existence: {exception.Message}");
-            return false;
         }
     }
 
