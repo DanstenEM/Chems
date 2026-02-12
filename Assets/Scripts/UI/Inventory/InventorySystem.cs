@@ -16,6 +16,7 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
     [SerializeField] private bool addStarterItems;
     [SerializeField] private int starterItemCount = 0;
     [SerializeField] private bool isGameplayInventory = true;
+    [SerializeField] private bool restoreMenuLoadoutOnInitialize = true;
     [SerializeField] private float dropForwardDistance = 1.5f;
     [SerializeField] private float dropHeightOffset = 0.4f;
     [SerializeField] private string playerTag = "Player";
@@ -90,6 +91,8 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
             }
         }
 
+        TryRestoreMenuLoadout();
+
         if (slots != null && slots.Length > 0)
         {
             if (!SelectWeaponSlot(0))
@@ -97,6 +100,24 @@ public class InventorySystem : MonoBehaviour, IInitializable, IDisposable
                 ChangeSelectSlot(0);
             }
         }
+    }
+
+    private void TryRestoreMenuLoadout()
+    {
+        if (!isGameplayInventory || !restoreMenuLoadoutOnInitialize)
+        {
+            return;
+        }
+
+        SavedInventory loadoutSnapshot = InventoryPersistenceService.LoadPostExtractionInventory();
+        if (loadoutSnapshot == null || loadoutSnapshot.stacks == null || loadoutSnapshot.stacks.Count == 0)
+        {
+            return;
+        }
+
+        var itemLookup = InventorySnapshotMapper.BuildLookupFromResources();
+        int restoredItems = InventorySnapshotMapper.RestoreSnapshot(this, loadoutSnapshot, itemLookup, true);
+        Debug.Log($"Restored menu loadout into gameplay inventory. Item count: {restoredItems}.");
     }
 
     public bool AddItem(InventoryItemObj inventoryItemObj)
