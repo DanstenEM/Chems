@@ -113,6 +113,12 @@ public class PlayerOverlay : MonoBehaviour
 
     private void Update()
     {
+        var activeScene = SceneManager.GetActiveScene().name;
+        if (activeScene == "Menu" || activeScene == "Inventory")
+        {
+            return;
+        }
+
         UpdateHealthText();
         UpdateStaminaBar();
         UpdateWeaponSlots();
@@ -154,17 +160,23 @@ public class PlayerOverlay : MonoBehaviour
         for (int i = 0; i < weaponIconImages.Length; i++)
         {
             var iconImage = weaponIconImages[i];
+            if (iconImage == null)
+            {
+                continue;
+            }
+
             var slot = i < weaponSlots.Length ? weaponSlots[i] : null;
             var item = slot != null ? slot.GetComponentInChildren<InventoryItem>() : null;
             var countText = weaponCountTexts != null && i < weaponCountTexts.Length ? weaponCountTexts[i] : null;
+            var slotBackground = weaponSlotImages != null && i < weaponSlotImages.Length ? weaponSlotImages[i] : null;
             var slotIndex = GetInventorySlotIndex(slot);
             var isSelected = slotIndex >= 0 && slotIndex == selectedIndex;
 
             if (item != null && item.itemObj != null && item.itemObj.icon != null)
             {
-                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                if (slotBackground != null)
                 {
-                    weaponSlotImages[i].color = isSelected
+                    slotBackground.color = isSelected
                         ? weaponSlotSelectedBackground
                         : GetWeaponSlotColor(item.itemObj.category);
                 }
@@ -181,9 +193,9 @@ public class PlayerOverlay : MonoBehaviour
             }
             else if (item != null)
             {
-                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                if (slotBackground != null)
                 {
-                    weaponSlotImages[i].color = isSelected
+                    slotBackground.color = isSelected
                         ? weaponSlotSelectedBackground
                         : GetWeaponSlotColor(item.itemObj != null ? item.itemObj.category : InventoryItemObj.ItemCategory.Weapon);
                 }
@@ -199,9 +211,9 @@ public class PlayerOverlay : MonoBehaviour
             }
             else
             {
-                if (weaponSlotImages != null && i < weaponSlotImages.Length)
+                if (slotBackground != null)
                 {
-                    weaponSlotImages[i].color = isSelected ? weaponSlotSelectedBackground : weaponSlotBackground;
+                    slotBackground.color = isSelected ? weaponSlotSelectedBackground : weaponSlotBackground;
                 }
 
                 iconImage.enabled = false;

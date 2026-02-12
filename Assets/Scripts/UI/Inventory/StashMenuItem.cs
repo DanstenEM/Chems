@@ -1,15 +1,17 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerClickHandler
 {
     [SerializeField] private Image image;
     [SerializeField] private TMP_Text countText;
 
     public string ItemId { get; private set; }
     public int Count { get; private set; }
+    public InventoryItemObj.ItemCategory Category { get; private set; }
 
     public Transform parentAfterDrag;
 
@@ -19,10 +21,11 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
         countText = targetCountText;
     }
 
-    public void Construct(string itemId, Sprite icon, Color fallbackColor, int count)
+    public void Construct(string itemId, Sprite icon, Color fallbackColor, int count, InventoryItemObj.ItemCategory category)
     {
         ItemId = itemId;
         Count = Mathf.Max(1, count);
+        Category = category;
 
         if (image != null)
         {
@@ -78,6 +81,37 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
         transform.SetParent(parentAfterDrag);
 
+        SnapToParent();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        transform.position = eventData.position;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        var keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            return;
+        }
+
+        if (!keyboard.leftShiftKey.isPressed && !keyboard.rightShiftKey.isPressed)
+        {
+            return;
+        }
+
+        StashSlot.TryQuickTransferItem(this);
+    }
+
+    public void SnapToParent()
+    {
         var rectTransform = GetComponent<RectTransform>();
         if (rectTransform != null)
         {
@@ -87,11 +121,6 @@ public class StashMenuItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
             rectTransform.offsetMax = Vector2.zero;
             rectTransform.anchoredPosition = Vector2.zero;
         }
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        transform.position = eventData.position;
     }
 
     private void RefreshCount()

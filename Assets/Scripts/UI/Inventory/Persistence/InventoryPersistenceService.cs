@@ -5,6 +5,7 @@ using UnityEngine;
 public static class InventoryPersistenceService
 {
     private const string DefaultStashKey = "stash";
+    private const string DefaultPostExtractionKey = "post_extract_inventory";
 
     public static bool SaveStash(SavedInventory inventory)
     {
@@ -14,6 +15,21 @@ public static class InventoryPersistenceService
     public static SavedInventory LoadStash()
     {
         return Load(DefaultStashKey);
+    }
+
+    public static bool SavePostExtractionInventory(SavedInventory inventory)
+    {
+        return Save(DefaultPostExtractionKey, inventory);
+    }
+
+    public static SavedInventory LoadPostExtractionInventory()
+    {
+        return Load(DefaultPostExtractionKey);
+    }
+
+    public static void ClearPostExtractionInventory()
+    {
+        Delete(DefaultPostExtractionKey);
     }
 
     public static void ClearStash()
