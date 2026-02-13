@@ -69,6 +69,14 @@ public class MainMenuController : MonoBehaviour
     public void Play()
     {
         PersistStashView();
+
+        var raidLoadoutSnapshot = BuildSnapshotFromSlots(extractedSlots);
+        if (!InventoryPersistenceService.SaveRaidLoadout(raidLoadoutSnapshot))
+        {
+            Debug.LogError("Failed to save raid loadout. Raid start is blocked to avoid losing selected menu loadout.");
+            return;
+        }
+
         LoadSceneByName(playSceneName);
     }
 
