@@ -128,6 +128,17 @@ public static class InventorySnapshotMapper
         var allItems = Resources.LoadAll<InventoryItemObj>(string.Empty);
         AddItemsToLookup(lookup, allItems, false);
 
+        var catalogs = Resources.LoadAll<InventoryItemCatalog>(string.Empty);
+        foreach (var catalog in catalogs)
+        {
+            if (catalog == null)
+            {
+                continue;
+            }
+
+            AddItemsToLookup(lookup, catalog.Items, false);
+        }
+
 #if UNITY_EDITOR
         AddItemsToLookup(lookup, BuildLookupInEditor(), false);
 #endif
