@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class RaidInventoryLoadoutBootstrap : MonoBehaviour
 {
-    [SerializeField] private float resolveTimeoutSeconds = 3f;
+    [SerializeField] private float resolveTimeoutSeconds = 5f;
     [SerializeField] private float resolveRetryDelaySeconds = 0.1f;
     [SerializeField] private InventoryItemObj[] lookupFallbackItems;
 
@@ -29,7 +29,7 @@ public class RaidInventoryLoadoutBootstrap : MonoBehaviour
         while (elapsed < resolveTimeoutSeconds)
         {
             gameplayInventory = InventorySystem.GameplayInventory;
-            if (gameplayInventory != null)
+            if (gameplayInventory != null && HasSlotsReady(gameplayInventory))
             {
                 break;
             }
@@ -40,6 +40,14 @@ public class RaidInventoryLoadoutBootstrap : MonoBehaviour
 
         if (gameplayInventory == null)
         {
+            Debug.LogWarning("[InventoryLoadout] Gameplay inventory not found within timeout. Skipping raid loadout restore.");
+            Destroy(gameObject);
+            yield break;
+        }
+
+        if (!HasSlotsReady(gameplayInventory))
+        {
+            Debug.LogWarning("[InventoryLoadout] Gameplay inventory slots are not ready within timeout. Skipping raid loadout restore.");
             Destroy(gameObject);
             yield break;
         }
@@ -53,5 +61,11 @@ public class RaidInventoryLoadoutBootstrap : MonoBehaviour
 
         Debug.Log($"[InventoryLoadout] Raid loadout restore complete. Restored item count: {restoredItemCount}.");
         Destroy(gameObject);
+    }
+
+    private static bool HasSlotsReady(InventorySystem inventorySystem)
+    {
+        var slots = inventorySystem != null ? inventorySystem.GetSlots() : null;
+        return slots != null && slots.Length > 0;
     }
 }
