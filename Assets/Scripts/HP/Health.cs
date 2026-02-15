@@ -119,6 +119,7 @@ public class Health : MonoBehaviour
             InventorySnapshotMapper.ClearInventoryContents(gameplayInventory);
         }
 
+        InventoryPersistenceService.ClearRaidLoadout();
         playerLootTransferredThisDeath = true;
     }
 

@@ -6,6 +6,7 @@ public static class InventoryPersistenceService
 {
     private const string DefaultStashKey = "stash";
     private const string DefaultPostExtractionKey = "post_extract_inventory";
+    private const string DefaultRaidLoadoutKey = "raid_loadout";
 
     public static bool SaveStash(SavedInventory inventory)
     {
@@ -35,6 +36,21 @@ public static class InventoryPersistenceService
     public static void ClearStash()
     {
         Delete(DefaultStashKey);
+    }
+
+    public static bool SaveRaidLoadout(SavedInventory inventory)
+    {
+        return Save(DefaultRaidLoadoutKey, inventory);
+    }
+
+    public static SavedInventory LoadRaidLoadout()
+    {
+        return Load(DefaultRaidLoadoutKey);
+    }
+
+    public static void ClearRaidLoadout()
+    {
+        Delete(DefaultRaidLoadoutKey);
     }
 
     public static bool Save(string key, SavedInventory inventory)
